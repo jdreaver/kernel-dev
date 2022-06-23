@@ -9,6 +9,7 @@
     in {
       devShell.x86_64-linux = pkgs.mkShell {
         buildInputs = with pkgs; [
+          # Kernel builds
           autoconf
           bc
           binutils
@@ -27,6 +28,9 @@
           python3
           xz
           zlib
+
+          # QEMU and dev scripts
+          debootstrap
         ];
       };
     };
