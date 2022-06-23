@@ -14,6 +14,11 @@ directory, but won't be committed to this repo.
 
 - Set up QEMU dev env
   - https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU
+    - Alternate NixOS QEMU image
+      https://gist.github.com/tarnacious/f9674436fff0efeb4bb6585c79a3b9ff
+    - NixOS qcow2 build
+      https://gist.github.com/jahkeup/14c0f35383bf949fdd92fbfa20184b4f
+    - https://discourse.nixos.org/t/how-to-build-a-standalone-nixos-qemu-vm/5688/4
   - https://vccolombo.github.io/cybersecurity/linux-kernel-qemu-setup/
   - https://kernel-recipes.org/en/2015/talks/speed-up-your-kernel-development-cycle-with-qemu/
     - https://www.youtube.com/watch?v=PBY9l97-lto
