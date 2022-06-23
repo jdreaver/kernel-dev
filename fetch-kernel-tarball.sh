@@ -31,3 +31,7 @@ rm "$tar_file"
 
 echo "Extracting /proc/config.gz to $dir_name/.config"
 gunzip < /proc/config.gz > "$dir_name/.config"
+
+# Helps Emacs find the project root. See
+# https://michael.stapelberg.ch/posts/2021-04-02-emacs-project-override/
+touch "$dir_name/.project.el"
