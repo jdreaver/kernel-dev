@@ -1,2 +1,3 @@
 /linux*
+/.ccls-cache/
 /qemu-image.img
