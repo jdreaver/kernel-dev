@@ -5,11 +5,6 @@ scripts/tools here instead of inside the actual kernel tree. It is expected that
 this repo will live on my machine, and any kernel trees will live under this
 directory, but won't be committed to this repo.
 
-## NixOS Kernel Resources
-
-- https://nixos.wiki/wiki/Linux_kernel
-- https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU
-
 ## TODO
 
 - Set up QEMU dev env
@@ -33,3 +28,30 @@ qemu-system-x86_64 -s \
     -enable-kvm \
     -nographic
 ```
+
+## Misc resources
+
+NixOS:
+- https://nixos.wiki/wiki/Linux_kernel
+- https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU
+
+Email:
+- https://www.kernel.org/doc/html/latest/process/email-clients.html
+- https://offlinemark.com/2020/09/26/tips-for-submitting-your-first-linux-kernel-patch/
+- https://ane.iki.fi/emacs/patches.html
+- https://git-send-email.io
+- https://devtut.github.io/git/git-send-email.html#sending-patches-by-mail
+
+First time contributions:
+- https://kernelnewbies.org/
+- https://williamdurand.fr/2021/02/22/first-patch-in-the-linux-kernel/
+- [tpiekarski's comment from discussion "Is reading Linux kernel development helpful in 2020? Is it outdated?"](https://www.reddit.com/r/kernel/comments/g0i4qq/is_reading_linux_kernel_development_helpful_in/fn9swcs/)
+- [How to become a Kernel Developer?](https://www.reddit.com/r/kernel/comments/tniuhx/how_to_become_a_kernel_developer/)
+- [How should I start kernel development?](https://www.reddit.com/r/kernel/comments/hf6bmv/how_should_i_start_kernel_development/)
+- [What (not how) to contribute to the kernel](https://www.reddit.com/r/kernel/comments/rc6t73/what_not_how_to_contribute_to_the_kernel/)
+- [Recommendations for newer books on kernel development?](https://www.reddit.com/r/kernel/comments/ajho69/recommendations_for_newer_books_on_kernel/)
+
+Getting started
+- [Kernel dev
+  process](https://www.kernel.org/doc/html/latest/process/development-process.html)
+- https://github.com/agelastic/eudyptula
