@@ -13,9 +13,12 @@ cd "$kernel_dir"
 make mrproper # Clears all artifacts, do this especially if you upgrade from a significant old version
 make defconfig kvm_guest.config
 scripts/config \
-  --set-val DEBUG_INFO y \
+  --set-val DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT y \
   --set-val DEBUG y \
   --set-val GDB_SCRIPTS y \
-  --set-val DEBUG_DRIVER y
+  --set-val DEBUG_DRIVER y \
+  --set-val CONFIG_IKCONFIG y \
+  --set-val CONFIG_IKCONFIG_PROC y
 
-# make -j17
+# Use new .config (properly merges config and allows you to inspect .config)
+make oldconfig
