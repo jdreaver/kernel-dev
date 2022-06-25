@@ -32,10 +32,12 @@ qemu-system-x86_64 -s \
 
 ### Whitespace patch
 
+Branch is `davidreaver/tinylcd-align-paren`
+
 ```patch
-From 4130aa90c455c1c3b64593cdba0ff9843ae6c9ab Mon Sep 17 00:00:00 2001
+From 4f57d9c0375bbaad41eee1ba462ce4f374ad8502 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 25 Jun 2022 10:03:55 -0700
+Date: Sat, 25 Jun 2022 13:32:30 -0700
 Subject: [PATCH] staging: fbtft: fix alignment should match open parenthesis
 
 Fix alignment of this line of code with the previous parenthesis, as
@@ -63,20 +65,18 @@ index 9469248f2c50..60cda57bcb33 100644
 
 ### Perl interpreter patch for docs
 
+Branch is `davidreaver/get-feat-perl-env`
+
 ```patch
-From 28f25b9b7ee205851182ed3010143eb302100432 Mon Sep 17 00:00:00 2001
+From 1998041c53bc9935c6841d269d8130fb85082fba Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 25 Jun 2022 12:38:18 -0700
+Date: Sat, 25 Jun 2022 13:41:03 -0700
 Subject: [PATCH] scripts: get_feat.pl: use /usr/bin/env to find perl
 
-I couldn't build the docs via `make pdfdocs` because my Linux
-distribution (NixOS) doesn't put perl in that location. My understanding
-`#!/usr/bin/env perl` is more portable, and with this patch I can
-successfully run this script.
-
-Tested by running this command:
-
-./scripts/get_feat.pl rest --dir Documentation/features --arch arm
+I tried running `make pdfdocs` on NixOS, but it failed because
+get_feat.pl uses a shebang line with /usr/bin/perl, and that file path
+doesn't exist on NixOS. Using the more portable /usr/bin/env perl fixes
+the problem.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
