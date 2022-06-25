@@ -7,6 +7,7 @@ directory, but won't be committed to this repo.
 
 ## TODO
 
+- Try Eudyptula challenge
 - Set up QEMU dev env
   - https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU
     - Alternate NixOS QEMU image
@@ -29,6 +30,71 @@ qemu-system-x86_64 -s \
     -nographic
 ```
 
+### Whitespace patch
+
+```patch
+From 4130aa90c455c1c3b64593cdba0ff9843ae6c9ab Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Sat, 25 Jun 2022 10:03:55 -0700
+Subject: [PATCH] staging: fbtft: fix alignment should match open parenthesis
+
+Fix alignment of this line of code with the previous parenthesis, as
+suggested by checkpatch.pl.
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ drivers/staging/fbtft/fb_tinylcd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/fbtft/fb_tinylcd.c b/drivers/staging/fbtft/fb_tinylcd.c
+index 9469248f2c50..60cda57bcb33 100644
+--- a/drivers/staging/fbtft/fb_tinylcd.c
++++ b/drivers/staging/fbtft/fb_tinylcd.c
+@@ -38,7 +38,7 @@ static int init_display(struct fbtft_par *par)
+ 	write_reg(par, 0xE5, 0x00);
+ 	write_reg(par, 0xF0, 0x36, 0xA5, 0x53);
+ 	write_reg(par, 0xE0, 0x00, 0x35, 0x33, 0x00, 0x00, 0x00,
+-		       0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
++		  0x00, 0x35, 0x33, 0x00, 0x00, 0x00);
+ 	write_reg(par, MIPI_DCS_SET_PIXEL_FORMAT, 0x55);
+ 	write_reg(par, MIPI_DCS_EXIT_SLEEP_MODE);
+ 	udelay(250);
+```
+
+### Perl interpreter patch for docs
+
+```patch
+From 28f25b9b7ee205851182ed3010143eb302100432 Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Sat, 25 Jun 2022 12:38:18 -0700
+Subject: [PATCH] scripts: get_feat.pl: use /usr/bin/env to find perl
+
+I couldn't build the docs via `make pdfdocs` because my Linux
+distribution (NixOS) doesn't put perl in that location. My understanding
+`#!/usr/bin/env perl` is more portable, and with this patch I can
+successfully run this script.
+
+Tested by running this command:
+
+./scripts/get_feat.pl rest --dir Documentation/features --arch arm
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ scripts/get_feat.pl | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/get_feat.pl b/scripts/get_feat.pl
+index 76cfb96b59b6..5c5397eeb237 100755
+--- a/scripts/get_feat.pl
++++ b/scripts/get_feat.pl
+@@ -1,4 +1,4 @@
+-#!/usr/bin/perl
++#!/usr/bin/env perl
+ # SPDX-License-Identifier: GPL-2.0
+
+ use strict;
+```
+
 ## Misc resources
 
 NixOS:
@@ -44,6 +110,16 @@ Email:
 
 First time contributions:
 - https://kernelnewbies.org/
+  - https://kernelnewbies.org/KernelHacking
+    - Suggests running `checkpatch.pl` on `drivers/staging` directories
+    - Also suggests running
+      [Coccinelle](https://www.kernel.org/doc/html/v4.15/dev-tools/coccinelle.html)
+- Very informative patch set with revisions, followups, responses from Greg
+  K-H's autobot, etc
+  https://lore.kernel.org/linux-staging/ac6d83d6-c8b0-e0bd-10aa-a49897679edb@gmail.com/T/
+  - Versioning patch revisions
+    https://kernelnewbies.org/FirstKernelPatch#Versioning_one_patch_revision
+- https://www.linux.com/news/three-ways-beginners-contribute-linux-kernel/
 - https://williamdurand.fr/2021/02/22/first-patch-in-the-linux-kernel/
 - [tpiekarski's comment from discussion "Is reading Linux kernel development helpful in 2020? Is it outdated?"](https://www.reddit.com/r/kernel/comments/g0i4qq/is_reading_linux_kernel_development_helpful_in/fn9swcs/)
 - [How to become a Kernel Developer?](https://www.reddit.com/r/kernel/comments/tniuhx/how_to_become_a_kernel_developer/)

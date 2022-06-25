@@ -31,6 +31,15 @@
 
           # QEMU and dev scripts
           debootstrap
+
+          # Kernel tools
+          coccinelle
+          sparse
+
+          # For kernel docs
+          sphinx
+          texlive.combined.scheme-small
+          graphviz
         ];
       };
     };
