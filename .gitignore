@@ -1,4 +1,5 @@
 /linux*
 /.ccls-cache/
-/qemu-image.img
+/debian.img
 /deb-image-mount/
+/nixos.qcow2

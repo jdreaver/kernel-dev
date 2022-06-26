@@ -15,7 +15,16 @@
 
   networking.firewall.enable = false;
 
-  # boot.kernelParams = [ "console=ttyS0" ];
+  # Enable serial console. See https://github.com/NixOS/nixpkgs/issues/84105
+  boot.kernelParams = [
+    "console=tty1"
+    "console=ttyS0,115200"
+  ];
+  systemd.services."serial-getty@ttyS0" = {
+    enable = true;
+    wantedBy = [ "getty.target" ]; # to start at boot
+    serviceConfig.Restart = "always"; # restart when session is closed
+  };
 
   services.getty.helpLine = ''
     Log in as "root" with an empty password.
