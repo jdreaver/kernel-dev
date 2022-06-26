@@ -6,6 +6,14 @@
   outputs = { self, nixpkgs-unstable }:
     let
       pkgs = import nixpkgs-unstable { system = "x86_64-linux"; config = { allowUnfree = true; }; };
+
+      python-packages = python-packages: with python-packages; [
+        # Needed for checkpatch.pl, which uses spdxcheck.py
+        GitPython
+        ply
+      ];
+      python-and-packages = pkgs.python3.withPackages python-packages;
+
     in {
       devShell.x86_64-linux = pkgs.mkShell {
         buildInputs = with pkgs; [
@@ -25,7 +33,7 @@
           openssl
           pahole
           pkg-config
-          python3
+          python-and-packages
           xz
           zlib
 
