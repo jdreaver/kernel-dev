@@ -5,6 +5,36 @@ scripts/tools here instead of inside the actual kernel tree. It is expected that
 this repo will live on my machine, and any kernel trees will live under this
 directory, but won't be committed to this repo.
 
+## Usage
+
+Here is a typical workflow with bells and whistles:
+1. Get a linux kernel source tree, with either of these options:
+
+   ```
+   $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+   # or
+   $ ./fetch-kernel-tarball.sh 5.18.6
+   ```
+2. Configure the kernel, using a QEMU configuration with `./minimal-qemu-kernel-config.sh linux`
+3. Create a QEMU image using `./create-qemu-image.sh <debian|nixos>`
+4. Compile the kernel with `cd linux/ && make -j32`
+5. Run the kernel with QEMU image using something like:
+
+   ```
+   $ ./run-qemu-kernel.sh linux nixos.qcow2 /path/to/shared-files
+   ```
+
+    `/path/to/shared-files` here is a directory that will be packaged up into a
+    QEMU `.img` file and hooked up at `/dev/sdb`. This arg is optional, but it
+    is useful for e.g. adding compiled, out-of-tree kernel modules.
+6. In the QEMU VM, you could mount the shared directory using
+
+   ```
+   $ mkdir /mnt
+   $ mount /dev/sdb /mnt
+   ```
+
+
 ## TODO
 
 - Try Eudyptula challenge

@@ -39,4 +39,10 @@
   documentation.info.enable = false;
   programs.bash.enableCompletion = false;
   programs.command-not-found.enable = false;
+
+  environment.systemPackages = with pkgs; [
+    kmod # modprobe
+    binutils
+    elfutils
+  ];
 }
