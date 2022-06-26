@@ -35,6 +35,7 @@ qemu-system-x86_64 -s \
 NixOS:
 - https://nixos.wiki/wiki/Linux_kernel
 - https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU
+  - https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix
 
 Email:
 - https://www.kernel.org/doc/html/latest/process/email-clients.html

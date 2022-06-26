@@ -50,5 +50,8 @@
           graphviz
         ];
       };
+
+      qemu-image = import ./nix-image/make-image.nix { inherit pkgs; };
+
     };
 }
