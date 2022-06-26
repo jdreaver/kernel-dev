@@ -34,38 +34,23 @@ Here is a typical workflow with bells and whistles:
    $ mount /dev/sdb /mnt
    ```
 
-
-## TODO
-
-- Try Eudyptula challenge
-- Set up QEMU dev env
-  - https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU
-    - Alternate NixOS QEMU image
-      https://gist.github.com/tarnacious/f9674436fff0efeb4bb6585c79a3b9ff
-    - NixOS qcow2 build
-      https://gist.github.com/jahkeup/14c0f35383bf949fdd92fbfa20184b4f
-    - https://discourse.nixos.org/t/how-to-build-a-standalone-nixos-qemu-vm/5688/4
-  - https://vccolombo.github.io/cybersecurity/linux-kernel-qemu-setup/
-  - https://kernel-recipes.org/en/2015/talks/speed-up-your-kernel-development-cycle-with-qemu/
-    - https://www.youtube.com/watch?v=PBY9l97-lto
-  - https://medium.com/@daeseok.youn/prepare-the-environment-for-developing-linux-kernel-with-qemu-c55e37ba8ade
-  - https://www.collabora.com/news-and-blog/blog/2017/01/16/setting-up-qemu-kvm-for-kernel-development/
-
-```
-qemu-system-x86_64 -s \
-    -kernel linux-5.18.6/arch/x86/boot/bzImage \
-    -hda qemu-image.img \
-    -append "root=/dev/sda console=ttyS0" \
-    -enable-kvm \
-    -nographic
-```
-
 ## Misc resources
 
-NixOS:
-- https://nixos.wiki/wiki/Linux_kernel
+QEMU dev env:
 - https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU
   - https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix
+  - Alternate NixOS QEMU image
+    https://gist.github.com/tarnacious/f9674436fff0efeb4bb6585c79a3b9ff
+  - NixOS qcow2 build
+    https://gist.github.com/jahkeup/14c0f35383bf949fdd92fbfa20184b4f
+  - https://discourse.nixos.org/t/how-to-build-a-standalone-nixos-qemu-vm/5688/4
+- https://vccolombo.github.io/cybersecurity/linux-kernel-qemu-setup/
+- https://kernel-recipes.org/en/2015/talks/speed-up-your-kernel-development-cycle-with-qemu/
+  - https://www.youtube.com/watch?v=PBY9l97-lto
+- https://medium.com/@daeseok.youn/prepare-the-environment-for-developing-linux-kernel-with-qemu-c55e37ba8ade
+- https://www.collabora.com/news-and-blog/blog/2017/01/16/setting-up-qemu-kvm-for-kernel-development/
+- Nice explanation of using -nographic with available options
+  https://web.archive.org/web/20180104171638/http://nairobi-embedded.org/qemu_monitor_console.html
 
 Email:
 - https://www.kernel.org/doc/html/latest/process/email-clients.html
