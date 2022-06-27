@@ -43,6 +43,8 @@
           # Kernel tools
           coccinelle
           sparse
+          qt5.full # for make xconfig
+          lz4
 
           # For kernel docs
           sphinx
