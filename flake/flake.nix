@@ -37,6 +37,11 @@
           xz
           zlib
 
+          # Non-standard build stuff
+          gmp # for a gcc plugin used by some staging module
+          libmpc # for a gcc plugin used by some staging module
+          mpfr # for a gcc plugin used by some staging module
+
           # QEMU and dev scripts
           debootstrap
 
