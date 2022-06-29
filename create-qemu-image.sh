@@ -22,7 +22,7 @@ elif [ "$image_type" = "debian" ]; then
   # Inspired by https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU#Create_a_bootable_NixOS_image_with_no_kernel
   image_name=debian.img
   qemu-img create "$image_name" 5G
-  mkfs.ext2 "$image_name"
+  mkfs.ext4 "$image_name"
 
   mount_dir=deb-image-mount
   if [ ! -d "$mount_dir" ]; then
