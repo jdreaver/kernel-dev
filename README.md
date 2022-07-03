@@ -78,7 +78,8 @@ First time contributions:
 - [What (not how) to contribute to the kernel](https://www.reddit.com/r/kernel/comments/rc6t73/what_not_how_to_contribute_to_the_kernel/)
 - [Recommendations for newer books on kernel development?](https://www.reddit.com/r/kernel/comments/ajho69/recommendations_for_newer_books_on_kernel/)
 
-Getting started
+Getting started, things to do
 - [Kernel dev
   process](https://www.kernel.org/doc/html/latest/process/development-process.html)
 - https://github.com/agelastic/eudyptula
+- https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project
