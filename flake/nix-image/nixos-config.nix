@@ -41,8 +41,12 @@
   programs.command-not-found.enable = false;
 
   environment.systemPackages = with pkgs; [
-    kmod # modprobe
     binutils
     elfutils
+    kmod # modprobe
+    linuxPackages.perf
+    pciutils # for lspci
+    sysstat # Perf monitoring: mpstat, iostat, sar, etc
+    usbutils # lsusb
   ];
 }
