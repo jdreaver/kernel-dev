@@ -21,7 +21,7 @@ Here is a typical workflow with bells and whistles:
 5. Run the kernel with QEMU image using something like:
 
    ```
-   $ ./run-qemu-kernel.sh linux nixos.qcow2 /path/to/shared-files
+   $ ./run-qemu-kernel.sh linux nixos.img /path/to/shared-files
    ```
 
     `/path/to/shared-files` here is a directory that will be packaged up into a

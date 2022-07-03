@@ -14,7 +14,7 @@ if [ "$image_type" = "nixos" ]; then
     pushd flake/
     nix build .#qemu-image
     popd
-    install -m 644 flake/result/nixos.qcow2 .
+    install -m 644 flake/result/nixos.img .
     rm flake/result
 
 elif [ "$image_type" = "debian" ]; then

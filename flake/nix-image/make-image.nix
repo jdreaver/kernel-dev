@@ -10,5 +10,5 @@ import ("${pkgs.path}/nixos/lib/make-disk-image.nix") {
   inherit (pkgs) lib;
   diskSize = 8192;
   partitionTableType = "none";
-  format = "qcow2";
+  format = "raw";
 }
