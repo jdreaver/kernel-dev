@@ -51,6 +51,8 @@ QEMU dev env:
 - https://www.collabora.com/news-and-blog/blog/2017/01/16/setting-up-qemu-kvm-for-kernel-development/
 - Nice explanation of using -nographic with available options
   https://web.archive.org/web/20180104171638/http://nairobi-embedded.org/qemu_monitor_console.html
+- ClangBuiltLinux has a repo super similar to this repo, including QEMU and
+  buildroot scripts https://github.com/ClangBuiltLinux/boot-utils
 
 Email:
 - https://www.kernel.org/doc/html/latest/process/email-clients.html
