@@ -24,15 +24,10 @@ Here is a typical workflow with bells and whistles:
    $ ./run-qemu-kernel.sh linux nixos.img /path/to/shared-files
    ```
 
-    `/path/to/shared-files` here is a directory that will be packaged up into a
-    QEMU `.img` file and hooked up at `/dev/sdb`. This arg is optional, but it
-    is useful for e.g. adding compiled, out-of-tree kernel modules.
-6. In the QEMU VM, you could mount the shared directory using
-
-   ```
-   $ mkdir /mnt
-   $ mount /dev/sdb /mnt
-   ```
+    `/path/to/shared-files` here is a directory that will be packaged up into
+    the QEMU `.img` file and mounted at `/shared` in the VM. This arg is
+    optional, but it is useful for e.g. adding compiled, out-of-tree kernel
+    modules.
 
 ## Misc resources
 
