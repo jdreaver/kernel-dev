@@ -5,4 +5,4 @@
 # - https://github.com/NixOS/nix/issues/3121
 # - https://discourse.nixos.org/t/tweag-nix-dev-update-31/19481
 # - https://github.com/NixOS/nix/issues/4097
-(builtins.getFlake (toString ./flake)).devShell.${system}
+(builtins.getFlake (toString ./flake)).devShells.${system}.default

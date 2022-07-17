@@ -15,7 +15,7 @@
       python-and-packages = pkgs.python3.withPackages python-packages;
 
     in {
-      devShell.x86_64-linux = pkgs.mkShell {
+      devShells.x86_64-linux.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           # Kernel builds
           autoconf
