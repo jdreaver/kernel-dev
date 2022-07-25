@@ -1,4 +1,5 @@
 /linux*
+/buildroot*
 /.ccls-cache/
 /debian.img
 /deb-image-mount/
