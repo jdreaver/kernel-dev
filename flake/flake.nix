@@ -58,6 +58,9 @@
           qt5.full # for make xconfig
           lz4
 
+          # buildroot
+          unzip
+
           # For kernel docs
           sphinx
           texlive.combined.scheme-small
