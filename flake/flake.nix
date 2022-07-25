@@ -48,6 +48,10 @@
           # QEMU and dev scripts
           debootstrap
 
+          # Cross-compilation to ARM
+          pkgsCross.aarch64-multiplatform.buildPackages.gcc
+          pkgsCross.armv7l-hf-multiplatform.buildPackages.gcc
+
           # Kernel tools
           coccinelle
           sparse
