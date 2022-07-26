@@ -47,7 +47,25 @@ some nix quirks. Here is a general procedure:
 3. `cd buildroot`
 4. `make raspberrypi4_64_defconfig`
 5. `make -j32`
-6. Copy `output/images/sdcard.img` to an SD card and use it to boot the Pi!
+6. Copy `output/images/sdcard.img` to an SD card
+   (MAKE SURE TO VERIFY DEVICE NAME, REPLACE `sdz`)
+
+   ```
+   $ sudo dd if=output/images/sdcard.img of=/dev/sdz status=progress
+   ```
+7. Connect Pi serial port to USB serial port connector, use `dmesg` to find
+   `tty` device name
+
+   ```
+   dmesg | grep 'cp210x converter now attached'
+   [48407.800462] usb 1-4: cp210x converter now attached to ttyUSB0
+   ```
+8. Connect with GNU screen
+
+   ```
+   $ sudo screen /dev/ttyUSB0 115200
+   ```
+9. Boot the Pi! Log in with `root` and no password.
 
 Cool links:
 - https://www.thirtythreeforty.net/series/mastering-embedded-linux/

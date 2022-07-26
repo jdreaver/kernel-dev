@@ -56,6 +56,9 @@
           # QEMU and dev scripts
           debootstrap
 
+          # Use GNU screen to connect to serial port (e.g. sudo screen /dev/ttyUSB0 115200)
+          screen
+
           # Cross-compilation to ARM
           pkgsCross.aarch64-multiplatform.buildPackages.gcc
           pkgsCross.armv7l-hf-multiplatform.buildPackages.gcc
