@@ -29,6 +29,32 @@ Here is a typical workflow with bells and whistles:
     optional, but it is useful for e.g. adding compiled, out-of-tree kernel
     modules.
 
+## Buildroot
+
+Getting `buildroot` working is not too onerous, at least since I figured out
+some nix quirks. Here is a general procedure:
+
+1. Set up some stupid symlinks that buildroot expects (well, really the problem
+   is `libtool` and `autotools` I think. `buildroot` can't use host
+   libraries and pretty much compiles everything from scratch).
+   ```
+   $ sudo ln -s (which file) /usr/bin/file
+   $ sudo ln -s (which true) /bin/true
+   $ sudo ln -s (which awk) /usr/bin/awk
+   $ sudo ln -s (which bash) /bin/bash
+   ```
+2. `git clone git://git.buildroot.net/buildroot`
+3. `cd buildroot`
+4. `make raspberrypi4_64_defconfig`
+5. `make -j32`
+6. Copy `output/images/sdcard.img` to an SD card and use it to boot the Pi!
+
+Cool links:
+- https://www.thirtythreeforty.net/series/mastering-embedded-linux/
+- Serial console
+  - https://learn.adafruit.com/adafruits-raspberry-pi-lesson-5-using-a-console-cable/test-and-configure
+  - https://www.jeffgeerling.com/blog/2021/attaching-raspberry-pis-serial-console-uart-debugging
+
 ## Misc resources
 
 QEMU dev env:
