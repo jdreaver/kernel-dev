@@ -16,6 +16,14 @@
 
     in {
       devShells.x86_64-linux.default = pkgs.mkShell {
+        # Disable default hardening flags. These are very confusing when doing
+        # development and they break builds of packages/systems that don't
+        # expect these flags to be on. Automatically enables stuff like
+        # FORTIFY_SOURCE, -Werror=format-security, -fPIE, etc. See:
+        # - https://nixos.org/manual/nixpkgs/stable/#sec-hardening-in-nixpkgs
+        # - https://nixos.wiki/wiki/C#Hardening_flags
+        hardeningDisable = ["all"];
+
         buildInputs = with pkgs; [
           # Kernel builds
           autoconf
