@@ -75,6 +75,8 @@ Cool links:
 
 ## Misc resources
 
+TODO Check out this repo for kernel dev with nix https://github.com/jordanisaacs/kernel-module-flake
+
 QEMU dev env:
 - https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU
   - https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/virtualisation/qemu-vm.nix
