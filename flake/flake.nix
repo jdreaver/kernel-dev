@@ -66,7 +66,7 @@
           # Kernel tools
           coccinelle
           sparse
-          qt5.full # for make xconfig
+          # qt5.full # for make xconfig
           lz4
 
           # buildroot
@@ -80,6 +80,5 @@
       };
 
       qemu-image = import ./nix-image/make-image.nix { inherit pkgs; };
-
     };
 }
