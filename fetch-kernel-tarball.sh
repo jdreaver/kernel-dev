@@ -26,7 +26,7 @@ major_version="${version::1}"
 
 tar_file="${dir_name}.tar.xz"
 wget "https://cdn.kernel.org/pub/linux/kernel/v${major_version}.x/${tar_file}"
-tar xvf "$tar_file"
+tar xf "$tar_file"
 rm "$tar_file"
 
 echo "Extracting /proc/config.gz to $dir_name/.config"
