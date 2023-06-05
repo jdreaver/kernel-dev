@@ -29,6 +29,27 @@ Here is a typical workflow with bells and whistles:
     optional, but it is useful for e.g. adding compiled, out-of-tree kernel
     modules.
 
+## Rust
+
+TODO: This doesn't actually work yet. Watch [Mentorship Session: Setting Up an Environment for Writing Linux Kernel Modules in Rust](https://www.youtube.com/watch?v=tPs1uRqOnlk)
+- Also see <https://github.com/jordanisaacs/kernel-module-flake>
+- Also see <https://github.com/Rust-for-Linux/nix>
+
+```
+$ make mrproper
+$ make LLVM=1 allnoconfig defconfig rust.config
+$ make LLVM=1 -j14
+```
+
+(I get this error)
+
+```
+  LD      arch/x86/boot/setup.elf
+ld.lld: error: section .bsdata file range overlaps with .header
+>>> .bsdata range is [0x1092, 0x122B]
+>>> .header range is [0x11EF, 0x126B]
+```
+
 ## Buildroot
 
 Getting `buildroot` working is not too onerous, at least since I figured out
