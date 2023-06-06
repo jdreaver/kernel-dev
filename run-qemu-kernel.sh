@@ -36,5 +36,5 @@ qemu-system-x86_64 \
     -kernel "$linux_dir/arch/x86/boot/bzImage" \
     -hda "$qemu_image" \
     -append "root=/dev/sda console=ttyS0" \
-    -enable-kvm \
+    -machine q35,accel=kvm \
     -nographic

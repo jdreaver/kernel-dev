@@ -21,7 +21,7 @@
     "console=ttyS0,115200"
   ];
   systemd.services."serial-getty@ttyS0" = {
-    enable = true;
+    enable = lib.mkForce true;
     wantedBy = [ "getty.target" ]; # to start at boot
     serviceConfig.Restart = "always"; # restart when session is closed
   };
@@ -49,4 +49,6 @@
     sysstat # Perf monitoring: mpstat, iostat, sar, etc
     usbutils # lsusb
   ];
+
+  system.stateVersion = "22.05";
 }

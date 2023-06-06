@@ -101,6 +101,7 @@
           mpfr # for a gcc plugin used by some staging module
 
           # QEMU and dev scripts
+          qemu
           debootstrap
 
           # Use GNU screen to connect to serial port (e.g. sudo screen /dev/ttyUSB0 115200)
