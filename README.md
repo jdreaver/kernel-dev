@@ -10,7 +10,7 @@ directory, but won't be committed to this repo.
 Here is a typical workflow with bells and whistles:
 1. Get a linux kernel source tree, with either of these options:
 
-   ```
+   ```bash
    $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
    # or
    $ ./fetch-kernel-tarball.sh 5.18.6
@@ -20,7 +20,7 @@ Here is a typical workflow with bells and whistles:
 4. Compile the kernel with `cd linux/ && make -j32`
 5. Run the kernel with QEMU image using something like:
 
-   ```
+   ```bash
    $ ./run-qemu-kernel.sh linux nixos.img /path/to/shared-files
    ```
 
@@ -28,6 +28,21 @@ Here is a typical workflow with bells and whistles:
     the QEMU `.img` file and mounted at `/shared` in the VM. This arg is
     optional, but it is useful for e.g. adding compiled, out-of-tree kernel
     modules.
+
+## Language Server Protocol (LSP) Configuration
+
+The kernel has a script to generate a `compile-commands.json` usable with LSP:
+
+```bash
+$ cd linux/
+# Make a config and build the kernel
+$ make mrproper
+$ make defconfig
+# Build just for good measure
+$ make -j14
+# Generate compile-commands.json
+$ ./scripts/clang-tools/gen_compile_commands.py
+```
 
 ## Rust
 
@@ -63,12 +78,14 @@ some nix quirks. Here is a general procedure:
 1. Set up some stupid symlinks that buildroot expects (well, really the problem
    is `libtool` and `autotools` I think. `buildroot` can't use host
    libraries and pretty much compiles everything from scratch).
-   ```
+
+   ```bash
    $ sudo ln -s (which file) /usr/bin/file
    $ sudo ln -s (which true) /bin/true
    $ sudo ln -s (which awk) /usr/bin/awk
    $ sudo ln -s (which bash) /bin/bash
    ```
+
 2. `git clone git://git.buildroot.net/buildroot`
 3. `cd buildroot`
 4. `make raspberrypi4_64_defconfig`
@@ -76,9 +93,10 @@ some nix quirks. Here is a general procedure:
 6. Copy `output/images/sdcard.img` to an SD card
    (MAKE SURE TO VERIFY DEVICE NAME, REPLACE `sdz`)
 
-   ```
+   ```bash
    $ sudo dd if=output/images/sdcard.img of=/dev/sdz status=progress
    ```
+
 7. Connect Pi serial port to USB serial port connector, use `dmesg` to find
    `tty` device name
 
@@ -86,11 +104,13 @@ some nix quirks. Here is a general procedure:
    dmesg | grep 'cp210x converter now attached'
    [48407.800462] usb 1-4: cp210x converter now attached to ttyUSB0
    ```
+
 8. Connect with GNU screen
 
-   ```
+   ```bash
    $ sudo screen /dev/ttyUSB0 115200
    ```
+
 9. Boot the Pi! Log in with `root` and no password.
 
 Cool links:
