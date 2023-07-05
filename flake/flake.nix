@@ -54,7 +54,7 @@
         # Use a slightly older GCC version so older kernels compile. When I
         # tried to compile linux-staging in July 2023, nixpkgs used gcc 12 by
         # default, and I needed to use gcc 11.
-        stdenv = pkgs.gcc11Stdenv;
+        # stdenv = pkgs.gcc11Stdenv;
       } {
         # Disable default hardening flags. These are very confusing when doing
         # development and they break builds of packages/systems that don't
