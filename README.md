@@ -8,10 +8,10 @@ directory, but won't be committed to this repo.
 ## Usage
 
 Here is a typical workflow with bells and whistles:
-1. Get a linux kernel source tree, with either of these options:
+1. (Optional) Update the kernel source tree or get a new one
 
    ```bash
-   $ git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+   $ cd linux && git pull upstream master
    # or
    $ ./fetch-kernel-tarball.sh 5.18.6
    ```
