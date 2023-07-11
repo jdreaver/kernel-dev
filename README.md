@@ -29,7 +29,7 @@ Here is a typical workflow with bells and whistles:
     optional, but it is useful for e.g. adding compiled, out-of-tree kernel
     modules.
 
-## Language Server Protocol (LSP) Configuration
+## Linux Kernel Language Server Protocol (LSP) Configuration
 
 The kernel has a script to generate a `compile-commands.json` usable with LSP:
 
@@ -44,7 +44,7 @@ $ make -j14
 $ ./scripts/clang-tools/gen_compile_commands.py
 ```
 
-## Rust
+## Linux Kernel Rust
 
 ```
 $ make mrproper
@@ -71,6 +71,31 @@ Maybe the problem is my LLVM env for nix in general? <https://github.com/NixOS/n
 - <https://github.com/jordanisaacs/kernel-module-flake>
 
 ## Buildroot
+
+### Raspberry Pi using external directory
+
+1. Set up some stupid symlinks that buildroot expects (well, really the problem
+   is `libtool` and `autotools` I think. `buildroot` can't use host
+   libraries and pretty much compiles everything from scratch).
+
+   ```bash
+   $ sudo ln -s (which file) /usr/bin/file
+   $ sudo ln -s (which true) /bin/true
+   $ sudo ln -s (which awk) /usr/bin/awk
+   $ sudo ln -s (which bash) /bin/bash
+   ```
+2. Use the external config
+
+   ```bash
+   $ cd buildroot
+   $ make BR2_EXTERNAL=../buildroot-rpi reaver_rpi_defconfig menuconfig
+   ```
+3. Build `$ make` (no need for `-j` since buildroot uses parallelism internally, not for top level targets)
+4. Copy image to SD card (see below for generic instructions)
+
+### Raspberry Pi Generic
+
+(These were the instructions I used before I set up the `buildroot-rpi` external infra)
 
 Getting `buildroot` working is not too onerous, at least since I figured out
 some nix quirks. Here is a general procedure:
@@ -172,3 +197,17 @@ Getting started, things to do
   process](https://www.kernel.org/doc/html/latest/process/development-process.html)
 - https://github.com/agelastic/eudyptula
 - https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project
+
+## TODO
+
+Embedded:
+- Dev setup
+  - Get booting with NFS or TFTP
+    - See the bootlin labs or the Mastering Embedded Linux Book
+  - Consider using buildroot or nix for just a barebones setup to bootstrap NFS and/or SSH, and thereafter just syncing to board
+- Buildroot
+  - (Consider abandoning buildroot and figuring out a kernel dev loop with nix)
+  - Set up NFS booting, and/or an initramfs for faster booting so we can have a quicker kernel dev inner loop
+  - <https://buildroot.org/downloads/manual/manual.html#customize>
+  - <https://buildroot.org/downloads/manual/using-buildroot-development.txt>
+  - Set up my own BR2_EXTERNAL directory for rpi4 + Linux dev
