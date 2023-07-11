@@ -1,0 +1,4 @@
+# This file is sourced in /etc/init.d/S50dropbear.
+
+# The -B option allows blank password logins
+DROPBEAR_ARGS="-B"
