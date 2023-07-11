@@ -13,15 +13,15 @@ Here is a typical workflow with bells and whistles:
    ```bash
    $ cd linux && git pull upstream master
    # or
-   $ ./fetch-kernel-tarball.sh 5.18.6
+   $ ./scripts/fetch-kernel-tarball.sh 5.18.6
    ```
-2. Configure the kernel, using a QEMU configuration with `./scripts/minimal-qemu-kernel-config.sh linux`
-3. Create a QEMU image using `./scripts/create-qemu-image.sh <debian|nixos>`
+2. Configure the kernel, using a QEMU configuration with `./qemu/minimal-qemu-kernel-config.sh linux`
+3. Create a QEMU image using `./qemu/create-qemu-image.sh <debian|nixos>`
 4. Compile the kernel with `cd linux/ && make -j32`
 5. Run the kernel with QEMU image using something like:
 
    ```bash
-   $ ./scripts/run-qemu-kernel.sh linux nixos.img /path/to/shared-files
+   $ ./qemu/run-qemu-kernel.sh linux nixos.img /path/to/shared-files
    ```
 
     `/path/to/shared-files` here is a directory that will be packaged up into
