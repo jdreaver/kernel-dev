@@ -110,9 +110,8 @@
           qemu
           debootstrap
 
-          # Serial consoles to connect to serial port
-          screen # screen /dev/ttyUSB0 115200
-          minicom # minicom -D /dev/ttyUSB0 -b 115200
+          # Use GNU screen to connect to serial port (e.g. sudo screen /dev/ttyUSB0 115200)
+          screen
 
           # Cross-compilation to ARM
           pkgsCross.aarch64-multiplatform.buildPackages.gcc
