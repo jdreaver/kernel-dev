@@ -204,6 +204,7 @@ Embedded:
 - Dev setup
   - Get booting with NFS or TFTP
     - See the bootlin labs or the Mastering Embedded Linux Book
+    - NFS mounting seems to work with `# mount -v -t nfs 10.42.0.1:/nfs-export /nfs-mnt -o nolock,vers=3`
   - Consider using buildroot or nix for just a barebones setup to bootstrap NFS and/or SSH, and thereafter just syncing to board
 - Buildroot
   - (Consider abandoning buildroot and figuring out a kernel dev loop with nix)
