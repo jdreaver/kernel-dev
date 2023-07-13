@@ -1,0 +1,35 @@
+ROOTFS = rootfs
+ROOTFS_BUSYBOX = $(ROOTFS)/bin/busybox
+
+
+.PHONY: all
+all: $(ROOTFS_BUSYBOX)
+
+BUSYBOX_VERSION = 1.36.1
+BUSYBOX_DIR = busybox-$(BUSYBOX_VERSION)
+BUSYBOX_TARBALL = $(BUSYBOX_DIR).tar.bz2
+BUSYBOX_URL = https://busybox.net/downloads/$(BUSYBOX_TARBALL)
+BUSYBOX_README = $(BUSYBOX_DIR)/README
+BUSYBOX_CONFIG = $(BUSYBOX_DIR)/.config
+BUSYBOX_BUILD = $(BUSYBOX_DIR)/busybox
+BUSYBOX_MAKE_ARGS = ARCH=arm CROSS_COMPILE=armv7l-unknown-linux-gnueabihf-
+
+$(BUSYBOX_README):
+	wget $(BUSYBOX_URL)
+	tar -xjf $(BUSYBOX_TARBALL)
+	rm $(BUSYBOX_TARBALL)
+
+$(BUSYBOX_CONFIG): $(BUSYBOX_README)
+	cd $(BUSYBOX_DIR) && make defconfig && sed -i 's/# CONFIG_STATIC is not set/CONFIG_STATIC=y/' .config
+
+$(BUSYBOX_BUILD): $(BUSYBOX_CONFIG)
+	cd $(BUSYBOX_DIR) && make $(BUSYBOX_MAKE_ARGS) busybox -j$$(nproc)
+
+$(ROOTFS_BUSYBOX): $(BUSYBOX_BUILD)
+	rm -rf $(ROOTFS)
+	mkdir -p $(ROOTFS)/bin
+	cd $(BUSYBOX_DIR) && make $(BUSYBOX_MAKE_ARGS) CONFIG_PREFIX=../$(ROOTFS) install
+
+.PHONY: clean
+clean:
+	rm -rf $(ROOTFS) $(BUSYBOX_DIR) $(BUSYBOX_TARBALL)
