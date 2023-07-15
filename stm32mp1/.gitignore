@@ -1,2 +1,3 @@
 /u-boot/
+/trusted-firmware-a/
 fip*.bin

@@ -84,6 +84,7 @@ Maybe the problem is my LLVM env for nix in general? <https://github.com/NixOS/n
    $ sudo ln -s /run/current-system/sw/bin/awk /usr/bin/awk
    $ sudo ln -s /run/current-system/sw/bin/bash /bin/bash
    $ sudo ln -s /run/current-system/sw/bin/install /usr/bin/install
+   $ sudo ln -s /run/current-system/sw/bin/openssl /usr/bin/openssl
    ```
 2. Use the external config
 

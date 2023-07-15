@@ -7,3 +7,4 @@
   - <https://wiki.st.com/stm32mpu/wiki/How_to_configure_TF-A_FIP>
 - <https://u-boot.readthedocs.io/en/latest/board/st/index.html>
   - <https://u-boot.readthedocs.io/en/latest/board/st/stm32mp1.html#build-procedure>
+- Excellent build explanations, labs, etc for STM32MP1 <https://bootlin.com/training/embedded-linux/>

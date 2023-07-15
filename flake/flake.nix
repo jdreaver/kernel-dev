@@ -133,6 +133,7 @@
           # u-boot
           swig
           armTrustedFirmwareTools # for fiptool
+          dtc
 
           # For kernel docs
           sphinx
