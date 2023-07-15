@@ -127,6 +127,9 @@
           # buildroot
           unzip
 
+          # stm32
+          stlink
+
           # For kernel docs
           sphinx
           texlive.combined.scheme-small
