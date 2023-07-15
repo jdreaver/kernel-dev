@@ -4,28 +4,30 @@ UBOOT = $(UBOOT_REPO)/u-boot.dtb
 UBOOT_NODTB = $(UBOOT_REPO)/u-boot-nodtb.bin
 UBOOT_DEVICE_TREE = stm32mp157a-dk1
 
-TFA_REPO = trusted-firmware-a
-TFA_README = $(TFA_REPO)/readme.rst
-TFA_BIN = tf-a-stm32mp157a-dk1.stm32
-
 CROSS_COMPILE_ARG = CROSS_COMPILE=armv7l-unknown-linux-gnueabihf-
 
 .PHONY: all
-all: $(UBOOT) $(TFA_BIN)
+all: $(UBOOT)
 
 $(UBOOT_README):
 	git clone https://source.denx.de/u-boot/u-boot.git
 
 $(UBOOT): $(UBOOT_README)
-	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) stm32mp15_defconfig
+	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) stm32mp15_basic_defconfig
 	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) DEVICE_TREE=$(UBOOT_DEVICE_TREE) -j$$(nproc)
 
-$(TFA_README):
-	git clone https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git
-	git checkout v2.7
+SDCARD_DEV =
 
-$(TFA_BIN): $(TFA_README) $(UBOOT)
-	make -C $(TFA_REPO) V=1 $(CROSS_COMPILE_ARG) ARM_ARCH_MAJOR=7 ARCH=aarch32 PLAT=stm32mp1 AARCH32_SP=sp_min DTB_FILE_NAME=stm32mp157a-dk1.dtb BL33=$(UBOOT_NODTB) BL33_CFG=$(UBOOT) STM32MP_SDMMC=1 fip all -j $$(nproc)
-
-# $(FIP_BIN): $(UBOOT)
-# 	fiptool --verbose update --nt-fw $(UBOOT_NODTB) --hw-config $(UBOOT) $@
+.PHONY: flash-sdcard
+flash-sdcard: $(UBOOT)
+	@[ "${SDCARD_DEV}" ] || ( echo ">> SDCARD_DEV is not set"; exit 1 )
+	sudo sgdisk -o $(SDCARD_DEV)
+	sudo sgdisk --resize-table=128 -a 1 \
+          -n 1:34:545     -c 1:fsbl1 \
+          -n 2:546:1057   -c 2:fsbl2 \
+          -n 3:1058:5153  -c 3:ssbl \
+          -n 4:5154:      -c 4:rootfs -A 4:set:2 \
+          -p $(SDCARD_DEV)
+	sudo dd if=u-boot/u-boot-spl.stm32 of=$(SDCARD_DEV)1
+	sudo dd if=u-boot/u-boot-spl.stm32 of=$(SDCARD_DEV)2
+	sudo dd if=u-boot/u-boot.img of=$(SDCARD_DEV)3
