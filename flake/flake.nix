@@ -130,6 +130,10 @@
           # stm32
           stlink
 
+          # u-boot
+          swig
+          armTrustedFirmwareTools # for fiptool
+
           # For kernel docs
           sphinx
           texlive.combined.scheme-small
