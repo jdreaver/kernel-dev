@@ -79,10 +79,11 @@ Maybe the problem is my LLVM env for nix in general? <https://github.com/NixOS/n
    libraries and pretty much compiles everything from scratch).
 
    ```bash
-   $ sudo ln -s (which file) /usr/bin/file
-   $ sudo ln -s (which true) /bin/true
-   $ sudo ln -s (which awk) /usr/bin/awk
-   $ sudo ln -s (which bash) /bin/bash
+   $ sudo ln -s /run/current-system/sw/bin/file /usr/bin/file
+   $ sudo ln -s /run/current-system/sw/bin/true /bin/true
+   $ sudo ln -s /run/current-system/sw/bin/awk /usr/bin/awk
+   $ sudo ln -s /run/current-system/sw/bin/bash /bin/bash
+   $ sudo ln -s /run/current-system/sw/bin/install /usr/bin/install
    ```
 2. Use the external config
 
