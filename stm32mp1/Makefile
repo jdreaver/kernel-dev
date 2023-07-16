@@ -15,8 +15,10 @@ KERNEL_IMAGE = $(TFTP_DIR)/zImage
 ROOTFS = /nfs-export/rootfs
 ROOTFS_BUSYBOX = $(ROOTFS)/bin/busybox
 
+SDCARD = sdcard.img
+
 .PHONY: all
-all: $(UBOOT_IMG) $(KERNEL_IMAGE) $(ROOTFS_BUSYBOX)
+all: $(UBOOT_IMG) $(KERNEL_IMAGE) $(ROOTFS_BUSYBOX) $(SDCARD)
 
 $(UBOOT_README):
 	git clone https://source.denx.de/u-boot/u-boot.git
@@ -127,18 +129,27 @@ $(ROOTFS_BUSYBOX): $(BUSYBOX_BUILD)
 
 	sudo chown -R root:root $(ROOTFS)
 
-SDCARD_DEV =
-
-.PHONY: flash-sdcard
-flash-sdcard: $(UBOOT_IMG)
-	@[ "${SDCARD_DEV}" ] || ( echo ">> SDCARD_DEV is not set"; exit 1 )
-	sudo sgdisk -o $(SDCARD_DEV)
-	sudo sgdisk --resize-table=128 -a 1 \
+$(SDCARD): $(UBOOT_IMG)
+	dd if=/dev/zero of=$@ bs=1M count=10
+	sgdisk --resize-table=128 -a 1 \
           -n 1:34:545     -c 1:fsbl1 \
           -n 2:546:1057   -c 2:fsbl2 \
           -n 3:1058:5153  -c 3:ssbl \
           -n 4:5154:      -c 4:rootfs -A 4:set:2 \
-          -p $(SDCARD_DEV)
-	sudo dd if=u-boot/u-boot-spl.stm32 of=$(SDCARD_DEV)1
-	sudo dd if=u-boot/u-boot-spl.stm32 of=$(SDCARD_DEV)2
-	sudo dd if=$(UBOOT_IMG) of=$(SDCARD_DEV)3
+          -p $@
+
+	@sudo losetup --detach /dev/loop0 || true
+	sudo losetup --partscan /dev/loop0 $@
+
+	sudo dd if=u-boot/u-boot-spl.stm32 of=/dev/loop0p1
+	sudo dd if=u-boot/u-boot-spl.stm32 of=/dev/loop0p2
+	sudo dd if=$(UBOOT_IMG) of=/dev/loop0p3
+
+	sudo losetup --detach /dev/loop0
+
+SDCARD_DEV =
+
+.PHONY: flash-sdcard
+flash-sdcard: $(SDCARD)
+	@[ "${SDCARD_DEV}" ] || ( echo ">> SDCARD_DEV is not set"; exit 1 )
+	sudo dd if=$(SDCARD) of=$(SDCARD_DEV) bs=1M status=progress
