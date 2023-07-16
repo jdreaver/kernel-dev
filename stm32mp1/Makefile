@@ -31,8 +31,9 @@ $(UBOOT_IMG): $(UBOOT_CONFIG)
 
 $(KERNEL_CONFIG):
 	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) multi_v7_defconfig
-        # Disable a bunch of SOCs and options we don't need
+        # Disable a bunch of SOCs and options we don't need, and also enable some other stuff
 	cd ../linux && scripts/config \
+          --enable CONFIG_GPIO_SYSFS \
           --disable CONFIG_GCC_PLUGINS \
           --disable CONFIG_DRM \
           --disable CONFIG_ARCH_EMEV2 \
