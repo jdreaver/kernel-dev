@@ -4,5 +4,3 @@ set -eux
 
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
-
-exec /bin/sh
