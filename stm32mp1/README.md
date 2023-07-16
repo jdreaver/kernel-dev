@@ -1,5 +1,13 @@
 # STM32MP157 build
 
+## Tips
+
+### Decompile compiled device tree file
+
+```sh
+dtc -I dtb -O dts ../linux/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb > compiled.dts
+```
+
 ## Useful links
 
 - <https://wiki.st.com/stm32mpu/wiki/STM32MP15_U-Boot>
