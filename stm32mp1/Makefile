@@ -8,7 +8,9 @@ UBOOT_DEVICE_TREE = stm32mp157a-dk1
 CROSS_COMPILE_ARG = CROSS_COMPILE=armv7l-unknown-linux-gnueabihf-
 
 KERNEL_CONFIG = ../linux/.config
-KERNEL_IMAGE = ../linux/arch/arm/boot/zImage
+
+TFTP_DIR = /srv/tftp
+KERNEL_IMAGE = $(TFTP_DIR)/zImage
 
 ROOTFS = /nfs-export/rootfs
 ROOTFS_BUSYBOX = $(ROOTFS)/bin/busybox
@@ -83,12 +85,13 @@ $(KERNEL_CONFIG):
           --disable CONFIG_ARCH_VT8500 \
           --disable CONFIG_ARCH_WM8850 \
           --disable CONFIG_ARCH_ZYNQ
+	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) olddefconfig
 
 $(KERNEL_IMAGE): $(KERNEL_CONFIG)
 	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) -j$$(nproc)
 
-	sudo cp ../linux/arch/arm/boot/zImage /srv/tftp/
-	sudo cp ../linux/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb /srv/tftp/
+	sudo cp ../linux/arch/arm/boot/zImage $(TFTP_DIR)/
+	sudo cp ../linux/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb $(TFTP_DIR)/
 
 BUSYBOX_VERSION = 1.36.1
 BUSYBOX_DIR = busybox-$(BUSYBOX_VERSION)
@@ -126,7 +129,6 @@ $(ROOTFS_BUSYBOX): $(BUSYBOX_BUILD)
 	echo "set -eux" >> $(ROOTFS)/etc/init.d/rcS
 	echo "mount -t proc proc /proc" >> $(ROOTFS)/etc/init.d/rcS
 	echo "mount -t sysfs sysfs /sys" >> $(ROOTFS)/etc/init.d/rcS
-	#echo "mount -t devtmpfs devtmpfs /dev" >> $(ROOTFS)/etc/init.d/rcS # I think kernel is doing this automatically
 	echo "exec /bin/sh" >> $(ROOTFS)/etc/init.d/rcS
 	chmod +x $(ROOTFS)/etc/init.d/rcS
 
