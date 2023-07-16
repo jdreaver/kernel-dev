@@ -4,6 +4,7 @@ UBOOT_CONFIG = $(UBOOT_REPO)/.config
 UBOOT_IMG = $(UBOOT_REPO)/u-boot.img
 UBOOT_NODTB = $(UBOOT_REPO)/u-boot-nodtb.bin
 UBOOT_DEVICE_TREE = stm32mp157a-dk1
+UBOOT_ENV = u-boot.env
 
 CROSS_COMPILE_ARG = CROSS_COMPILE=armv7l-unknown-linux-gnueabihf-
 
@@ -23,9 +24,13 @@ all: $(UBOOT_IMG) $(KERNEL_IMAGE) $(ROOTFS_BUSYBOX) $(SDCARD)
 $(UBOOT_README):
 	git clone https://source.denx.de/u-boot/u-boot.git
 
-$(UBOOT_CONFIG): $(UBOOT_README)
+$(UBOOT_CONFIG): $(UBOOT_README) $(UBOOT_ENV)
 	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) stm32mp15_basic_defconfig
 	echo 'CONFIG_CMD_CONFIG=y' >> $(UBOOT_CONFIG)
+
+	echo 'CONFIG_USE_DEFAULT_ENV_FILE=y' >> $(UBOOT_CONFIG)
+	echo 'CONFIG_DEFAULT_ENV_FILE="../u-boot.env"' >> $(UBOOT_CONFIG)
+
 	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) oldconfig
 
 $(UBOOT_IMG): $(UBOOT_CONFIG)

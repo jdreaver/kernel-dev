@@ -134,6 +134,8 @@
           swig
           armTrustedFirmwareTools # for fiptool
           dtc
+          ubootTools # mkimage
+          xxd
 
           # For kernel docs
           sphinx
