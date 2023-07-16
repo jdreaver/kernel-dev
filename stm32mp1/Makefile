@@ -114,7 +114,7 @@ $(BUSYBOX_BUILD): $(BUSYBOX_CONFIG)
 
 $(ROOTFS_BUSYBOX): $(BUSYBOX_BUILD)
 	sudo rm -rf $(ROOTFS)
-	sudo mkdir $(ROOTFS)
+	sudo cp -r rootfs-init $(ROOTFS)
 	sudo chown $(USER):$(USER) $(ROOTFS)
 
 	mkdir -p $(ROOTFS)/bin
@@ -123,14 +123,6 @@ $(ROOTFS_BUSYBOX): $(BUSYBOX_BUILD)
 	mkdir -p $(ROOTFS)/proc
 	mkdir -p $(ROOTFS)/sys
 	mkdir -p $(ROOTFS)/dev
-
-	mkdir -p $(ROOTFS)/etc/init.d
-	echo "#!/bin/sh" > $(ROOTFS)/etc/init.d/rcS
-	echo "set -eux" >> $(ROOTFS)/etc/init.d/rcS
-	echo "mount -t proc proc /proc" >> $(ROOTFS)/etc/init.d/rcS
-	echo "mount -t sysfs sysfs /sys" >> $(ROOTFS)/etc/init.d/rcS
-	echo "exec /bin/sh" >> $(ROOTFS)/etc/init.d/rcS
-	chmod +x $(ROOTFS)/etc/init.d/rcS
 
 	sudo chown -R root:root $(ROOTFS)
 
