@@ -1,5 +1,6 @@
 UBOOT_REPO = u-boot
 UBOOT_README = $(UBOOT_REPO)/README
+UBOOT_CONFIG = $(UBOOT_REPO)/.config
 UBOOT = $(UBOOT_REPO)/u-boot.dtb
 UBOOT_NODTB = $(UBOOT_REPO)/u-boot-nodtb.bin
 UBOOT_DEVICE_TREE = stm32mp157a-dk1
@@ -12,8 +13,12 @@ all: $(UBOOT)
 $(UBOOT_README):
 	git clone https://source.denx.de/u-boot/u-boot.git
 
-$(UBOOT): $(UBOOT_README)
+$(UBOOT_CONFIG): $(UBOOT_README)
 	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) stm32mp15_basic_defconfig
+	echo 'CONFIG_CMD_CONFIG=y' >> $(UBOOT_CONFIG)
+	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) oldconfig
+
+$(UBOOT): $(UBOOT_CONFIG)
 	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) DEVICE_TREE=$(UBOOT_DEVICE_TREE) -j$$(nproc)
 
 SDCARD_DEV =
