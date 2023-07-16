@@ -2,3 +2,4 @@
 /trusted-firmware-a/
 fip*.bin
 *.img
+/busybox-*

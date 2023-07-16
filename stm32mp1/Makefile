@@ -10,8 +10,11 @@ CROSS_COMPILE_ARG = CROSS_COMPILE=armv7l-unknown-linux-gnueabihf-
 KERNEL_CONFIG = ../linux/.config
 KERNEL_IMAGE = ../linux/arch/arm/boot/zImage
 
+ROOTFS = /nfs-export/rootfs
+ROOTFS_BUSYBOX = $(ROOTFS)/bin/busybox
+
 .PHONY: all
-all: $(UBOOT_IMG) $(KERNEL_IMAGE)
+all: $(UBOOT_IMG) $(KERNEL_IMAGE) $(ROOTFS_BUSYBOX)
 
 $(UBOOT_README):
 	git clone https://source.denx.de/u-boot/u-boot.git
@@ -86,6 +89,48 @@ $(KERNEL_IMAGE): $(KERNEL_CONFIG)
 
 	sudo cp ../linux/arch/arm/boot/zImage /srv/tftp/
 	sudo cp ../linux/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb /srv/tftp/
+
+BUSYBOX_VERSION = 1.36.1
+BUSYBOX_DIR = busybox-$(BUSYBOX_VERSION)
+BUSYBOX_TARBALL = $(BUSYBOX_DIR).tar.bz2
+BUSYBOX_URL = https://busybox.net/downloads/$(BUSYBOX_TARBALL)
+BUSYBOX_README = $(BUSYBOX_DIR)/README
+BUSYBOX_CONFIG = $(BUSYBOX_DIR)/.config
+BUSYBOX_BUILD = $(BUSYBOX_DIR)/busybox
+
+$(BUSYBOX_README):
+	wget $(BUSYBOX_URL)
+	tar -xjf $(BUSYBOX_TARBALL)
+	rm $(BUSYBOX_TARBALL)
+
+$(BUSYBOX_CONFIG): $(BUSYBOX_README)
+	cd $(BUSYBOX_DIR) && make ARCH=arm $(CROSS_COMPILE_ARG) defconfig && sed -i 's/# CONFIG_STATIC is not set/CONFIG_STATIC=y/' .config
+
+$(BUSYBOX_BUILD): $(BUSYBOX_CONFIG)
+	cd $(BUSYBOX_DIR) && make ARCH=arm $(CROSS_COMPILE_ARG) busybox -j$$(nproc)
+
+$(ROOTFS_BUSYBOX): $(BUSYBOX_BUILD)
+	sudo rm -rf $(ROOTFS)
+	sudo mkdir $(ROOTFS)
+	sudo chown $(USER):$(USER) $(ROOTFS)
+
+	mkdir -p $(ROOTFS)/bin
+	cd $(BUSYBOX_DIR) && make ARCH=arm $(CROSS_COMPILE_ARG) CONFIG_PREFIX=$(ROOTFS) install
+
+	mkdir -p $(ROOTFS)/proc
+	mkdir -p $(ROOTFS)/sys
+	mkdir -p $(ROOTFS)/dev
+
+	mkdir -p $(ROOTFS)/etc/init.d
+	echo "#!/bin/sh" > $(ROOTFS)/etc/init.d/rcS
+	echo "set -eux" >> $(ROOTFS)/etc/init.d/rcS
+	echo "mount -t proc proc /proc" >> $(ROOTFS)/etc/init.d/rcS
+	echo "mount -t sysfs sysfs /sys" >> $(ROOTFS)/etc/init.d/rcS
+	#echo "mount -t devtmpfs devtmpfs /dev" >> $(ROOTFS)/etc/init.d/rcS # I think kernel is doing this automatically
+	echo "exec /bin/sh" >> $(ROOTFS)/etc/init.d/rcS
+	chmod +x $(ROOTFS)/etc/init.d/rcS
+
+	sudo chown -R root:root $(ROOTFS)
 
 SDCARD_DEV =
 
