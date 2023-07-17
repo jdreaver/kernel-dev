@@ -1,3 +1,8 @@
+CROSSTOOL_NG_REPO = crosstool-ng
+CROSSTOOL_NG_README = $(CROSSTOOL_NG_REPO)/README.md
+CT_NG = $(CROSSTOOL_NG_REPO)/ct-ng
+CROSSTOOL_NG_CONFIG = $(CROSSTOOL_NG_REPO)/.config
+
 UBOOT_REPO = u-boot
 UBOOT_README = $(UBOOT_REPO)/README
 UBOOT_CONFIG = $(UBOOT_REPO)/.config
@@ -20,6 +25,24 @@ SDCARD = sdcard.img
 
 .PHONY: all
 all: $(UBOOT_IMG) $(KERNEL_IMAGE) $(ROOTFS_BUSYBOX) $(SDCARD)
+
+$(CROSSTOOL_NG_README):
+	git clone https://github.com/crosstool-ng/crosstool-ng.git
+
+$(CT_NG): $(CROSSTOOL_NG_README)
+	cd $(CROSSTOOL_NG_REPO) && ./bootstrap
+	cd $(CROSSTOOL_NG_REPO) && ./configure --enable-local
+	cd $(CROSSTOOL_NG_REPO) && make -j$$(nproc)
+
+$(CROSSTOOL_NG_CONFIG): $(CT_NG)
+	cd $(CROSSTOOL_NG_REPO) && ./ct-ng arm-cortexa5-linux-uclibcgnueabihf
+        # Set up configuration
+	echo 'CT_ARCH_CPU="cortex-a7"' >> $(CROSSTOOL_NG_CONFIG)
+	echo 'CT_ARCH_FPU="vfvp4"' >> $(CROSSTOOL_NG_CONFIG)
+	echo 'CT_TARGET_VENDOR="reaver"' >> $(CROSSTOOL_NG_CONFIG)
+	echo 'CT_TARGET_ALIAS="arm-linux"' >> $(CROSSTOOL_NG_CONFIG)
+
+	cd $(CROSSTOOL_NG_REPO) && ./ct-ng oldconfig
 
 $(UBOOT_README):
 	git clone https://source.denx.de/u-boot/u-boot.git

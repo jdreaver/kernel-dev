@@ -3,3 +3,4 @@
 fip*.bin
 *.img
 /busybox-*
+/crosstool-ng/

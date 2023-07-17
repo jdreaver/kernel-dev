@@ -127,6 +127,13 @@
           # buildroot
           unzip
 
+          # crosstool-ng
+          automake
+          help2man
+          ncurses
+          unzip
+          libtool
+
           # stm32
           stlink
 
