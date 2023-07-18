@@ -4,3 +4,5 @@ set -eux
 
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
+mount -t debugfs debugfs /sys/kernel/debug
+mount -t configfs configfs /sys/kernel/config

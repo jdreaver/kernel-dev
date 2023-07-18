@@ -1,0 +1,13 @@
+#include <dt-bindings/gpio/gpio.h>
+
+/dts-v1/;
+/plugin/;
+
+&{/led} {
+        my-led {
+                label = "myled";
+		gpios = <&gpioe 1 GPIO_ACTIVE_HIGH>;
+		linux,default-trigger = "heartbeat";
+		default-state = "off";
+	};
+};

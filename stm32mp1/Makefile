@@ -17,6 +17,7 @@ KERNEL_CONFIG = ../linux/.config
 
 TFTP_DIR = /srv/tftp
 KERNEL_IMAGE = $(TFTP_DIR)/zImage
+DEVICETREE_OVERLAY = $(TFTP_DIR)/overlay.dtbo
 
 ROOTFS = /nfs-export/rootfs
 ROOTFS_BUSYBOX = $(ROOTFS)/bin/busybox
@@ -24,7 +25,7 @@ ROOTFS_BUSYBOX = $(ROOTFS)/bin/busybox
 SDCARD = sdcard.img
 
 .PHONY: all
-all: $(UBOOT_IMG) $(KERNEL_IMAGE) $(ROOTFS_BUSYBOX) $(SDCARD)
+all: $(UBOOT_IMG) $(KERNEL_IMAGE) $(ROOTFS_BUSYBOX) $(SDCARD) $(DEVICETREE_OVERLAY)
 
 $(CROSSTOOL_NG_README):
 	git clone https://github.com/crosstool-ng/crosstool-ng.git
@@ -64,6 +65,10 @@ $(KERNEL_CONFIG):
         # Disable a bunch of SOCs and options we don't need, and also enable some other stuff
 	cd ../linux && scripts/config \
           --enable CONFIG_GPIO_SYSFS \
+          --enable CONFIG_OF_OVERLAY \
+          --enable CONFIG_OF_CONFIGFS \
+          --enable CONFIG_IKCONFIG \
+          --enable CONFIG_IKCONFIG_PROC \
           --disable CONFIG_GCC_PLUGINS \
           --disable CONFIG_DRM \
           --disable CONFIG_ARCH_EMEV2 \
@@ -119,10 +124,17 @@ $(KERNEL_CONFIG):
 	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) olddefconfig
 
 $(KERNEL_IMAGE): $(KERNEL_CONFIG)
-	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) -j$$(nproc)
+        # N.B. DTS_FLAGS add __symbols__ to dtb files, which is necessary for u-boot to apply overlays
+	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) DTC_FLAGS=-@ -j$$(nproc)
 
 	sudo cp ../linux/arch/arm/boot/zImage $(TFTP_DIR)/
 	sudo cp ../linux/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb $(TFTP_DIR)/
+
+$(DEVICETREE_OVERLAY): overlay.dts
+	cpp -I ../linux/include -nostdinc -undef -x assembler-with-cpp -o $<.tmp $<
+	dtc -O dtb -o out.dtbo $<.tmp
+	sudo cp out.dtbo $@
+	rm -f $<.tmp out.dtbo
 
 BUSYBOX_VERSION = 1.36.1
 BUSYBOX_DIR = busybox-$(BUSYBOX_VERSION)
