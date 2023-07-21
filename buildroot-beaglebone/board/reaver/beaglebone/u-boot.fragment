@@ -1,0 +1,3 @@
+# Use a custom u-boot startup script, not the default one from u-boot/buildroot
+CONFIG_USE_DEFAULT_ENV_FILE=y
+CONFIG_DEFAULT_ENV_FILE="$(BR2_EXTERNAL_REAVER_BEAGLEBONE_PATH)/board/reaver/beaglebone/u-boot.env"
