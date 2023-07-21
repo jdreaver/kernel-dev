@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# Runs a buildroot command in the buildroot directory using this external tree.
+
+set -eu
+
+cd "$(dirname "$0")"
+
+run_echo_command() {
+    echo "$@"
+    "$@"
+}
+
+run_echo_command make -C ../buildroot O="$(pwd)/output" BR2_EXTERNAL="$(pwd)" "$@"
