@@ -45,8 +45,6 @@ BR2_PACKAGE_HOST_UBOOT_TOOLS_FIT_SUPPORT=y
 # Stuff after here was probably modified
 #
 
-BR2_TARGET_ROOTFS_EXT2_SIZE="100M" # TODO: This got a lot larger after we started using our custom kernel for some reason. Maybe try a clean build with this smaller?
-
 BR2_PACKAGE_OVERRIDE_FILE="$(BR2_EXTERNAL_REAVER_BEAGLEBONE_PATH)/override.mk"
 
 # Kernel
