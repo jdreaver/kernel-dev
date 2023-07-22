@@ -6,8 +6,39 @@
 &{/leds} {
         my-led {
                 label = "myled";
-                gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+                /* gpio1 28 == P9_12 == GPIO_60 */
+                gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
 		linux,default-trigger = "heartbeat";
 		default-state = "off";
+        };
+};
+
+/*
+ * N.B. The gpio0, gpio1, gpio2, and gpio3 device tree nodes are out of order in the kernel. Here is the mapping:
+ *   &gpio0 = "/ocp/interconnect@44c00000/segment@200000/target-module@7000/gpio@0" = gpiochip3 = /sys/class/gpio/gpiochip608
+ *   &gpio1 = "/ocp/interconnect@48000000/segment@0/target-module@4c000/gpio@0" = gpiochip0 = /sys/class/gpio/gpiochip512
+ *   &gpio2 = "/ocp/interconnect@48000000/segment@100000/target-module@ac000/gpio@0" = gpiochip1 = /sys/class/gpio/gpiochip544
+ *   &gpio3 = "/ocp/interconnect@48000000/segment@100000/target-module@ae000/gpio@0" = gpiochip2 = /sys/class/gpio/gpiochip576
+ *
+ * The beaglebone black GPIO numbers, like GPIO_67, GPIO_26, etc have no apparent relationship to the gpiochip numbers.
+ * You have to use the gpio-line-names fields in the devicetree, or use gpioinfo/gpiofind.
+ */
+
+&{/} {
+        my-lcd {
+                compatible = "hit,hd44780";
+
+                rs-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;      /* gpio2 3  == P8_8  == GPIO_67 */
+                enable-gpios = <&gpio2 4 GPIO_ACTIVE_HIGH>;  /* gpio2 4  == P8_10 == GPIO_68 */
+                data-gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>,   /* gpio1 12 == P8_12 == GPIO_44 */
+                             <&gpio0 26 GPIO_ACTIVE_HIGH>,   /* gpio0 26 == P8_14 == GPIO_26 */
+                             <&gpio1 14 GPIO_ACTIVE_HIGH>,   /* gpio1 14 == P8_16 == GPIO_46 */
+                             <&gpio2 1 GPIO_ACTIVE_HIGH>;    /* gpio2 1  == P8_18 == GPIO_65 */
+
+
+                /* TODO: Backlight GPIO? */
+
+                display-height-chars = <2>;
+                display-width-chars = <16>;
         };
 };

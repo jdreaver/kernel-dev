@@ -19,6 +19,10 @@ CONFIG_LEDS_TRIGGER_DEFAULT_ON=y
 CONFIG_LEDS_TRIGGER_TRANSIENT=y
 CONFIG_LEDS_TRIGGER_CAMERA=y
 
+# LCD display
+CONFIG_AUXDISPLAY=y
+CONFIG_HD44780=y
+
 # Disable some subsystems and modules we don't care about
 CONFIG_BT=n # bluetooth
 CONFIG_DRM=n
