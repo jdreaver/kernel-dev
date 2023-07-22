@@ -3,5 +3,11 @@
 /dts-v1/;
 /plugin/;
 
-&{/} {
+&{/leds} {
+        my-led {
+                label = "myled";
+                gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+		linux,default-trigger = "heartbeat";
+		default-state = "off";
+        };
 };

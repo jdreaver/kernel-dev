@@ -58,6 +58,7 @@ BR2_LINUX_KERNEL_DEFCONFIG="omap2plus"
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
 BR2_LINUX_KERNEL_INTREE_DTS_NAME="ti/omap/am335x-boneblack"
 BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL=y
+BR2_LINUX_KERNEL_DTB_OVERLAY_SUPPORT=y # Compile DTB's with -@ so it generates __symbols__ so we can use overlays
 
 # uboot
 BR2_TARGET_UBOOT_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_REAVER_BEAGLEBONE_PATH)/board/reaver/beaglebone/u-boot.fragment"
