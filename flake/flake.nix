@@ -117,6 +117,7 @@
           pkgsCross.aarch64-multiplatform.buildPackages.gcc
           pkgsCross.armv7l-hf-multiplatform.buildPackages.gcc
           pkgsCross.armv7l-hf-multiplatform.glibc.static # For libm and libresolv for busybox
+          gcc-arm-embedded
 
           # Kernel tools
           coccinelle
