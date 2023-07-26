@@ -141,9 +141,12 @@
           # u-boot
           swig
           armTrustedFirmwareTools # for fiptool
-          dtc
           ubootTools # mkimage
           xxd
+
+          # DeviceTree tools
+          dtc
+          dt-schema
 
           # For kernel docs
           sphinx
