@@ -122,6 +122,7 @@
           # Kernel tools
           coccinelle
           sparse
+          smatch
           # qt5.full # for make xconfig
           lz4
 
