@@ -151,6 +151,7 @@
 
           # For kernel docs
           sphinx
+          python3Packages.pyyaml
           texlive.combined.scheme-small
           graphviz
         ];
