@@ -40,4 +40,5 @@ qemu-system-x86_64 \
     -machine q35,accel=kvm \
     -enable-kvm \
     -cpu host \
+    -nic user,hostfwd=tcp::2222-:22 \
     -nographic

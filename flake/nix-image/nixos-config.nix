@@ -39,6 +39,19 @@
   programs.bash.enableCompletion = false;
   programs.command-not-found.enable = false;
 
+  # Enable SSH with root login. SSH is generally a nicer experience than the
+  # QEMU serial console.
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "yes";
+      PermitEmptyPasswords = "yes";
+    };
+  };
+  security.pam.services.sshd = {
+    allowNullPassword = true;
+  };
+
   environment.systemPackages = with pkgs; [
     arp-scan
     binutils
