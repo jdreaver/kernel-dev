@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euxo pipefail
 
 if [ $# -lt 2 ]; then
     echo 'Usage: run-qemu-kernel.sh <linux-dir> <qemu-image> [shared-directory]'
