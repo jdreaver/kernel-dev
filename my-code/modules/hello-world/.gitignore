@@ -1,0 +1,13 @@
+.hello*
+Module*
+hello.mod*
+hello.o
+hello.ko
+.modules*
+.Module*
+modules.order
+*.o.cmd
+*.o
+.ccls-cache/
+compile_commands*
+.compile_commands*
