@@ -33,6 +33,7 @@ if [ $# -eq 3 ]; then
 fi
 
 qemu-system-x86_64 \
+    -m 8G \
     -kernel "$linux_dir/arch/x86/boot/bzImage" \
     -hda "$qemu_image" \
     -append "root=/dev/sda console=ttyS0" \

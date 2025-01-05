@@ -9,10 +9,6 @@
   boot.isContainer = true;
   boot.loader.initScript.enable = true;
 
-  # Auto-login as root with empty password
-  services.getty.autologinUser = lib.mkDefault "root";
-  users.extraUsers.root.initialHashedPassword = "";
-
   networking.firewall.enable = false;
 
   # Enable serial console. See https://github.com/NixOS/nixpkgs/issues/84105
@@ -26,6 +22,9 @@
     serviceConfig.Restart = "always"; # restart when session is closed
   };
 
+  # Auto-login as root with empty password
+  services.getty.autologinUser = lib.mkDefault "root";
+  users.extraUsers.root.initialHashedPassword = "";
   services.getty.helpLine = ''
     Log in as "root" with an empty password.
     If you are connect via serial console:
@@ -41,13 +40,39 @@
   programs.command-not-found.enable = false;
 
   environment.systemPackages = with pkgs; [
+    arp-scan
     binutils
+    cpuid
+    dhcpcd
+    dmidecode
+    dnsutils # dig et al
+    efibootmgr
     elfutils
+    ethtool
+    file
+    fzf
+    htop
+    inetutils # telnet
+    iperf3
     kmod # modprobe
-    linuxPackages.perf
+    lsof
+    nmap
     pciutils # for lspci
+    screenfetch # nice little util showing system summary
     sysstat # Perf monitoring: mpstat, iostat, sar, etc
+    tcpdump
+    tldr # Simpler man pages https://tldr.sh
+    tree
     usbutils # lsusb
+    wget
+
+    # Performance utilities
+    linuxPackages.perf
+    trace-cmd
+
+    # eBPF (bcc is enabled with programs.bcc.enable = true;)
+    bpftrace
+    linuxPackages.ply
   ];
 
   system.stateVersion = "22.05";
