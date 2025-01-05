@@ -12,3 +12,8 @@ compile_commands.json:
 .PHONY: clean
 clean:
 	make -C $(KDIR) M=$(PWD) clean
+
+.PHONY: checkpatch
+checkpatch:
+	make clean
+	$(KDIR)/scripts/checkpatch.pl --no-tree -f --max-line-length=95 *.[ch]
