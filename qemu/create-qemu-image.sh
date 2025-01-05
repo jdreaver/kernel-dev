@@ -35,18 +35,18 @@ elif [ "$image_type" = "debian" ]; then
   set -eu
   # Don't require root password
   /usr/bin/passwd -d root
+
+  # Auto-login to serial console as root
+  /bin/mkdir -p /etc/systemd/system/serial-getty@ttyS0.service.d/
+  /bin/cat > /etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf << EOF
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --keep-baud 115200,38400,9600 %I $TERM
+EOF
+
   exit
   "
   sudo umount -R "$mount_dir"
-
-  # Arch wiki says this will auto login to serial console, but it seems to just
-  # hang when I add it to the image.
-  # /bin/mkdir -p /etc/systemd/system/serial-getty@ttyS0.service.d/
-  # /bin/cat << EOF > /etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf
-  # [Service]
-  # ExecStart=
-  # ExecStart=-/sbin/agetty -o '-p -f -- \\u' --keep-baud --autologin root 115200,57600,38400,9600 - $TERM
-  # EOF
 
 else
     echo "Unknown image_type '$image_type'"
