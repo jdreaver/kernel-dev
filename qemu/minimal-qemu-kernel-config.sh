@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euxo pipefail
 
 if [ $# -ne 1 ]; then
     echo 'Usage: minimal-qemu-kernel-config.sh <kernel-source-dir>'

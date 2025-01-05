@@ -119,6 +119,9 @@
           pkgsCross.armv7l-hf-multiplatform.glibc.static # For libm and libresolv for busybox
           gcc-arm-embedded
 
+          # busybox x86
+          # glibc.static # For libm and libresolv for busybox
+
           # Kernel tools
           coccinelle
           sparse
