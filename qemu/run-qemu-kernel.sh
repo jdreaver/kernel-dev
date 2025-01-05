@@ -37,4 +37,6 @@ qemu-system-x86_64 \
     -hda "$qemu_image" \
     -append "root=/dev/sda console=ttyS0" \
     -machine q35,accel=kvm \
+    -enable-kvm \
+    -cpu host \
     -nographic
