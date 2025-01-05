@@ -18,7 +18,9 @@ scripts/config \
   --set-val GDB_SCRIPTS y \
   --set-val DEBUG_DRIVER y \
   --set-val CONFIG_IKCONFIG y \
-  --set-val CONFIG_IKCONFIG_PROC y
+  --set-val CONFIG_IKCONFIG_PROC y \
+  --set-val CONFIG_LOCALVERSION '"-reaver-dev"' \
+  --set-val CONFIG_LOCALVERSION_AUTO y
 
 # Use new .config (properly merges config and allows you to inspect .config)
 make oldconfig
