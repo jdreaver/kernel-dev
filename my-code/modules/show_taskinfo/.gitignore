@@ -1,0 +1,13 @@
+.show_taskinfo*
+Module*
+show_taskinfo.mod*
+show_taskinfo.o
+show_taskinfo.ko
+.modules*
+.Module*
+modules.order
+*.o.cmd
+*.o
+.ccls-cache/
+compile_commands*
+.compile_commands*
