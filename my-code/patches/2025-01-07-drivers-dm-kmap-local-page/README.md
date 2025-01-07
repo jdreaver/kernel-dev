@@ -1,4 +1,4 @@
-# Replace `kmap` with `kmap_local_page` in `drivers/dm`
+# Replace `kmap_atomic` with `kmap_local_page` in `drivers/dm`
 
 ## TODO
 
@@ -10,6 +10,8 @@
   - Existing commit against `torvalds/linux` <https://github.com/jdreaver/linux/commit/f068680d16e22318f48ed56f73d174ba870fe4fb>
 - Test running with an LVM setup in QEMU
   - Use a 32 bit arch (x86 and ARM?) with a ton of memory because this deals with highmem stuff
+  - Turn on all the debug tools, sanitizers, etc to see if they catch errors with sleep/preemption
+  - Trace calls with ftrace to see them in action
 - Go through all guides and checklists in <https://docs.kernel.org/process/index.html>
 - Test sending email to myself
 - Submit
