@@ -13,9 +13,9 @@ Cc: rcu@vger.kernel.org,
 
 The deprecated_apis map was created in [1] so checkpatch would flag
 deprecated RCU APIs. These deprecated APIs have since been removed from the
-kernel. This patch removes them so checkpatch doesn't waste time looking
-for them, and so readers of checkpatch looking for APIs to migrate don't
-waste time searching for them.
+kernel. This patch removes them from this map so checkpatch doesn't waste
+time looking for them, and so readers of checkpatch looking for deprecated
+APIs don't waste time searching for them.
 
 Link: https://lore.kernel.org/all/20181111192904.3199-13-paulmck@linux.ibm.com/ [1]
 
