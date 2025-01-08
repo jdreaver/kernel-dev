@@ -2,16 +2,17 @@
 
 ## TODO
 
-- Read [LWN article: Atomic kmaps become local (2020)](https://lwn.net/Articles/836144/)
+- [x] Read [LWN article: Atomic kmaps become local (2020)](https://lwn.net/Articles/836144/)
 - Think long and hard about correctness of patch
   - Do any call sites rely on the implicit preemption/pagefault disabling that `kmap_atomic` provides?
   - Do any call sites try to sleep or schedule?
-- Generate patch against `git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm.git`
-  - Existing commit against `torvalds/linux` <https://github.com/jdreaver/linux/commit/f068680d16e22318f48ed56f73d174ba870fe4fb>
+- [x] Generate patch against `git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm.git`
+  - <https://github.com/jdreaver/linux/commits/davidreaver/linux-dm-drivers-md-kmap-local-page/>
 - Test running with an LVM setup in QEMU
   - Use a 32 bit arch (x86 and ARM?) with a ton of memory because this deals with highmem stuff
   - Turn on all the debug tools, sanitizers, etc to see if they catch errors with sleep/preemption
   - Trace calls with ftrace to see them in action
+- Run the devicemapper test suite <https://github.com/jthornber/device-mapper-test-suite>
 - Go through all guides and checklists in <https://docs.kernel.org/process/index.html>
 - Test sending email to myself
 - Submit
@@ -45,7 +46,7 @@ I searched for open patches with `kmap` in the title and didn't find any: <https
 
 Christophe Hellwig did a large migration to `kmap_local_page` but didn't get all of `dm` <https://lore.kernel.org/dm-devel/20210727055646.118787-1-hch@lst.de/>
 
-Maintaners block:
+Maintainers block:
 
 ```
 DEVICE-MAPPER  (LVM)
@@ -65,3 +66,9 @@ F:	include/linux/device-mapper.h
 F:	include/linux/dm-*.h
 F:	include/uapi/linux/dm-*.h
 ```
+
+Highmem docs: <https://docs.kernel.org/mm/highmem.html#temporary-virtual-mappings>
+
+> kmap_atomic(). This function has been deprecated; use kmap_local_page().
+>
+> NOTE: Conversions to kmap_local_page() must take care to follow the mapping restrictions imposed on kmap_local_page(). Furthermore, the code between calls to kmap_atomic() and kunmap_atomic() may implicitly depend on the side effects of atomic mappings, i.e. disabling page faults or preemption, or both. In that case, explicit calls to pagefault_disable() or preempt_disable() or both must be made in conjunction with the use of kmap_local_page().
