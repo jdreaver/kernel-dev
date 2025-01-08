@@ -1,5 +1,8 @@
 # Remove old `deprecated_apis` from `checkpatch.pl`
 
+Status: reviewed/approved, not merged yet
+- Watch this branch: <https://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git/log/?h=dev>
+
 Patch discussion: <https://lore.kernel.org/rcu/20250108192456.47871-1-me@davidreaver.com/T/#u>
 
 ## TODO

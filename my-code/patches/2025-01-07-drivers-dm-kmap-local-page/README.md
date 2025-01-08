@@ -1,5 +1,7 @@
 # Replace `kmap_atomic` with `kmap_local_page` in `drivers/dm`
 
+Status: merged
+
 Patch discussion: <https://lore.kernel.org/linux-raid/20250108192131.46843-1-me@davidreaver.com/T/#u>
 
 ## TODO
