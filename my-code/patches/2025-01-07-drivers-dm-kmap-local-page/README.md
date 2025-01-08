@@ -6,13 +6,12 @@
 - Think long and hard about correctness of patch
   - Do any call sites rely on the implicit preemption/pagefault disabling that `kmap_atomic` provides?
   - Do any call sites try to sleep or schedule?
-- [x] Generate patch against `git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm.git`
-  - <https://github.com/jdreaver/linux/commits/davidreaver/linux-dm-drivers-md-kmap-local-page/>
-- Test running with an LVM setup in QEMU
+- [x] Generate patch against `mdraid` tree
+  - <https://github.com/jdreaver/linux/commits/davidreaver/mdraid-kmap-local-page/>
+- Test running with a RAID setup in QEMU
   - Use a 32 bit arch (x86 and ARM?) with a ton of memory because this deals with highmem stuff
   - Turn on all the debug tools, sanitizers, etc to see if they catch errors with sleep/preemption
   - Trace calls with ftrace to see them in action
-- Run the devicemapper test suite <https://github.com/jthornber/device-mapper-test-suite>
 - Go through all guides and checklists in <https://docs.kernel.org/process/index.html>
 - Test sending email to myself
 - Submit
@@ -49,22 +48,19 @@ Christophe Hellwig did a large migration to `kmap_local_page` but didn't get all
 Maintainers block:
 
 ```
-DEVICE-MAPPER  (LVM)
-M:	Alasdair Kergon <agk@redhat.com>
-M:	Mike Snitzer <snitzer@kernel.org>
-M:	Mikulas Patocka <mpatocka@redhat.com>
-L:	dm-devel@lists.linux.dev
-S:	Maintained
-Q:	http://patchwork.kernel.org/project/dm-devel/list/
-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/device-mapper/linux-dm.git
-F:	Documentation/admin-guide/device-mapper/
+SOFTWARE RAID (Multiple Disks) SUPPORT
+M:	Song Liu <song@kernel.org>
+M:	Yu Kuai <yukuai3@huawei.com>
+L:	linux-raid@vger.kernel.org
+S:	Supported
+Q:	https://patchwork.kernel.org/project/linux-raid/list/
+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mdraid/linux.git
 F:	drivers/md/Kconfig
 F:	drivers/md/Makefile
-F:	drivers/md/dm*
-F:	drivers/md/persistent-data/
-F:	include/linux/device-mapper.h
-F:	include/linux/dm-*.h
-F:	include/uapi/linux/dm-*.h
+F:	drivers/md/md*
+F:	drivers/md/raid*
+F:	include/linux/raid/
+F:	include/uapi/linux/raid/
 ```
 
 Highmem docs: <https://docs.kernel.org/mm/highmem.html#temporary-virtual-mappings>
