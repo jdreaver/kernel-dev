@@ -1,5 +1,11 @@
 # Remove old `deprecated_apis` from `checkpatch.pl`
 
+## TODO
+
+- [ ] Generate patch
+- [ ] Add emails. Probably send to the RCU list and add Paul Mckenney since that is where the original patch went
+- [ ] Send the patch
+
 ## Background
 
 `checkpatch.pl` has a `deprecated_apis` table that looks like this:
@@ -39,3 +45,5 @@ R:	Lukas Bulwahn <lukas.bulwahn@gmail.com>
 S:	Maintained
 F:	scripts/checkpatch.pl
 ```
+
+Similar patch that removed something for checkpatch that was for RCU: <https://lore.kernel.org/rcu/20231013115902.1059735-2-frederic@kernel.org/>
