@@ -22,5 +22,20 @@ scripts/config \
   --set-val CONFIG_LOCALVERSION '"-reaver-dev"' \
   --set-val CONFIG_LOCALVERSION_AUTO y
 
+# If env var DEBUG is defined, add more debug options. Taken from
+# https://docs.kernel.org/process/submit-checklist.html#test-your-code
+if [ -n "${DEBUG:-}" ]; then
+  scripts/config \
+    --set-val CONFIG_PREEMPT y \
+    --set-val CONFIG_DEBUG_PREEMPT y \
+    --set-val CONFIG_SLUB_DEBUG y \
+    --set-val CONFIG_DEBUG_PAGEALLOC y \
+    --set-val CONFIG_DEBUG_MUTEXES y \
+    --set-val CONFIG_DEBUG_SPINLOCK y \
+    --set-val CONFIG_DEBUG_ATOMIC_SLEEP y \
+    --set-val CONFIG_PROVE_RCU y \
+    --set-val CONFIG_DEBUG_OBJECTS_RCU_HEAD y
+fi
+
 # Use new .config (properly merges config and allows you to inspect .config)
 make oldconfig
