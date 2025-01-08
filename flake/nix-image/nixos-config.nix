@@ -52,6 +52,9 @@
     allowNullPassword = true;
   };
 
+  # Enable LVM so LVM commands work
+  services.lvm.enable = true;
+
   environment.systemPackages = with pkgs; [
     arp-scan
     binutils
@@ -69,6 +72,7 @@
     iperf3
     kmod # modprobe
     lsof
+    lvm2
     nmap
     pciutils # for lspci
     screenfetch # nice little util showing system summary

@@ -32,10 +32,16 @@ if [ $# -eq 3 ]; then
     qemu_image="$shared_image"
 fi
 
+# Create another empty disk
+dummy_disk=/tmp/dummy.img
+rm -f $dummy_disk
+dd if=/dev/zero of=$dummy_disk bs=1M count=512
+
 qemu-system-x86_64 \
     -m 8G \
     -kernel "$linux_dir/arch/x86/boot/bzImage" \
     -hda "$qemu_image" \
+    -hdb $dummy_disk \
     -append "root=/dev/sda console=ttyS0" \
     -machine q35,accel=kvm \
     -enable-kvm \

@@ -17,6 +17,7 @@ scripts/config \
   --set-val DEBUG y \
   --set-val GDB_SCRIPTS y \
   --set-val DEBUG_DRIVER y \
+  --set-val CONFIG_DM_DEBUG y \
   --set-val CONFIG_IKCONFIG y \
   --set-val CONFIG_IKCONFIG_PROC y \
   --set-val CONFIG_LOCALVERSION '"-reaver-dev"' \
