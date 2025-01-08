@@ -2,13 +2,13 @@ From 0378d27b44f9ed8705c8e599d9552ae73059a668 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 7 Jan 2025 13:00:10 -0800
 Subject: [PATCH] md: Replace deprecated kmap_atomic() with kmap_local_page()
-To: Song Liu <song@kernel.org>
-To: Yu Kuai <yukuai3@huawei.com>
-Cc: linux-raid@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Krister Johansen <kjlx@templeofstupid.com>
-Cc: Ira Weiny <ira.weiny@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+To: Song Liu <song@kernel.org>,
+    Yu Kuai <yukuai3@huawei.com>
+Cc: linux-raid@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    Krister Johansen <kjlx@templeofstupid.com>,
+    Ira Weiny <ira.weiny@intel.com>,
+    Thomas Gleixner <tglx@linutronix.de>
 
 kmap_atomic() is deprecated and should be replaced with kmap_local_page()
 [1][2]. kmap_local_page() is faster in kernels with HIGHMEM enabled, can

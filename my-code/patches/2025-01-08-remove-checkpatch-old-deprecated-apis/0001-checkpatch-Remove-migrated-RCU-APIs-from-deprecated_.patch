@@ -1,0 +1,47 @@
+From 19de2df031c981a0d2c6f6317feef2b02a9f96fa Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Wed, 8 Jan 2025 10:11:03 -0800
+Subject: [PATCH] checkpatch: Remove migrated RCU APIs from deprecated_apis
+To: Andy Whitcroft <apw@canonical.com>,
+    Joe Perches <joe@perches.com>,
+    Dwaipayan Ray <dwaipayanray1@gmail.com>,
+    Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+    Paul E. McKenney <paulmck@linux.ibm.com>
+Cc: rcu@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    Krister Johansen <kjlx@templeofstupid.com>
+
+The deprecated_apis map was created in [1] so checkpatch would flag
+deprecated RCU APIs. These deprecated APIs have since been removed from the
+kernel. This patch removes them so checkpatch doesn't waste time looking
+for them, and so readers of checkpatch looking for APIs to migrate don't
+waste time searching for them.
+
+Link: https://lore.kernel.org/all/20181111192904.3199-13-paulmck@linux.ibm.com/ [1]
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ scripts/checkpatch.pl | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 9eed3683ad76..842a39a01af1 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -834,1 +834,1 @@ foreach my $entry (@mode_permission_funcs) {
+ $mode_perms_search = "(?:${mode_perms_search})";
+
+ our %deprecated_apis = (
+-	"synchronize_rcu_bh"			=> "synchronize_rcu",
+-	"synchronize_rcu_bh_expedited"		=> "synchronize_rcu_expedited",
+-	"call_rcu_bh"				=> "call_rcu",
+-	"rcu_barrier_bh"			=> "rcu_barrier",
+-	"synchronize_sched"			=> "synchronize_rcu",
+-	"synchronize_sched_expedited"		=> "synchronize_rcu_expedited",
+-	"call_rcu_sched"			=> "call_rcu",
+-	"rcu_barrier_sched"			=> "rcu_barrier",
+-	"get_state_synchronize_sched"		=> "get_state_synchronize_rcu",
+-	"cond_synchronize_sched"		=> "cond_synchronize_rcu",
+ 	"kmap"					=> "kmap_local_page",
+ 	"kunmap"				=> "kunmap_local",
+ 	"kmap_atomic"				=> "kmap_local_page",

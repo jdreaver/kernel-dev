@@ -2,8 +2,8 @@
 
 ## TODO
 
-- [ ] Generate patch
-- [ ] Add emails. Probably send to the RCU list and add Paul Mckenney since that is where the original patch went
+- [x] Generate patch
+- [x] Add emails. Probably send to the RCU list and add Paul Mckenney since that is where the original patch went
 - [ ] Send the patch
 
 ## Background
