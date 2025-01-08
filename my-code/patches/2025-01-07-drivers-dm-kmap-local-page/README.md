@@ -1,20 +1,18 @@
 # Replace `kmap_atomic` with `kmap_local_page` in `drivers/dm`
 
+Patch discussion: <https://lore.kernel.org/linux-raid/20250108192131.46843-1-me@davidreaver.com/T/#u>
+
 ## TODO
 
 - [x] Read [LWN article: Atomic kmaps become local (2020)](https://lwn.net/Articles/836144/)
-- Think long and hard about correctness of patch
+- [x] Think long and hard about correctness of patch
   - Do any call sites rely on the implicit preemption/pagefault disabling that `kmap_atomic` provides?
   - Do any call sites try to sleep or schedule?
 - [x] Generate patch against `mdraid` tree
   - <https://github.com/jdreaver/linux/commits/davidreaver/mdraid-kmap-local-page/>
-- Test running with a RAID setup in QEMU
-  - Use a 32 bit arch (x86 and ARM?) with a ton of memory because this deals with highmem stuff
-  - Turn on all the debug tools, sanitizers, etc to see if they catch errors with sleep/preemption
-  - Trace calls with ftrace to see them in action
-- Go through all guides and checklists in <https://docs.kernel.org/process/index.html>
-- Test sending email to myself
-- Submit
+- [x] Go through all guides and checklists in <https://docs.kernel.org/process/index.html>
+- [x] Test sending email to myself
+- [x] Submit
 
 ## How I found this
 

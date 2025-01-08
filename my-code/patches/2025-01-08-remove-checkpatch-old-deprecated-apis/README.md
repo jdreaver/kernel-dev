@@ -1,10 +1,12 @@
 # Remove old `deprecated_apis` from `checkpatch.pl`
 
+Patch discussion: <https://lore.kernel.org/rcu/20250108192456.47871-1-me@davidreaver.com/T/#u>
+
 ## TODO
 
 - [x] Generate patch
 - [x] Add emails. Probably send to the RCU list and add Paul Mckenney since that is where the original patch went
-- [ ] Send the patch
+- [x] Send the patch
 
 ## Background
 
