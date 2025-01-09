@@ -1,0 +1,47 @@
+From 725fbc4f27b1f5eae78a62a9aac0c4668bfb6132 Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Wed, 8 Jan 2025 19:44:06 -0800
+Subject: [PATCH] virtio: console: Replace deprecated kmap_atomic with
+ kmap_local_page
+To: Amit Shah <amit@kernel.org>,
+    Arnd Bergmann <arnd@arndb.de>,
+    Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: virtualization@lists.linux.dev,
+    linux-kernel@vger.kernel.org,
+    Ira Weiny <ira.weiny@intel.com>,
+    Thomas Gleixner <tglx@linutronix.de>
+
+kmap_atomic() is deprecated and should be replaced with kmap_local_page()
+[1][2]. kmap_local_page() is faster in kernels with HIGHMEM enabled, can
+take page faults, and allows preemption.
+
+According to [2], this replacement is safe as long as the code between
+kmap_atomic() and kunmap_atomic() does not implicitly depend on disabling
+page faults or preemption. In this patch, the only thing happening between
+mapping and unmapping the page is a memcpy, and I don't suspect it depends
+on disabling page faults or preemption.
+
+[1] https://lwn.net/Articles/836144/
+[2] https://docs.kernel.org/mm/highmem.html#temporary-virtual-mappings
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ drivers/char/virtio_console.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
+index c62b208b42f1..24442485e73e 100644
+--- a/drivers/char/virtio_console.c
++++ b/drivers/char/virtio_console.c
+@@ -883,9 +883,9 @@ static int pipe_to_sg(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+ 		if (len + offset > PAGE_SIZE)
+ 			len = PAGE_SIZE - offset;
+ 
+-		src = kmap_atomic(buf->page);
++		src = kmap_local_page(buf->page);
+ 		memcpy(page_address(page) + offset, src + buf->offset, len);
+-		kunmap_atomic(src);
++		kunmap_local(src);
+ 
+ 		sg_set_page(&(sgl->sg[sgl->n]), page, len, offset);
+ 	}
