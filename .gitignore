@@ -1,7 +1,4 @@
 /staging/
 /.ccls-cache/
-/debian.img
-/deb-image-mount/
-/nixos.img
-/shared-disk.img
+/images/
 /linux-docs-next/

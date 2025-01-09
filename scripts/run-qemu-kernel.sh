@@ -14,7 +14,8 @@ qemu_image=$2
 if [ $# -eq 3 ]; then
     shared_directory=$3
 
-    shared_image=shared-disk.img
+    mkdir -p images/
+    shared_image=images/shared-disk.img
     rm -f "$shared_image"
     cp "$qemu_image" "$shared_image"
 
@@ -33,7 +34,7 @@ if [ $# -eq 3 ]; then
 fi
 
 # Create another empty disk
-dummy_disk=/tmp/dummy.img
+dummy_disk=images/dummy.img
 rm -f $dummy_disk
 dd if=/dev/zero of=$dummy_disk bs=1M count=512
 

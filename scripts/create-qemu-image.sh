@@ -8,28 +8,30 @@ if [ $# -ne 1 ]; then
 fi
 
 image_type=$1
+images_dir=images
 
 if [ "$image_type" = "nixos" ]; then
 
     pushd flake/
     nix build .#qemu-image
     popd
-    install -m 644 flake/result/nixos.img .
+    mkdir -p images
+    install -m 644 flake/result/nixos.img images/
     rm flake/result
 
 elif [ "$image_type" = "debian" ]; then
 
   # Inspired by https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU#Create_a_bootable_NixOS_image_with_no_kernel
-  image_name=debian.img
-  qemu-img create "$image_name" 5G
-  mkfs.ext4 "$image_name"
+  image_path=$images_dir/debian.img
+  qemu-img create "$image_path" 5G
+  mkfs.ext4 "$image_path"
 
-  mount_dir=deb-image-mount
+  mount_dir=images/deb-image-mount
   if [ ! -d "$mount_dir" ]; then
       mkdir "$mount_dir"
   fi
 
-  sudo mount -o loop "$image_name" "$mount_dir"
+  sudo mount -o loop "$image_path" "$mount_dir"
   sudo debootstrap --arch amd64 buster "$mount_dir"
   sudo chroot "$mount_dir" /bin/bash -i -c "
   set -eu
