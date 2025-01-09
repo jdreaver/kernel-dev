@@ -1,5 +1,5 @@
 obj-m := show_taskinfo.o
-KDIR := ../../../linux
+KDIR := ../../linux
 PWD := $(shell pwd)
 
 .PHONY: all

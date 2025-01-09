@@ -1,5 +1,5 @@
 obj-m := hello.o
-KDIR := ../../../linux
+KDIR := ../../linux
 PWD := $(shell pwd)
 
 .PHONY: all
