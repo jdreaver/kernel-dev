@@ -5,7 +5,7 @@
 ### Decompile compiled device tree file
 
 ```sh
-dtc -I dtb -O dts ../linux/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb > compiled.dts
+dtc -I dtb -O dts ../../linux/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb > compiled.dts
 ```
 
 ## Useful links

@@ -13,7 +13,8 @@ UBOOT_ENV = u-boot.env
 
 CROSS_COMPILE_ARG = CROSS_COMPILE=armv7l-unknown-linux-gnueabihf-
 
-KERNEL_CONFIG = ../linux/.config
+KERNEL = ../../linux
+KERNEL_CONFIG = $(KERNEL)/.config
 
 TFTP_DIR = /srv/tftp
 KERNEL_IMAGE = $(TFTP_DIR)/zImage
@@ -61,9 +62,9 @@ $(UBOOT_IMG): $(UBOOT_CONFIG)
 	make -C $(UBOOT_REPO) $(CROSS_COMPILE_ARG) DEVICE_TREE=$(UBOOT_DEVICE_TREE) -j$$(nproc)
 
 $(KERNEL_CONFIG):
-	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) multi_v7_defconfig
+	make -C $(KERNEL) ARCH=arm $(CROSS_COMPILE_ARG) multi_v7_defconfig
         # Disable a bunch of SOCs and options we don't need, and also enable some other stuff
-	cd ../linux && scripts/config \
+	cd $(KERNEL) && scripts/config \
           --enable CONFIG_GPIO_SYSFS \
           --enable CONFIG_OF_OVERLAY \
           --enable CONFIG_OF_CONFIGFS \
@@ -121,17 +122,17 @@ $(KERNEL_CONFIG):
           --disable CONFIG_ARCH_VT8500 \
           --disable CONFIG_ARCH_WM8850 \
           --disable CONFIG_ARCH_ZYNQ
-	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) olddefconfig
+	make -C $(KERNEL) ARCH=arm $(CROSS_COMPILE_ARG) olddefconfig
 
 $(KERNEL_IMAGE): $(KERNEL_CONFIG)
         # N.B. DTS_FLAGS add __symbols__ to dtb files, which is necessary for u-boot to apply overlays
-	make -C ../linux ARCH=arm $(CROSS_COMPILE_ARG) DTC_FLAGS=-@ -j$$(nproc)
+	make -C $(KERNEL) ARCH=arm $(CROSS_COMPILE_ARG) DTC_FLAGS=-@ -j$$(nproc)
 
-	sudo cp ../linux/arch/arm/boot/zImage $(TFTP_DIR)/
-	sudo cp ../linux/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb $(TFTP_DIR)/
+	sudo cp $(KERNEL)/arch/arm/boot/zImage $(TFTP_DIR)/
+	sudo cp $(KERNEL)/arch/arm/boot/dts/st/stm32mp157a-dk1.dtb $(TFTP_DIR)/
 
 $(DEVICETREE_OVERLAY): overlay.dts
-	cpp -I ../linux/include -nostdinc -undef -x assembler-with-cpp -o $<.tmp $<
+	cpp -I $(KERNEL)/include -nostdinc -undef -x assembler-with-cpp -o $<.tmp $<
 	dtc -O dtb -o out.dtbo $<.tmp
 	sudo cp out.dtbo $@
 	rm -f $<.tmp out.dtbo

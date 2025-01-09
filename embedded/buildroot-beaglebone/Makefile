@@ -1,4 +1,5 @@
 NFS_ROOTFS = /nfs-export/rootfs
+KERNEL = ../../linux
 
 TFTP_DIR = /srv/tftp
 KERNEL_IMAGE = $(TFTP_DIR)/zImage
@@ -17,7 +18,7 @@ deploy-nfs-tftp: buildroot-build $(DEVICETREE_OVERLAY)
 	sudo tar -C $(NFS_ROOTFS) -xf output/images/rootfs.tar
 
 $(DEVICETREE_OVERLAY): board/reaver/beaglebone/overlay.dts
-	cpp -I ../linux/include -nostdinc -undef -x assembler-with-cpp -o $<.tmp $<
+	cpp -I $(KERNEL)/include -nostdinc -undef -x assembler-with-cpp -o $<.tmp $<
 	dtc -O dtb -o out.dtbo $<.tmp
 	sudo cp out.dtbo $@
 	rm -f $<.tmp out.dtbo

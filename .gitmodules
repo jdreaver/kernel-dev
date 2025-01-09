@@ -2,5 +2,5 @@
 	path = linux
 	url = git@github.com:jdreaver/linux.git
 [submodule "buildroot"]
-	path = buildroot
+	path = embedded/buildroot
 	url = git@github.com:jdreaver/buildroot.git
