@@ -1,0 +1,57 @@
+linux/drivers/ata/libata-sff.c
+583:	buf = kmap_atomic(page);
+764:	buf = kmap_atomic(page);
+linux/drivers/char/virtio_console.c
+886:		src = kmap_atomic(buf->page);
+linux/drivers/gpu/drm/drm_cache.c
+60:	page_virtual = kmap_atomic(page);
+linux/drivers/md/md-bitmap.c
+ 685:	sb = kmap_atomic(bitmap->storage.sb_page);
+ 720:	sb = kmap_atomic(bitmap->storage.sb_page);
+ 763:	sb = kmap_atomic(bitmap->storage.sb_page);
+ 868:	sb = kmap_atomic(sb_page);
+1164:	kaddr = kmap_atomic(page);
+1193:	paddr = kmap_atomic(page);
+1217:	paddr = kmap_atomic(page);
+1391:			paddr = kmap_atomic(page);
+1409:		paddr = kmap_atomic(page);
+1549:			sb = kmap_atomic(bitmap->storage.sb_page);
+linux/drivers/scsi/scsi_lib.c
+3139:	return kmap_atomic(page);
+linux/fs/nfs/nfs4proc.c
+351:	start = p = kmap_atomic(*readdir->pages);
+linux/include/linux/highmem-internal.h
+205:static inline void *kmap_atomic(struct page *page)
+217:	return kmap_atomic(page);
+222:	return kmap_atomic(pfn_to_page(pfn));
+linux/include/linux/highmem.h
+179:static inline void *kmap_atomic(struct page *page);
+linux/kernel/events/uprobes.c
+254:	void *kaddr = kmap_atomic(page);
+261:	void *kaddr = kmap_atomic(page);
+397:	kaddr = kmap_atomic(page);
+linux/kernel/power/snapshot.c
+2276:			kaddr = kmap_atomic(page);
+linux/lib/iov_iter.c
+482:		p = kmap_atomic(page) + offset;
+linux/lib/scatterlist.c
+903:		miter->addr = kmap_atomic(miter->page) + miter->__offset;
+linux/net/core/skbuff.c
+1386:			vaddr = kmap_atomic(p);
+2015:			vaddr = kmap_atomic(p);
+3016:				vaddr = kmap_atomic(p);
+3433:				vaddr = kmap_atomic(p);
+3516:				vaddr = kmap_atomic(p);
+3619:				vaddr = kmap_atomic(p);
+4403:				st->frag_data = kmap_atomic(skb_frag_page(frag) + pg_idx);
+linux/net/sunrpc/socklib.c
+135:		kaddr = kmap_atomic(*ppage);
+linux/net/sunrpc/xdr.c
+130:	kaddr = kmap_atomic(buf->pages[0]);
+300:		vto = kmap_atomic(*pgto);
+302:			vfrom = kmap_atomic(*pgfrom);
+371:		vto = kmap_atomic(*pgto);
+373:			vfrom = kmap_atomic(*pgfrom);
+412:		vto = kmap_atomic(*pgto);
+459:		vfrom = kmap_atomic(*pgfrom);
+519:		vpage = kmap_atomic(*page);
