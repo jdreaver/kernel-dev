@@ -12,6 +12,7 @@ Patches:
 
 - [2025-01-07-drivers-dm-kmap-local-page](./2025-01-07-drivers-dm-kmap-local-page)
 - [2025-01-08-virtio-console-kmap-local-page](./2025-01-08-virtio-console-kmap-local-page)
+- [2025-01-10-pm-snapshot-kmap-local-page](./2025-01-10-pm-snapshot-kmap-local-page)
 
 ## Misc
 
