@@ -1,74 +1,276 @@
-Definitions (nuke these last):
+arch:
 
-linux/include/linux/highmem.h
-179:static inline void *kmap_atomic(struct page *page);
-linux/include/linux/highmem-internal.h
-205:static inline void *kmap_atomic(struct page *page)
-217:	return kmap_atomic(page);
-222:	return kmap_atomic(pfn_to_page(pfn));
+arch/arc/mm/cache.c:	void *kfrom = kmap_atomic(from);
+arch/arc/mm/cache.c:	void *kto = kmap_atomic(to);
+arch/arc/mm/highmem.c: * kmap_atomic() can't sleep (calls pagefault_disable()), thus it provides
+arch/arm/mm/cache-feroceon-l2.c:	void *vaddr = kmap_atomic_pfn(paddr >> PAGE_SHIFT);
+arch/arm/mm/cache-xsc3l2.c:		va = (unsigned long)kmap_atomic_pfn(pa >> PAGE_SHIFT);
+arch/arm/mm/copypage-fa.c:	kfrom = kmap_atomic(from);
+arch/arm/mm/copypage-fa.c:	kto = kmap_atomic(to);
+arch/arm/mm/copypage-fa.c:	void *ptr, *kaddr = kmap_atomic(page);
+arch/arm/mm/copypage-feroceon.c:	kfrom = kmap_atomic(from);
+arch/arm/mm/copypage-feroceon.c:	kto = kmap_atomic(to);
+arch/arm/mm/copypage-feroceon.c:	void *ptr, *kaddr = kmap_atomic(page);
+arch/arm/mm/copypage-v4mc.c:	void *kto = kmap_atomic(to);
+arch/arm/mm/copypage-v4mc.c:	void *ptr, *kaddr = kmap_atomic(page);
+arch/arm/mm/copypage-v4wb.c:	kfrom = kmap_atomic(from);
+arch/arm/mm/copypage-v4wb.c:	kto = kmap_atomic(to);
+arch/arm/mm/copypage-v4wb.c:	void *ptr, *kaddr = kmap_atomic(page);
+arch/arm/mm/copypage-v4wt.c:	kfrom = kmap_atomic(from);
+arch/arm/mm/copypage-v4wt.c:	kto = kmap_atomic(to);
+arch/arm/mm/copypage-v4wt.c:	void *ptr, *kaddr = kmap_atomic(page);
+arch/arm/mm/copypage-v6.c:	kfrom = kmap_atomic(from);
+arch/arm/mm/copypage-v6.c:	kto = kmap_atomic(to);
+arch/arm/mm/copypage-v6.c:	void *kaddr = kmap_atomic(page);
+arch/arm/mm/copypage-xsc3.c:	kfrom = kmap_atomic(from);
+arch/arm/mm/copypage-xsc3.c:	kto = kmap_atomic(to);
+arch/arm/mm/copypage-xsc3.c:	void *ptr, *kaddr = kmap_atomic(page);
+arch/arm/mm/copypage-xscale.c:	void *kto = kmap_atomic(to);
+arch/arm/mm/copypage-xscale.c:	void *ptr, *kaddr = kmap_atomic(page);
+arch/arm/mm/dma-mapping.c:				vaddr = kmap_atomic(page);
+arch/arm/mm/dma-mapping.c:			void *ptr = kmap_atomic(page);
+arch/arm/probes/uprobes/core.c:	void *xol_page_kaddr = kmap_atomic(page);
+arch/arm64/kernel/probes/uprobes.c:	void *xol_page_kaddr = kmap_atomic(page);
+arch/csky/mm/dma-mapping.c:			start = kmap_atomic(page);
+arch/mips/kernel/uprobes.c:	kaddr = (unsigned long)kmap_atomic(page);
+arch/mips/mm/c-r4k.c:			vaddr = kmap_atomic(page);
+arch/mips/mm/c-r4k.c:		 * Use kmap_coherent or kmap_atomic to do flushes for
+arch/mips/mm/dma-noncoherent.c:		addr = kmap_atomic(page);
+arch/mips/mm/init.c:		vfrom = kmap_atomic(from);
+arch/mips/mm/init.c:	vto = kmap_atomic(to);
+arch/powerpc/include/asm/book3s/32/pgtable.h: * per-CPU PTE such as a kmap_atomic, we also do a simple update preserving
+arch/powerpc/kvm/e500_mmu_host.c:	eaddr = (unsigned long)kmap_atomic(page);
+arch/powerpc/mm/dma-noncoherent.c:		start = (unsigned long)kmap_atomic(page + seg_nr) + seg_offset;
+arch/powerpc/mm/dma-noncoherent.c: * not sleep so kmap_atomic()/kunmap_atomic() are used.
+arch/powerpc/platforms/44x/pci.c:	 * that with something akin to kmap_atomic instead. We set aside 1 bus
+arch/riscv/kernel/probes/uprobes.c:	void *kaddr = kmap_atomic(page);
+arch/sh/mm/cache-sh4.c:			vaddr = kmap_atomic(page);
+arch/sh/mm/cache-sh4.c:		 * Use kmap_coherent or kmap_atomic to do flushes for
+arch/sh/mm/cache.c:		vfrom = kmap_atomic(from);
+arch/sh/mm/cache.c:	void *kaddr = kmap_atomic(page);
+arch/sh/mm/cache.c:	vto = kmap_atomic(to);
+arch/sparc/kernel/uprobes.c:	void *kaddr = kmap_atomic(page);
+arch/sparc/mm/init_64.c:	vfrom = kmap_atomic(from);
+arch/sparc/mm/init_64.c:	vfrom = kmap_atomic(from);
+arch/sparc/mm/init_64.c:	vto = kmap_atomic(to);
+arch/sparc/mm/init_64.c:	vto = kmap_atomic(to);
+arch/um/kernel/skas/uaccess.c:	addr = (unsigned long) kmap_atomic(page) +
+arch/um/kernel/skas/uaccess.c:	addr = (unsigned long) kmap_atomic(page) +
+arch/um/kernel/skas/uaccess.c:	uaddr = kmap_atomic(page) + ((unsigned long) uaddr & ~PAGE_MASK);
+arch/xtensa/include/asm/fixmap.h:/* The map slots for temporary mappings via kmap_atomic/local(). */
+arch/xtensa/kernel/pci-dma.c:			void *vaddr = kmap_atomic(page);
 
-Remaining:
+Docs:
 
-linux/drivers/ata/libata-sff.c
-583:	buf = kmap_atomic(page);
-764:	buf = kmap_atomic(page);
-linux/drivers/gpu/drm/drm_cache.c
-60:	page_virtual = kmap_atomic(page);
+Documentation/mm/highmem.rst:  Each call of kmap_atomic() in the kernel creates a non-preemptible section
+Documentation/mm/highmem.rst:  Nesting kmap_local_page() and kmap_atomic() mappings is allowed to a certain
+Documentation/mm/highmem.rst:  On 64-bit systems, calls to kmap_local_page(), kmap_atomic() and kmap() have
+Documentation/mm/highmem.rst:  These functions should always be used, whereas kmap_atomic() and kmap() have
+Documentation/mm/highmem.rst:  calls to kmap_atomic() and kunmap_atomic() may implicitly depend on the side
+Documentation/mm/highmem.rst:  kmap_atomic() may also be used by interrupt contexts, since it does not
+Documentation/mm/highmem.rst:  users should prefer kmap_local_page() instead of kmap_atomic().
+Documentation/mm/highmem.rst:* kmap_atomic(). This function has been deprecated; use kmap_local_page().
+Documentation/translations/zh_CN/mm/highmem.rst:  kmap_atomic()也可以被中断上下文使用，因为它不睡眠，调用者也可能在调用kunmap_atomic()
+Documentation/translations/zh_CN/mm/highmem.rst:  内核中对kmap_atomic()的每次调用都会创建一个不可抢占的段，并禁用缺页异常。这可能是
+Documentation/translations/zh_CN/mm/highmem.rst:  在64位系统中，调用kmap_local_page()、kmap_atomic()和kmap()没有实际作用，因为64位
+Documentation/translations/zh_CN/mm/highmem.rst:  嵌套kmap_local_page()和kmap_atomic()映射在一定程度上是允许的（最多到KMAP_TYPE_NR），
+Documentation/translations/zh_CN/mm/highmem.rst:  未预期延迟的来源之一。因此用户应该选择kmap_local_page()而不是kmap_atomic()。
+Documentation/translations/zh_CN/mm/highmem.rst:* kmap_atomic().  这允许对单个页面进行非常短的时间映射。由于映射被限制在发布它的CPU上，
 
-linux/drivers/scsi/scsi_lib.c
-3139:	return kmap_atomic(page);
-- Need patch set similar to https://lore.kernel.org/lkml/20230810160019.16977-1-richard@nod.at/
-- Alternatively, we can do kmap_local_page as {migrate|preempt}_disable() + pagefault_disable() to keep the behavior the same.
+Others:
 
-linux/fs/nfs/nfs4proc.c
-351:	start = p = kmap_atomic(*readdir->pages);
-linux/kernel/events/uprobes.c
-254:	void *kaddr = kmap_atomic(page);
-261:	void *kaddr = kmap_atomic(page);
-397:	kaddr = kmap_atomic(page);
-linux/kernel/power/snapshot.c
-2276:			kaddr = kmap_atomic(page);
-linux/lib/iov_iter.c
-482:		p = kmap_atomic(page) + offset;
-linux/lib/scatterlist.c
-903:		miter->addr = kmap_atomic(miter->page) + miter->__offset;
-linux/net/core/skbuff.c
-1386:			vaddr = kmap_atomic(p);
-2015:			vaddr = kmap_atomic(p);
-3016:				vaddr = kmap_atomic(p);
-3433:				vaddr = kmap_atomic(p);
-3516:				vaddr = kmap_atomic(p);
-3619:				vaddr = kmap_atomic(p);
-4403:				st->frag_data = kmap_atomic(skb_frag_page(frag) + pg_idx);
+crypto/async_tx/async_memcpy.c:		dest_buf = kmap_atomic(dest) + dest_offset;
+crypto/async_tx/async_memcpy.c:		src_buf = kmap_atomic(src) + src_offset;
+drivers/ata/libata-sff.c:	buf = kmap_atomic(page);
+drivers/ata/libata-sff.c:	buf = kmap_atomic(page);
+drivers/block/brd.c:			src = kmap_atomic(page);
+drivers/block/brd.c:		dst = kmap_atomic(page);
+drivers/block/brd.c:		src = kmap_atomic(page);
+drivers/block/brd.c:	dst = kmap_atomic(page);
+drivers/block/brd.c:	mem = kmap_atomic(page);
+drivers/block/drbd/drbd_bitmap.c:	return (unsigned long *) kmap_atomic(page);
+drivers/block/drbd/drbd_bitmap.c:	unsigned long *paddr = kmap_atomic(b->bm_pages[page_nr]);
+drivers/block/drbd/drbd_bitmap.c: *  And we need the kmap_atomic.
+drivers/block/drbd/drbd_worker.c:		d = kmap_atomic(page);
+drivers/block/drbd/drbd_worker.c:		src = kmap_atomic(page);
+drivers/block/drbd/drbd_worker.c:	src = kmap_atomic(page);
+drivers/block/xen-blkback/blkback.c:			segments = kmap_atomic(pages[n/SEGS_PER_INDIRECT_FRAME]->page);
+drivers/block/xen-blkfront.c:			data.bvec_data = kmap_atomic(sg_page(sg));
+drivers/block/xen-blkfront.c:			setup.bvec_data = kmap_atomic(sg_page(sg));
+drivers/block/xen-blkfront.c:		setup->segments = kmap_atomic(gnt_list_entry->page);
+drivers/block/xen-blkfront.c:		shared_data = kmap_atomic(gnt_list_entry->page);
+drivers/block/xen-blkfront.c:	shared_data = kmap_atomic(s->grants_used[info->grant_idx]->page);
+drivers/char/virtio_console.c:		src = kmap_atomic(buf->page);
+drivers/crypto/caam/error.c:		it_page = kmap_atomic(sg_page(it));
+drivers/crypto/hifn_795x.c:			saddr = kmap_atomic(sg_page(t));
+drivers/crypto/hifn_795x.c:		daddr = kmap_atomic(sg_page(dst));
+drivers/crypto/omap-crypto.c:		dstb = kmap_atomic(sg_page(dst)) + dsto + dst->offset;
+drivers/crypto/omap-crypto.c:		srcb = kmap_atomic(sg_page(src)) + srco + src->offset;
+drivers/edac/edac_mc.c:	virt_addr = kmap_atomic(pg);
+drivers/firmware/efi/capsule.c:		sglist = kmap_atomic(sg_pages[i]);
+drivers/gpu/drm/drm_cache.c:		page_virtual = kmap_atomic(page);
+drivers/gpu/drm/drm_cache.c:	page_virtual = kmap_atomic(page);
+drivers/gpu/drm/gma500/mmu.c:		v = kmap_atomic(pd->p);
+drivers/gpu/drm/gma500/mmu.c:		v = kmap_atomic(pd->p);
+drivers/gpu/drm/gma500/mmu.c:		v = kmap_atomic(pd->p);
+drivers/gpu/drm/gma500/mmu.c:	pt->v = kmap_atomic(pt->p);
+drivers/gpu/drm/gma500/mmu.c:	pt->v = kmap_atomic(pt->p);
+drivers/gpu/drm/gma500/mmu.c:	v = kmap_atomic(pt->p);
+drivers/gpu/drm/qxl/qxl_image.c:					ptr = qxl_bo_kmap_atomic_page(qdev, chunk_bo, page_base);
+drivers/gpu/drm/qxl/qxl_image.c:				ptr = qxl_bo_kmap_atomic_page(qdev, chunk_bo, page << PAGE_SHIFT);
+drivers/gpu/drm/qxl/qxl_image.c:	ptr = qxl_bo_kmap_atomic_page(qdev, chunk_bo, 0);
+drivers/gpu/drm/qxl/qxl_image.c:	ptr = qxl_bo_kmap_atomic_page(qdev, image_bo, 0);
+drivers/gpu/drm/qxl/qxl_ioctl.c:	fb_cmd = qxl_bo_kmap_atomic_page(qdev, cmd_bo, (release->release_offset & PAGE_MASK));
+drivers/gpu/drm/qxl/qxl_ioctl.c:	reloc_page = qxl_bo_kmap_atomic_page(qdev, info->dst_bo, info->dst_offset & PAGE_MASK);
+drivers/gpu/drm/qxl/qxl_ioctl.c:	reloc_page = qxl_bo_kmap_atomic_page(qdev, info->dst_bo, info->dst_offset & PAGE_MASK);
+drivers/gpu/drm/qxl/qxl_object.c:void *qxl_bo_kmap_atomic_page(struct qxl_device *qdev,
+drivers/gpu/drm/qxl/qxl_object.h:void *qxl_bo_kmap_atomic_page(struct qxl_device *qdev, struct qxl_bo *bo, int page_offset);
+drivers/gpu/drm/qxl/qxl_release.c:	ptr = qxl_bo_kmap_atomic_page(qdev, bo, release->release_offset & PAGE_MASK);
+drivers/gpu/drm/vmwgfx/vmwgfx_blit.c:				kmap_atomic_prot(d->dst_pages[dst_page],
+drivers/gpu/drm/vmwgfx/vmwgfx_blit.c:				kmap_atomic_prot(d->src_pages[src_page],
+drivers/gpu/drm/vmwgfx/vmwgfx_blit.c: * On supported architectures (x86), we're using kmap_atomic which avoids
+drivers/gpu/drm/vmwgfx/vmwgfx_mob.c:		save_addr = addr = kmap_atomic(page);
+drivers/infiniband/sw/siw/siw_qp_rx.c:		dest = kmap_atomic(p);
+drivers/md/md-bitmap.c:			paddr = kmap_atomic(page);
+drivers/md/md-bitmap.c:			sb = kmap_atomic(bitmap->storage.sb_page);
+drivers/md/md-bitmap.c:		paddr = kmap_atomic(page);
+drivers/md/md-bitmap.c:	kaddr = kmap_atomic(page);
+drivers/md/md-bitmap.c:	paddr = kmap_atomic(page);
+drivers/md/md-bitmap.c:	paddr = kmap_atomic(page);
+drivers/md/md-bitmap.c:	sb = kmap_atomic(bitmap->storage.sb_page);
+drivers/md/md-bitmap.c:	sb = kmap_atomic(bitmap->storage.sb_page);
+drivers/md/md-bitmap.c:	sb = kmap_atomic(bitmap->storage.sb_page);
+drivers/md/md-bitmap.c:	sb = kmap_atomic(sb_page);
+drivers/md/raid5-cache.c:				addr = kmap_atomic(dev->page);
+drivers/md/raid5-cache.c:		addr = kmap_atomic(sh->dev[i].page);
+drivers/md/raid5-cache.c:		addr = kmap_atomic(sh->dev[i].page);
+drivers/md/raid5-cache.c:	addr = kmap_atomic(page);
+drivers/media/pci/ivtv/ivtv-udma.c:			src = kmap_atomic(dma->map[map_offset]) + offset;
+drivers/memstick/host/jmb38x_ms.c:			buf = kmap_atomic(pg) + p_off;
+drivers/memstick/host/tifm_ms.c:			buf = kmap_atomic(pg) + p_off;
+drivers/mmc/host/sdhci.c:					buffer = sdhci_kmap_atomic(sg);
+drivers/mmc/host/sdhci.c:				buffer = sdhci_kmap_atomic(sg);
+drivers/mmc/host/sdhci.c:static char *sdhci_kmap_atomic(struct scatterlist *sg)
+drivers/nvdimm/btt.c:	void *mem = kmap_atomic(page);
+drivers/nvdimm/btt.c:	void *mem = kmap_atomic(page);
+drivers/nvdimm/btt.c:	void *mem = kmap_atomic(page);
+drivers/nvdimm/pmem.c:		mem = kmap_atomic(page);
+drivers/nvdimm/pmem.c:		mem = kmap_atomic(page);
+drivers/scsi/arcmsr/arcmsr_hba.c:		buffer = kmap_atomic(sg_page(sg)) + sg->offset;
+drivers/scsi/arcmsr/arcmsr_hba.c:	buffer = kmap_atomic(sg_page(sg)) + sg->offset;
+drivers/scsi/bnx2fc/bnx2fc_fcoe.c:		cp = kmap_atomic(skb_frag_page(frag)) + skb_frag_off(frag);
+drivers/scsi/csiostor/csio_scsi.c:		sg_addr = kmap_atomic(sg_page(sg) + (sg_off >> PAGE_SHIFT));
+drivers/scsi/cxgbi/libcxgbi.c:				char *src = kmap_atomic(frag->page);
+drivers/scsi/dc395x.c:				base = scsi_kmap_atomic_sg(scsi_sglist(srb->cmd),
+drivers/scsi/dc395x.c:				base = scsi_kmap_atomic_sg(scsi_sglist(srb->cmd),
+drivers/scsi/dc395x.c:		base = scsi_kmap_atomic_sg(sg, scsi_sg_count(cmd), &offset, &len);
+drivers/scsi/esp_scsi.c:			ptr = scsi_kmap_atomic_sg(p->cur_sg, p->num_sg,
+drivers/scsi/fcoe/fcoe.c:		cp = kmap_atomic(skb_frag_page(frag)) + skb_frag_off(frag);
+drivers/scsi/fcoe/fcoe_transport.c:			data = kmap_atomic(
+drivers/scsi/fdomain.c:		virt = scsi_kmap_atomic_sg(scsi_sglist(cmd), scsi_sg_count(cmd),
+drivers/scsi/fdomain.c:		virt = scsi_kmap_atomic_sg(scsi_sglist(cmd), scsi_sg_count(cmd),
+drivers/scsi/isci/request.c:			kaddr = kmap_atomic(page);
+drivers/scsi/isci/request.c:		kaddr = kmap_atomic(sg_page(sg));
+drivers/scsi/isci/request.c:		kaddr = kmap_atomic(sg_page(sg));
+drivers/scsi/isci/request.c:	kaddr = kmap_atomic(sg_page(sg));
+drivers/scsi/libfc/fc_fcp.c:			page_addr = kmap_atomic(page);
+drivers/scsi/libfc/fc_libfc.c:		page_addr = kmap_atomic(sg_page(sg) + (off >> PAGE_SHIFT));
+drivers/scsi/libiscsi_tcp.c:		segment->sg_mapped = kmap_atomic(sg_page(sg));
+drivers/scsi/megaraid.c:			buf = kmap_atomic(sg_page(sg)) + sg->offset;
+drivers/scsi/mvsas/mv_sas.c:			to = kmap_atomic(sg_page(sg_resp));
+drivers/scsi/pm8001/pm80xx_hwi.c:			to = kmap_atomic(sg_page(sg_resp));
+drivers/scsi/pm8001/pm80xx_hwi.c:	to = kmap_atomic(sg_page(smp_req));
+drivers/scsi/qedf/qedf_main.c:		cp = kmap_atomic(skb_frag_page(frag)) + skb_frag_off(frag);
+drivers/scsi/scsi_lib.c:	return kmap_atomic(page);
+drivers/scsi/scsi_lib.c: * scsi_kmap_atomic_sg - find and atomically map an sg-elemnt
+drivers/scsi/scsi_lib.c: * scsi_kunmap_atomic_sg - atomically unmap a virtual address, previously mapped with scsi_kmap_atomic_sg
+drivers/scsi/scsi_lib.c:EXPORT_SYMBOL(scsi_kmap_atomic_sg);
+drivers/scsi/scsi_lib.c:void *scsi_kmap_atomic_sg(struct scatterlist *sgl, int sg_count,
+drivers/target/target_core_sbc.c:				daddr = kmap_atomic(sg_page(dsg)) + dsg->offset;
+drivers/target/target_core_sbc.c:				daddr = kmap_atomic(sg_page(dsg)) + dsg->offset;
+drivers/target/target_core_sbc.c:				daddr = kmap_atomic(sg_page(dsg)) + dsg->offset;
+drivers/target/target_core_sbc.c:				daddr = kmap_atomic(sg_page(dsg)) + dsg->offset;
+drivers/target/target_core_sbc.c:			addr = kmap_atomic(sg_page(sg)) + sg->offset + offset;
+drivers/target/target_core_sbc.c:		daddr = kmap_atomic(sg_page(dsg)) + dsg->offset;
+drivers/target/target_core_sbc.c:		daddr = kmap_atomic(sg_page(dsg)) + dsg->offset;
+drivers/target/target_core_sbc.c:		paddr = kmap_atomic(sg_page(psg)) + psg->offset;
+drivers/target/target_core_sbc.c:		paddr = kmap_atomic(sg_page(psg)) + psg->offset;
+drivers/target/target_core_sbc.c:		paddr = kmap_atomic(sg_page(psg)) + psg->offset;
+drivers/target/target_core_sbc.c:		unsigned char *addr = kmap_atomic(sg_page(sg));
+drivers/target/target_core_user.c:			data_page_start = kmap_atomic(page);
+drivers/target/tcm_fc/tfc_io.c:			from = kmap_atomic(page + (mem_off >> PAGE_SHIFT));
+drivers/target/tcm_fc/tfc_io.c:		to = kmap_atomic(page + (mem_off >> PAGE_SHIFT));
+drivers/vhost/vhost.c:	base = kmap_atomic(page);
+fs/ceph/addr.c:		void *kaddr = kmap_atomic(page);
+fs/ceph/mds_client.c:		__le32 *addr = kmap_atomic(page);
+fs/ceph/mds_client.c:	addr = kmap_atomic(page);
+fs/ceph/xattr.c:			void *addr = kmap_atomic(page);
+fs/dax.c:	vto = kmap_atomic(vmf->cow_page);
+fs/hfsplus/xattr.c:		kaddr = kmap_atomic(page);
+fs/nfs/nfs4proc.c:	start = p = kmap_atomic(*readdir->pages);
+fs/ntfs3/fsntfs.c:	kaddr = kmap_atomic(fill);
+fs/ntfs3/inode.c:		kaddr = kmap_atomic(page);
+fs/ocfs2/aops.c:			kaddr = kmap_atomic(bh_result->b_page);
+fs/orangefs/orangefs-bufmap.c:	page_from = kmap_atomic(from->page_array[slot_index]);
+fs/pstore/ram_core.c:	 * and kmap_atomic() (i.e. kcore) to avoid __va() failures.
+fs/smb/client/smbdirect.c:	page_address = kmap_atomic(page);
+include/linux/highmem-internal.h:	return kmap_atomic(page);
+include/linux/highmem-internal.h:	return kmap_atomic(pfn_to_page(pfn));
+include/linux/highmem-internal.h:	return kmap_atomic_prot(page, kmap_prot);
+include/linux/highmem-internal.h: * Unmaps an address previously mapped by kmap_atomic() and re-enables
+include/linux/highmem-internal.h: * kunmap_atomic - Unmap the virtual address mapped by kmap_atomic() - deprecated!
+include/linux/highmem-internal.h: * this function takes the address returned from kmap_atomic(), not the
+include/linux/highmem-internal.h:static inline void *kmap_atomic(struct page *page)
+include/linux/highmem-internal.h:static inline void *kmap_atomic(struct page *page)
+include/linux/highmem-internal.h:static inline void *kmap_atomic_pfn(unsigned long pfn)
+include/linux/highmem-internal.h:static inline void *kmap_atomic_pfn(unsigned long pfn)
+include/linux/highmem-internal.h:static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
+include/linux/highmem-internal.h:static inline void *kmap_atomic_prot(struct page *page, pgprot_t prot)
+include/linux/highmem.h: *   void *vaddr = kmap_atomic(page);
+include/linux/highmem.h: * Note that the kunmap_atomic() call takes the result of the kmap_atomic()
+include/linux/highmem.h: * another you need to keep the kmap_atomic calls strictly nested, like:
+include/linux/highmem.h: * kmap_atomic - Atomically map a page for temporary usage - Deprecated!
+include/linux/highmem.h: * vaddr1 = kmap_atomic(page1);
+include/linux/highmem.h: * vaddr2 = kmap_atomic(page2);
+include/linux/highmem.h:static inline void *kmap_atomic(struct page *page);
+include/linux/scatterlist.h:#define SG_MITER_ATOMIC		(1 << 0)	 /* use kmap_atomic */
+include/linux/skbuff.h: *	operations, notably kmap_atomic, must be called for each
+include/scsi/scsi_cmnd.h:extern void *scsi_kmap_atomic_sg(struct scatterlist *sg, int sg_count,
+kernel/debug/kdb/kdb_support.c:	vaddr = kmap_atomic(page);
+kernel/debug/kdb/kdb_support.c: * 	address is in range, use kmap_atomic() to get data
+kernel/events/uprobes.c:	kaddr = kmap_atomic(page);
+kernel/events/uprobes.c:	void *kaddr = kmap_atomic(page);
+kernel/events/uprobes.c:	void *kaddr = kmap_atomic(page);
+kernel/power/snapshot.c:			 * data modified by kmap_atomic()
+kernel/power/snapshot.c:		dst = kmap_atomic(last_highmem_page);
+kernel/power/snapshot.c:	kaddr1 = kmap_atomic(p1);
+kernel/power/snapshot.c:	kaddr2 = kmap_atomic(p2);
+kernel/watch_queue.c:	p = kmap_atomic(page);
+lib/iov_iter.c:		p = kmap_atomic(page) + offset;
+lib/scatterlist.c:		miter->addr = kmap_atomic(miter->page) + miter->__offset;
+net/appletalk/ddp.c:			vaddr = kmap_atomic(skb_frag_page(frag));
+net/core/skbuff.c:				st->frag_data = kmap_atomic(skb_frag_page(frag) + pg_idx);
+net/core/skbuff.c:				vaddr = kmap_atomic(p);
+net/core/skbuff.c:				vaddr = kmap_atomic(p);
+net/core/skbuff.c:				vaddr = kmap_atomic(p);
+net/core/skbuff.c:				vaddr = kmap_atomic(p);
+net/core/skbuff.c:			vaddr = kmap_atomic(p);
+net/core/skbuff.c:			vaddr = kmap_atomic(p);
+net/rds/ib_recv.c:		addr = kmap_atomic(sg_page(&frag->f_sg));
+net/rds/info.c:			iter->addr = kmap_atomic(*iter->pages);
 
-
-linux/net/sunrpc/socklib.c
-135:		kaddr = kmap_atomic(*ppage);
-linux/net/sunrpc/xdr.c
-130:	kaddr = kmap_atomic(buf->pages[0]);
-300:		vto = kmap_atomic(*pgto);
-302:			vfrom = kmap_atomic(*pgfrom);
-371:		vto = kmap_atomic(*pgto);
-373:			vfrom = kmap_atomic(*pgfrom);
-412:		vto = kmap_atomic(*pgto);
-459:		vfrom = kmap_atomic(*pgfrom);
-519:		vpage = kmap_atomic(*page);
+net/sunrpc/socklib.c:		kaddr = kmap_atomic(*ppage);
+net/sunrpc/xdr.c:			vfrom = kmap_atomic(*pgfrom);
+net/sunrpc/xdr.c:			vfrom = kmap_atomic(*pgfrom);
+net/sunrpc/xdr.c:		vfrom = kmap_atomic(*pgfrom);
+net/sunrpc/xdr.c:		vpage = kmap_atomic(*page);
+net/sunrpc/xdr.c:		vto = kmap_atomic(*pgto);
+net/sunrpc/xdr.c:		vto = kmap_atomic(*pgto);
+net/sunrpc/xdr.c:		vto = kmap_atomic(*pgto);
+net/sunrpc/xdr.c:	kaddr = kmap_atomic(buf->pages[0]);
+net/sunrpc/xprtrdma/rpc_rdma.c:			destp = kmap_atomic(ppages[i]);
 - sunrpc tests are at https://github.com/linux-test-project/ltp/tree/master/testcases/network/rpc
 
-
-Done:
-
-linux/drivers/char/virtio_console.c
-886:		src = kmap_atomic(buf->page);
-
-linux/drivers/md/md-bitmap.c
- 685:	sb = kmap_atomic(bitmap->storage.sb_page);
- 720:	sb = kmap_atomic(bitmap->storage.sb_page);
- 763:	sb = kmap_atomic(bitmap->storage.sb_page);
- 868:	sb = kmap_atomic(sb_page);
-1164:	kaddr = kmap_atomic(page);
-1193:	paddr = kmap_atomic(page);
-1217:	paddr = kmap_atomic(page);
-1391:			paddr = kmap_atomic(page);
-1409:		paddr = kmap_atomic(page);
-1549:			sb = kmap_atomic(bitmap->storage.sb_page);
+security/tomoyo/domain.c:		 * But remove_arg_zero() uses kmap_atomic()/kunmap_atomic().
+security/tomoyo/domain.c:		char *kaddr = kmap_atomic(page);
+tools/testing/scatterlist/linux/mm.h:static inline void *kmap_atomic(struct page *page)
