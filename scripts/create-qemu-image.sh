@@ -21,19 +21,58 @@ if [ "$image_type" = "nixos" ]; then
 
 elif [ "$image_type" = "debian" ]; then
 
-  # Inspired by https://nixos.wiki/wiki/Kernel_Debugging_with_QEMU#Create_a_bootable_NixOS_image_with_no_kernel
-  image_path=$images_dir/debian.img
-  qemu-img create "$image_path" 5G
-  mkfs.ext4 "$image_path"
+    image_path=$images_dir/debian.img
+    qemu-img create "$image_path" 10G
 
-  mount_dir=images/deb-image-mount
-  if [ ! -d "$mount_dir" ]; then
-      mkdir "$mount_dir"
-  fi
+    # Associate the image with a loop device and enable partition scanning (-P)
+    loop_device=$(sudo losetup --show -fP "$image_path")
 
-  sudo mount -o loop "$image_path" "$mount_dir"
-  sudo debootstrap --arch amd64 buster "$mount_dir"
-  sudo chroot "$mount_dir" /bin/bash -i -c "
+    # Function to clean up loop device on exit
+    # cleanup() {
+    #     sudo losetup -d "$loop_device" || true
+    # }
+    # trap cleanup EXIT
+
+    # Create a GPT partition table
+    sudo parted "$loop_device" --script -- mklabel gpt
+
+    # Define partition sizes
+    # Root partition: 80% of the disk
+    # Swap partition: 20% of the disk
+    sudo parted "$loop_device" --script -- mkpart primary ext4 1MiB 80%
+    sudo parted "$loop_device" --script -- mkpart primary linux-swap 80% 100%
+
+    # Inform the OS of partition table changes
+    sudo partprobe "$loop_device"
+
+    # Wait briefly to ensure the system recognizes the new partitions
+    sleep 1
+
+    # Determine partition device names
+    # On many systems, partitions are named like /dev/loop0p1, /dev/loop0p2
+    # Adjust accordingly based on your system's naming convention
+    if [ -e "${loop_device}p1" ]; then
+        root_partition="${loop_device}p1"
+        swap_partition="${loop_device}p2"
+    else
+        # Fallback for systems without 'p' in partition names
+        root_partition="${loop_device}p1"
+        swap_partition="${loop_device}p2"
+    fi
+
+    # Format the root partition as ext4 and label it 'root'
+    sudo mkfs.ext4 -L root "$root_partition"
+
+    # Format the swap partition and label it 'swap'
+    sudo mkswap -L swap "$swap_partition"
+
+    mount_dir=images/deb-image-mount
+    if [ ! -d "$mount_dir" ]; then
+        mkdir "$mount_dir"
+    fi
+
+    sudo debootstrap --arch amd64 buster "$mount_dir"
+    sudo chroot "$mount_dir" /bin/bash -i -c "
   set -eu
   # Don't require root password
   /usr/bin/passwd -d root
@@ -48,7 +87,7 @@ EOF
 
   exit
   "
-  sudo umount -R "$mount_dir"
+    sudo umount -R "$mount_dir"
 
 else
     echo "Unknown image_type '$image_type'"

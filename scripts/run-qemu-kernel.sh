@@ -43,7 +43,7 @@ qemu-system-x86_64 \
     -kernel "$linux_dir/arch/x86/boot/bzImage" \
     -hda "$qemu_image" \
     -hdb $dummy_disk \
-    -append "root=/dev/sda console=ttyS0" \
+    -append "root=/dev/sda console=ttyS0 resume=LABEL=swap rw" \
     -machine q35,accel=kvm \
     -enable-kvm \
     -cpu host \

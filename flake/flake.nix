@@ -109,6 +109,7 @@
           # QEMU and dev scripts
           qemu
           debootstrap
+          parted
 
           # Use GNU screen to connect to serial port (e.g. sudo screen /dev/ttyUSB0 115200)
           screen
