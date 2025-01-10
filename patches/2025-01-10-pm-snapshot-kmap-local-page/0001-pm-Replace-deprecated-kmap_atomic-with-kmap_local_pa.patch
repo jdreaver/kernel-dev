@@ -1,0 +1,45 @@
+From f42419a151d8912d0b4e1686b27af6ae5372b01d Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Fri, 10 Jan 2025 12:45:54 -0800
+Subject: [PATCH] pm: Replace deprecated kmap_atomic() with kmap_local_page()
+To: Rafael J. Wysocki <rafael@kernel.org>,
+    Pavel Machek <pavel@ucw.cz>,
+    Len Brown <len.brown@intel.com>
+Cc: linux-pm@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    Ira Weiny <ira.weiny@intel.com>
+
+kmap_atomic() is deprecated and should be replaced with kmap_local_page()
+[1][2]. kmap_local_page() is faster in kernels with HIGHMEM enabled, can
+take page faults, and allows preemption.
+
+According to [2], this replacement is safe as long as the code between
+kmap_atomic() and kunmap_atomic() does not implicitly depend on disabling
+page faults or preemption. In this patch, the only thing happening between
+mapping and unmapping the page is a copy_page(), and I don't suspect it
+depends on disabling page faults or preemption.
+
+[1] https://lwn.net/Articles/836144/
+[2] https://docs.kernel.org/mm/highmem.html#temporary-virtual-mappings
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ kernel/power/snapshot.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index c9fb559a6399..fcc3d4393321 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -2270,9 +2270,9 @@ int snapshot_read_next(struct snapshot_handle *handle)
+ 			 */
+ 			void *kaddr;
+ 
+-			kaddr = kmap_atomic(page);
++			kaddr = kmap_local_page(page);
+ 			copy_page(buffer, kaddr);
+-			kunmap_atomic(kaddr);
++			kunmap_local(kaddr);
+ 			handle->buffer = buffer;
+ 		} else {
+ 			handle->buffer = page_address(page);
