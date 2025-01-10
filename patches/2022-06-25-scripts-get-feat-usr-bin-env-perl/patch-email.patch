@@ -1,0 +1,35 @@
+From:   David Reaver <me@davidreaver.com>
+Cc:     Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        David Reaver <me@davidreaver.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] scripts: get_feat.pl: use /usr/bin/env to find perl
+Date:   Sat, 25 Jun 2022 14:15:48 -0700
+Message-Id: <20220625211548.1200198-1-me@davidreaver.com>
+X-Mailer: git-send-email 2.36.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+To:     unlisted-recipients:; (no To-header on input)
+Precedence: bulk
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
+
+I tried running `make pdfdocs` on NixOS, but it failed because
+get_feat.pl uses a shebang line with /usr/bin/perl, and that file path
+doesn't exist on NixOS. Using the more portable /usr/bin/env perl fixes
+the problem.
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ scripts/get_feat.pl | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/get_feat.pl b/scripts/get_feat.pl
+index 76cfb96b59b6..5c5397eeb237 100755
+--- a/scripts/get_feat.pl
++++ b/scripts/get_feat.pl
+@@ -1,2 +1,2 @@
+-#!/usr/bin/perl
++#!/usr/bin/env perl
+ # SPDX-License-Identifier: GPL-2.0
+
+ use strict;
