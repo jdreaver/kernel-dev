@@ -195,22 +195,11 @@ First time contributions:
 - [Recommendations for newer books on kernel development?](https://www.reddit.com/r/kernel/comments/ajho69/recommendations_for_newer_books_on_kernel/)
 
 Getting started, things to do
-- [Kernel dev
-  process](https://www.kernel.org/doc/html/latest/process/development-process.html)
+- [Kernel dev process](https://www.kernel.org/doc/html/latest/process/development-process.html)
 - https://github.com/agelastic/eudyptula
 - https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project
 
 ## TODO
 
-Embedded:
-- Dev setup
-  - Get booting with NFS or TFTP
-    - See the bootlin labs or the Mastering Embedded Linux Book
-    - NFS mounting seems to work with `# mount -v -t nfs 10.42.0.1:/nfs-export /nfs-mnt -o nolock,vers=3`
-  - Consider using buildroot or nix for just a barebones setup to bootstrap NFS and/or SSH, and thereafter just syncing to board
-- Buildroot
-  - (Consider abandoning buildroot and figuring out a kernel dev loop with nix)
-  - Set up NFS booting, and/or an initramfs for faster booting so we can have a quicker kernel dev inner loop
-  - <https://buildroot.org/downloads/manual/manual.html#customize>
-  - <https://buildroot.org/downloads/manual/using-buildroot-development.txt>
-  - Set up my own BR2_EXTERNAL directory for rpi4 + Linux dev
+- 32 bit HIGHMEM setup with QEMU. Probably 32 bit ARM, maybe with some Debian distribution?
+  - Or get BeagleBone or STM32 working
