@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euxo pipefail
 
 if [ $# -ne 1 ]; then
     echo 'Usage: create-qemu-image.sh <image-type>'
@@ -20,18 +20,24 @@ if [ "$image_type" = "nixos" ]; then
     rm flake/result
 
 elif [ "$image_type" = "debian" ]; then
-
     image_path=$images_dir/debian.img
+    sudo rm -f $image_path
     qemu-img create "$image_path" 10G
 
     # Associate the image with a loop device and enable partition scanning (-P)
     loop_device=$(sudo losetup --show -fP "$image_path")
 
+    mount_dir=images/deb-image-mount
+    sudo rm -rf "$mount_dir"
+    mkdir $mount_dir
+
     # Function to clean up loop device on exit
-    # cleanup() {
-    #     sudo losetup -d "$loop_device" || true
-    # }
-    # trap cleanup EXIT
+    cleanup() {
+        sudo umount -R "$mount_dir" || true
+        sudo losetup -d "$loop_device" || true
+        sudo rm -rf "$mount_dir"
+    }
+    trap cleanup EXIT
 
     # Create a GPT partition table
     sudo parted "$loop_device" --script -- mklabel gpt
@@ -65,8 +71,7 @@ elif [ "$image_type" = "debian" ]; then
 
     # Format the swap partition and label it 'swap'
     sudo mkswap -L swap "$swap_partition"
-
-    mount_dir=images/deb-image-mount
+    sudo mount -t ext4 "$root_partition" "$mount_dir"
     if [ ! -d "$mount_dir" ]; then
         mkdir "$mount_dir"
     fi
@@ -87,8 +92,15 @@ EOF
 
   exit
   "
-    sudo umount -R "$mount_dir"
 
+    # Unmount the root partition
+    sudo umount -R --detach-loop "$mount_dir"
+
+    # Clean up
+    sudo rmdir "$mount_dir"
+
+    # Remove the loop device (probably redundant with umount --detach-loop)
+    sudo losetup -d "$loop_device"
 else
     echo "Unknown image_type '$image_type'"
     exit 1

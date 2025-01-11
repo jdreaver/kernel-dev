@@ -38,12 +38,17 @@ dummy_disk=images/dummy.img
 rm -f $dummy_disk
 dd if=/dev/zero of=$dummy_disk bs=1M count=512
 
+kernel_args="root=/dev/sda console=ttyS0"
+if [[ $qemu_image == *"debian.img" ]]; then
+    kernel_args="root=/dev/sda1 console=ttyS0 resume=LABEL=swap rw"
+fi
+
 qemu-system-x86_64 \
     -m 8G \
     -kernel "$linux_dir/arch/x86/boot/bzImage" \
     -hda "$qemu_image" \
     -hdb $dummy_disk \
-    -append "root=/dev/sda console=ttyS0 resume=LABEL=swap rw" \
+    -append "$kernel_args" \
     -machine q35,accel=kvm \
     -enable-kvm \
     -cpu host \
