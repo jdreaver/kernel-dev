@@ -1,0 +1,82 @@
+From 8973b664f47e94ffe37d7cc21832e245c5c20b95 Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Subject: [PATCH v2] pm: Replace deprecated kmap_atomic() with kmap_local_page()
+To: Rafael J. Wysocki <rafael@kernel.org>,
+    Pavel Machek <pavel@ucw.cz>,
+    Len Brown <len.brown@intel.com>
+Cc: linux-pm@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    Ira Weiny <ira.weiny@intel.com>
+
+kmap_atomic() is deprecated and should be replaced with kmap_local_page()
+[1][2]. kmap_local_page() is faster in kernels with HIGHMEM enabled, can
+take page faults, and allows preemption.
+
+According to [2], this replacement is safe as long as the code between
+kmap_atomic() and kunmap_atomic() does not implicitly depend on disabling
+page faults or preemption. In all of the call sites in this patch, the only
+thing happening between mapping and unmapping pages is copy_page() calls,
+and I don't suspect they depend on disabling page faults or preemption.
+
+[1] https://lwn.net/Articles/836144/
+[2] https://docs.kernel.org/mm/highmem.html#temporary-virtual-mappings
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+
+Apologies, I tried testing a CONFIG_HIGHMEM kernel in QEMU and clearly made
+an error because there is an obvious typo. Any pointers to test setups for
+testing CONFIG_HIGHMEM in a VM would be appreciated! Here is v2 of the
+patch.
+
+V1 -> V2: Fix typo kmap_page_local() -> kmap_local_page()
+
+ kernel/power/snapshot.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index c9fb559a6399..87f4dde4a49d 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -2270,9 +2270,9 @@ int snapshot_read_next(struct snapshot_handle *handle)
+ 			 */
+ 			void *kaddr;
+ 
+-			kaddr = kmap_atomic(page);
++			kaddr = kmap_local_page(page);
+ 			copy_page(buffer, kaddr);
+-			kunmap_atomic(kaddr);
++			kunmap_local(kaddr);
+ 			handle->buffer = buffer;
+ 		} else {
+ 			handle->buffer = page_address(page);
+@@ -2561,9 +2561,9 @@ static void copy_last_highmem_page(void)
+ 	if (last_highmem_page) {
+ 		void *dst;
+ 
+-		dst = kmap_atomic(last_highmem_page);
++		dst = kmap_local_page(last_highmem_page);
+ 		copy_page(dst, buffer);
+-		kunmap_atomic(dst);
++		kunmap_local(dst);
+ 		last_highmem_page = NULL;
+ 	}
+ }
+@@ -2881,13 +2881,13 @@ static inline void swap_two_pages_data(struct page *p1, struct page *p2,
+ {
+ 	void *kaddr1, *kaddr2;
+ 
+-	kaddr1 = kmap_atomic(p1);
+-	kaddr2 = kmap_atomic(p2);
++	kaddr1 = kmap_local_page(p1);
++	kaddr2 = kmap_local_page(p2);
+ 	copy_page(buf, kaddr1);
+ 	copy_page(kaddr1, kaddr2);
+ 	copy_page(kaddr2, buf);
+-	kunmap_atomic(kaddr2);
+-	kunmap_atomic(kaddr1);
++	kunmap_local(kaddr2);
++	kunmap_local(kaddr1);
+ }
+ 
+ /**
