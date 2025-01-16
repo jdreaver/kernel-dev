@@ -1,0 +1,13 @@
+.myfs*
+Module*
+myfs.mod*
+myfs.o
+myfs.ko
+.modules*
+.Module*
+modules.order
+*.o.cmd
+*.o
+.ccls-cache/
+compile_commands*
+.compile_commands*
