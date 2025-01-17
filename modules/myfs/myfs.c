@@ -107,7 +107,7 @@ static ssize_t myfs_write_file(struct file *file, const char __user *buf,
 
 	pr_info("Wrote %zu bytes to file (inode = %zu)\n", count, file->f_inode->i_ino);
 	pr_info("Private data located at %p\n", file_data);
-	pr_info("File data: %s (%zu bytes)\n", file_data->data, file_data->size);
+	pr_info("File data (%zu bytes): %*pE\n", file_data->size, (int)file_data->size, file_data->data);
 	return count;
 }
 
