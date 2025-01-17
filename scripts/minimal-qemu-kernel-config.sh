@@ -35,6 +35,8 @@ if [ -n "${DEBUG:-}" ]; then
     --set-val CONFIG_DEBUG_SPINLOCK y \
     --set-val CONFIG_DEBUG_ATOMIC_SLEEP y \
     --set-val CONFIG_PROVE_RCU y \
+    --set-val CONFIG_GDB_SCRIPTS y \
+    --set-val CONFIG_RANDOMIZE_BASE n \
     --set-val CONFIG_DEBUG_OBJECTS_RCU_HEAD y
 fi
 

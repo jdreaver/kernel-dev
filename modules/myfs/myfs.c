@@ -105,15 +105,14 @@ static int myfs_init_fs_context(struct fs_context *fc)
 	return 0;
 }
 
-
 static struct file_system_type myfs_type = {
 	.name = "myfs",
 	.init_fs_context = myfs_init_fs_context,
+	// kill_anon_super is good for in-memory filesystems.
 	.kill_sb = kill_anon_super,
 
 	// N.B. mount is phased out in lieu of init_fs_context
 	// .mount = myfs_mount,
-	// kill_anon_super is good for in-memory filesystems.
 };
 
 static int __init myfs_init(void)

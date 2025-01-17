@@ -43,14 +43,22 @@ if [[ $qemu_image == *"debian.img" ]]; then
     kernel_args="root=/dev/sda1 console=ttyS0 resume=LABEL=swap rw"
 fi
 
-qemu-system-x86_64 \
-    -m 8G \
-    -kernel "$linux_dir/arch/x86/boot/bzImage" \
-    -hda "$qemu_image" \
-    -hdb $dummy_disk \
-    -append "$kernel_args" \
-    -machine q35,accel=kvm \
-    -enable-kvm \
-    -cpu host \
-    -nic user,hostfwd=tcp::2222-:22 \
+ARGS=(
+    -m 8G
+    -kernel "$linux_dir/arch/x86/boot/bzImage"
+    -hda "$qemu_image"
+    -hdb "$dummy_disk"
+    -append "$kernel_args"
+    -machine q35,accel=kvm
+    -enable-kvm
+    -cpu host
+    -nic user,hostfwd=tcp::2222-:22
     -nographic
+)
+
+# Docs on using GDB https://docs.kernel.org/dev-tools/gdb-kernel-debugging.html
+if [ -n "${GDB:-}" ]; then
+    ARGS+=(-gdb tcp::1234)
+fi
+
+exec qemu-system-x86_64 "${ARGS[@]}"
