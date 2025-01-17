@@ -8,6 +8,11 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
+# Remove old mount point if it exists
+mount_point=/mnt/myfs
+umount -f "$mount_point" || true
+rm -rf "$mount_point"
+
 # Remove old version of module if it exists
 if lsmod | grep -q "myfs"; then
     rmmod myfs
@@ -21,9 +26,6 @@ insmod myfs.ko
 grep myfs /proc/filesystems
 
 # Recreate mount point
-mount_point=/mnt/myfs
-umount -f "$mount_point" || true
-rm -rf "$mount_point"
 mkdir -p "$mount_point"
 
 # Mount filesystem
