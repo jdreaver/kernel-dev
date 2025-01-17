@@ -57,6 +57,22 @@ ARGS=(
 )
 
 # Docs on using GDB https://docs.kernel.org/dev-tools/gdb-kernel-debugging.html
+#
+# To debug a module:
+# 1. Build the module with debug info
+# 2. Load the module in the kernel with insmod
+# 3. Get the module address with `grep <module-name> /proc/modules`. You should see something like:
+#
+#    myfs 16384 1 - Live 0xffffffffa0400000 (O)
+#
+# 4. Start gdb with `gdb vmlinux` (vmlinux is the kernel binary located in the root of a built kernel directory)
+# 5. Connect to the QEMU instance with `target remote :1234`
+# 6. Load the module debug symbols in GDB with `add-symbol-file <module.ko> <module-address>`. Example:
+#
+#    add-symbol-file myfs.ko 0xffffffffa0400000
+#
+# 5. Set breakpoints in your module code
+# 6. Continue execution with `c`
 if [ -n "${GDB:-}" ]; then
     ARGS+=(-gdb tcp::1234)
 fi
