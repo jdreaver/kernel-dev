@@ -21,6 +21,14 @@ scripts/config \
   --set-val CONFIG_IKCONFIG y \
   --set-val CONFIG_IKCONFIG_PROC y \
   --set-val CONFIG_LOCALVERSION '"-reaver-dev"' \
+  --set-val CONFIG_FUNCTION_TRACER y \
+  --set-val CONFIG_FUNCTION_GRAPH_TRACER y \
+  --set-val CONFIG_FUNCTION_GRAPH_RETVAL y \
+  --set-val CONFIG_FUNCTION_GRAPH_RETADDR y \
+  --set-val CONFIG_FPROBE y \
+  --set-val CONFIG_FUNCTION_PROFILER y \
+  --set-val CONFIG_DYNAMIC_FTRACE y \
+  --set-val CONFIG_FPROBE_EVENTS y \
   --set-val CONFIG_LOCALVERSION_AUTO y
 
 # If env var DEBUG is defined, add more debug options. Taken from
@@ -37,6 +45,7 @@ if [ -n "${DEBUG:-}" ]; then
     --set-val CONFIG_PROVE_RCU y \
     --set-val CONFIG_GDB_SCRIPTS y \
     --set-val CONFIG_RANDOMIZE_BASE n \
+    --set-val CONFIG_DYNAMIC_DEBUB y \
     --set-val CONFIG_DEBUG_OBJECTS_RCU_HEAD y
 fi
 
