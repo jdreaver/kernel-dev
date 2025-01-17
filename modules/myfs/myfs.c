@@ -152,12 +152,7 @@ static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *
 	inode->i_ino = get_next_ino();
 	inode->i_sb = sb;
 	inode_init_owner(&nop_mnt_idmap, inode, dir, mode);
-
-	struct timespec64 ts;
-	ktime_get_real_ts64(&ts);
-	inode_set_atime_to_ts(inode, ts);
-	inode_set_mtime_to_ts(inode, ts);
-	inode_set_ctime_to_ts(inode, ts);
+	simple_inode_init_ts(inode);
 
 	switch (mode & S_IFMT) {
 	case S_IFREG:
@@ -184,9 +179,13 @@ static int myfs_mknod(struct mnt_idmap *idmap, struct inode *dir,
 	struct inode *inode = myfs_get_inode(dir->i_sb, dir, mode, dev);
 	if (!inode)
 		return -ENOSPC;
-	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
 	d_instantiate(dentry, inode);
-	dget(dentry);/* Extra count - pin the dentry in core */
+	// TODO: This dget shouldn't be here
+	dget(dentry);
+	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
+
+	pr_info("Created %s inode %lu, nlink = %u\n", S_ISDIR(mode) ? "directory" : "file", inode->i_ino, inode->i_nlink);
+
 	return 0;
 }
 
@@ -198,10 +197,29 @@ static int myfs_create(struct mnt_idmap *idmap,
 	return myfs_mknod(idmap, dir, dentry, mode | S_IFREG, 0);
 }
 
+static struct dentry *myfs_lookup(struct inode *dir, struct dentry *dentry, unsigned int flags)
+{
+	struct inode *inode = NULL;
+
+	pr_info("Looking up file %s in directory %lu\n", dentry->d_name.name, dir->i_ino);
+
+	/* Try to find an existing inode for the dentry */
+	inode = dentry->d_inode;
+	if (inode) {
+		pr_info("Found existing inode %lu for %s\n", inode->i_ino, dentry->d_name.name);
+		return NULL; // Entry already exists, nothing to do
+	}
+
+	/* If no inode exists, return a negative dentry */
+	d_add(dentry, NULL);
+	pr_info("No inode found for %s, returning negative dentry\n", dentry->d_name.name);
+	return NULL;
+}
+
 const struct inode_operations myfs_dir_inode_operations = {
 	.create		= myfs_create,
 	.setattr	= simple_setattr,
-	.lookup		= simple_lookup,
+	.lookup		= myfs_lookup,
 	.permission	= generic_permission,
 	.getattr	= simple_getattr,
 };
