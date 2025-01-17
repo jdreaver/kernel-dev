@@ -49,12 +49,15 @@ static void myfs_file_data_free(struct myfs_file_data *data)
 static ssize_t myfs_read_file(struct file *file, char __user *buf,
 				 size_t count, loff_t *ppos)
 {
+	pr_info("Reading file (inode = %zu)\n", file->f_inode->i_ino);
+
 	struct myfs_file_data *file_data = file->private_data;
 	if (!file_data) {
 		pr_err("No file->private_data in file\n");
 		return -EIO;
 	}
 
+	pr_info("Private data located at %p\n", file_data);
 	pr_info("Reading file data, *ppos = %lld, file_data->size = %zu\n", *ppos, file_data->size);
 	if (*ppos >= file_data->size) {
 		pr_info("EOF\n");
@@ -102,19 +105,27 @@ static ssize_t myfs_write_file(struct file *file, const char __user *buf,
 
 	*ppos += count;
 
-	pr_info("Wrote %zu bytes to file\n", count);
+	pr_info("Wrote %zu bytes to file (inode = %zu)\n", count, file->f_inode->i_ino);
+	pr_info("Private data located at %p\n", file_data);
 	pr_info("File data: %s (%zu bytes)\n", file_data->data, file_data->size);
 	return count;
 }
 
 static int myfs_file_open(struct inode *inode, struct file *file)
 {
-	// Allocate some memory for the file
-	if (!file->private_data) {
-		file->private_data = myfs_file_data_alloc();
-		if (!file->private_data)
+	// Allocate some memory for the file and store a pointer to it in the
+	// inode.
+	pr_info("Opening file (inode = %lu)\n", inode->i_ino);
+	if (!inode->i_private) {
+		pr_info("Allocating file data\n");
+		inode->i_private = myfs_file_data_alloc();
+		pr_info("Allocated private data at %p\n", inode->i_private);
+		if (!inode->i_private)
 			return -ENOMEM;
 	}
+
+	// Associate the file's private_data with the inode's private data.
+	file->private_data = inode->i_private;
 
 	return 0;
 }
