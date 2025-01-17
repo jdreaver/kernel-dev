@@ -18,12 +18,14 @@ MODULE_DESCRIPTION("A simple module example");
 static ssize_t default_read_file(struct file *file, char __user *buf,
 				 size_t count, loff_t *ppos)
 {
+	pr_info("Reading %lu bytes from file\n", count);
 	return 0;
 }
 
 static ssize_t default_write_file(struct file *file, const char __user *buf,
 				   size_t count, loff_t *ppos)
 {
+	pr_info("Writing %lu bytes to file\n", count);
 	return count;
 }
 
@@ -38,13 +40,7 @@ static const struct inode_operations myfs_file_inode_operations = {
 	.setattr	= simple_setattr,
 };
 
-/* const struct inode_operations myfs_dir_inode_operations = { */
-/* 	.setattr	= simple_setattr, */
-/* 	.lookup		= simple_lookup, */
-
-/* 	.permission	= generic_permission, */
-/* 	.getattr	= simple_getattr, */
-/* }; */
+const struct inode_operations myfs_dir_inode_operations;
 
 static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *dir, umode_t mode, dev_t dev)
 {
@@ -70,8 +66,7 @@ static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *
 		break;
 	case S_IFDIR:
 		pr_info("Creating directory inode\n");
-		//inode->i_op = &myfs_dir_inode_operations;
-		inode->i_op = &simple_dir_inode_operations;
+		inode->i_op = &myfs_dir_inode_operations;
 		inode->i_fop = &simple_dir_operations;
 		break;
 	default:
@@ -81,6 +76,34 @@ static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *
 	pr_info("Created inode %lu\n", inode->i_ino);
 	return inode;
 }
+
+static int myfs_mknod(struct mnt_idmap *idmap, struct inode *dir,
+			   struct dentry *dentry, umode_t mode, dev_t dev)
+{
+	struct inode *inode = myfs_get_inode(dir->i_sb, dir, mode, dev);
+	if (!inode)
+		return -ENOSPC;
+	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
+	d_instantiate(dentry, inode);
+	dget(dentry);/* Extra count - pin the dentry in core */
+	return 0;
+}
+
+
+static int myfs_create(struct mnt_idmap *idmap,
+			    struct inode *dir, struct dentry *dentry,
+			    umode_t mode, bool excl)
+{
+	return myfs_mknod(idmap, dir, dentry, mode | S_IFREG, 0);
+}
+
+const struct inode_operations myfs_dir_inode_operations = {
+	.create		= myfs_create,
+	.setattr	= simple_setattr,
+	.lookup		= simple_lookup,
+	.permission	= generic_permission,
+	.getattr	= simple_getattr,
+};
 
 static const struct super_operations myfs_super_operations = {
 	.statfs = simple_statfs,
