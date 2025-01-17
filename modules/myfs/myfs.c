@@ -38,13 +38,13 @@ static const struct inode_operations myfs_file_inode_operations = {
 	.setattr	= simple_setattr,
 };
 
-const struct inode_operations myfs_dir_inode_operations = {
-	.setattr	= simple_setattr,
-	.lookup		= simple_lookup,
+/* const struct inode_operations myfs_dir_inode_operations = { */
+/* 	.setattr	= simple_setattr, */
+/* 	.lookup		= simple_lookup, */
 
-	.permission	= generic_permission,
-	.getattr	= simple_getattr,
-};
+/* 	.permission	= generic_permission, */
+/* 	.getattr	= simple_getattr, */
+/* }; */
 
 static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *dir, umode_t mode, dev_t dev)
 {
@@ -64,11 +64,14 @@ static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *
 
 	switch (mode & S_IFMT) {
 	case S_IFREG:
+		pr_info("Creating file inode\n");
 		inode->i_op = &myfs_file_inode_operations;
 		inode->i_fop = &myfs_file_operations;
 		break;
 	case S_IFDIR:
-		inode->i_op = &myfs_dir_inode_operations;
+		pr_info("Creating directory inode\n");
+		//inode->i_op = &myfs_dir_inode_operations;
+		inode->i_op = &simple_dir_inode_operations;
 		inode->i_fop = &simple_dir_operations;
 		break;
 	default:
