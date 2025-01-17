@@ -2,6 +2,9 @@ obj-m := myfs.o
 KDIR := ../../linux
 PWD := $(shell pwd)
 
+# Enable debug symbols
+EXTRA_CFLAGS := -g -DDEBUG
+
 .PHONY: all
 all:
 	make -C $(KDIR) M=$(PWD) modules

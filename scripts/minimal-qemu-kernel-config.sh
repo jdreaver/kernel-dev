@@ -29,6 +29,7 @@ scripts/config \
   --set-val CONFIG_FUNCTION_PROFILER y \
   --set-val CONFIG_DYNAMIC_FTRACE y \
   --set-val CONFIG_FPROBE_EVENTS y \
+  --set-val CONFIG_MODULE_DEBUG y \
   --set-val CONFIG_LOCALVERSION_AUTO y
 
 # If env var DEBUG is defined, add more debug options. Taken from
