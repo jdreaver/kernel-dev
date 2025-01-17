@@ -258,27 +258,15 @@ static const struct dentry_operations myfs_dentry_operations = {
 
 static int myfs_fill_super(struct super_block *sb, struct fs_context *fc)
 {
-	// TODO: Don't use simple_fill_super
-	static const struct tree_descr files[] = {{""}};
-	int err = simple_fill_super(sb, DEBUGFS_MAGIC, files);
-	if (err)
-		return err;
-
-	// Just use normal pages for blocks since this is an in-memory
-	// filesystem.
 	sb->s_blocksize = PAGE_SIZE;
 	sb->s_blocksize_bits = PAGE_SHIFT;
-
 	sb->s_magic = MYFS_MAGIC;
+	sb->s_time_gran = 1;
 
 	sb->s_op = &myfs_super_operations;
 	sb->s_d_op = &myfs_dentry_operations;
 
-	// TODO:
-	// sb->s_time_gran = 1;
-
 	// Allocate root inode
-	// TODO: Locking here?
 	struct inode *root_inode = myfs_get_inode(sb, &nop_mnt_idmap, NULL, S_IFDIR | 0755, 0);
 	if (!root_inode)
 		return -ENOMEM;
@@ -288,6 +276,9 @@ static int myfs_fill_super(struct super_block *sb, struct fs_context *fc)
 		iput(root_inode);
 		return -ENOMEM;
 	}
+
+	// Set nlink to 2 because both . and .. point to the root.
+	set_nlink(root_inode, 2);
 
 	return 0;
 }
