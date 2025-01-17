@@ -180,8 +180,6 @@ static int myfs_mknod(struct mnt_idmap *idmap, struct inode *dir,
 	if (!inode)
 		return -ENOSPC;
 	d_instantiate(dentry, inode);
-	// TODO: This dget shouldn't be here
-	dget(dentry);
 	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
 
 	pr_info("Created %s inode %lu, nlink = %u\n", S_ISDIR(mode) ? "directory" : "file", inode->i_ino, inode->i_nlink);
@@ -248,7 +246,13 @@ static const struct super_operations myfs_super_operations = {
 };
 
 static const struct dentry_operations myfs_dentry_operations = {
-	.d_delete = always_delete_dentry,
+	// TODO: Store known files in an internal data structure that we then
+	// hook up to myfs_lookup instead of relying on dentries existing.
+	// In-memory filesystems shouldn't rely on keeping the dentries around
+	// for persistence, because you never know when they will get reaped due
+	// to e.g. memory pressure.
+	//
+	//.d_delete = always_delete_dentry,
 };
 
 static int myfs_fill_super(struct super_block *sb, struct fs_context *fc)
