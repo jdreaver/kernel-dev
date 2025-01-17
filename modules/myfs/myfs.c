@@ -1,6 +1,7 @@
 // Modifies the default printk format to include the module name and function name
 #define pr_fmt(fmt) KBUILD_MODNAME ":%s:%d: " fmt, __func__, __LINE__
 
+#include <linux/xattr.h>
 #include <linux/fs.h>
 #include <linux/fs_context.h>
 #include <linux/module.h>
@@ -14,10 +15,35 @@ MODULE_DESCRIPTION("A simple module example");
 // and some type safety mechanisms.
 #define MYFS_MAGIC 0x3a414e27
 
-static const struct inode_operations myfs_inode_operations = {
+static ssize_t default_read_file(struct file *file, char __user *buf,
+				 size_t count, loff_t *ppos)
+{
+	return 0;
+}
+
+static ssize_t default_write_file(struct file *file, const char __user *buf,
+				   size_t count, loff_t *ppos)
+{
+	return count;
+}
+
+static const struct file_operations myfs_file_operations = {
+	.read	= default_read_file,
+	.write	= default_write_file,
+	.open	= simple_open,
+	.llseek	= noop_llseek,
+};
+
+static const struct inode_operations myfs_file_inode_operations = {
+	.setattr	= simple_setattr,
 };
 
 const struct inode_operations myfs_dir_inode_operations = {
+	.setattr	= simple_setattr,
+	.lookup		= simple_lookup,
+
+	.permission	= generic_permission,
+	.getattr	= simple_getattr,
 };
 
 static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *dir, umode_t mode, dev_t dev)
@@ -38,10 +64,12 @@ static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *
 
 	switch (mode & S_IFMT) {
 	case S_IFREG:
-		inode->i_op = &myfs_inode_operations;
+		inode->i_op = &myfs_file_inode_operations;
+		inode->i_fop = &myfs_file_operations;
 		break;
 	case S_IFDIR:
 		inode->i_op = &myfs_dir_inode_operations;
+		inode->i_fop = &simple_dir_operations;
 		break;
 	default:
 		pr_err("TODO: Implement other inode types\n");
@@ -52,6 +80,7 @@ static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *
 }
 
 static const struct super_operations myfs_super_operations = {
+	.statfs = simple_statfs,
 };
 
 static const struct dentry_operations myfs_dentry_operations = {
@@ -60,6 +89,12 @@ static const struct dentry_operations myfs_dentry_operations = {
 
 static int myfs_fill_super(struct super_block *sb, struct fs_context *fc)
 {
+	// TODO: Don't use simple_fill_super
+	static const struct tree_descr files[] = {{""}};
+	int err = simple_fill_super(sb, DEBUGFS_MAGIC, files);
+	if (err)
+		return err;
+
 	// Just use normal pages for blocks since this is an in-memory
 	// filesystem.
 	sb->s_blocksize = PAGE_SIZE;
@@ -71,7 +106,6 @@ static int myfs_fill_super(struct super_block *sb, struct fs_context *fc)
 	sb->s_d_op = &myfs_dentry_operations;
 
 	// TODO:
-	// sb->s_op = &myfs_sops;
 	// sb->s_time_gran = 1;
 
 	// Allocate root inode
@@ -106,6 +140,7 @@ static int myfs_init_fs_context(struct fs_context *fc)
 }
 
 static struct file_system_type myfs_type = {
+	.owner = THIS_MODULE,
 	.name = "myfs",
 	.init_fs_context = myfs_init_fs_context,
 	// kill_anon_super is good for in-memory filesystems.

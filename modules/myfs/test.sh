@@ -27,7 +27,7 @@ rm -rf "$mount_point"
 mkdir -p "$mount_point"
 
 # Mount filesystem
-mount -t myfs none "$mount_point"
+mount -t myfs myfs "$mount_point"
 
 # Test filesystem
 echo "Hello, world!" > "$mount_point/hello.txt"
