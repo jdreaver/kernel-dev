@@ -15,24 +15,114 @@ MODULE_DESCRIPTION("A simple module example");
 // and some type safety mechanisms.
 #define MYFS_MAGIC 0x3a414e27
 
-static ssize_t default_read_file(struct file *file, char __user *buf,
-				 size_t count, loff_t *ppos)
+// myfs_file_data is stored in a struct file's private_data field to hold data
+// written to the file.
+struct myfs_file_data {
+    char *data;
+    size_t size;
+};
+
+static struct myfs_file_data *myfs_file_data_alloc(void)
 {
-	pr_info("Reading %lu bytes from file\n", count);
-	return 0;
+	return kzalloc(sizeof(struct myfs_file_data), GFP_KERNEL);
 }
 
-static ssize_t default_write_file(struct file *file, const char __user *buf,
-				   size_t count, loff_t *ppos)
+static void myfs_file_data_alloc_buffer(struct myfs_file_data *data, size_t size)
 {
-	pr_info("Writing %lu bytes to file\n", count);
+	data->data = kmalloc(size, GFP_KERNEL);
+	data->size = size;
+}
+
+static void myfs_file_data_realloc_buffer(struct myfs_file_data *data, size_t new_size)
+{
+	data->data = krealloc(data->data, new_size, GFP_KERNEL);
+	data->size = new_size;
+}
+
+static void myfs_file_data_free(struct myfs_file_data *data)
+{
+	kfree(data->data);
+	kfree(data);
+}
+
+// Read the internal file data buffer into the given user buffer.
+static ssize_t myfs_read_file(struct file *file, char __user *buf,
+				 size_t count, loff_t *ppos)
+{
+	struct myfs_file_data *file_data = file->private_data;
+	if (!file_data) {
+		pr_err("No file->private_data in file\n");
+		return -EIO;
+	}
+
+	pr_info("Reading file data, *ppos = %lld, file_data->size = %zu\n", *ppos, file_data->size);
+	if (*ppos >= file_data->size) {
+		pr_info("EOF\n");
+		return 0; // EOF
+	}
+
+	size_t remaining = file_data->size - *ppos;
+	if (count > remaining)
+		count = remaining;
+
+	if (copy_to_user(buf, file_data->data + *ppos, count))
+		return -EFAULT;
+
+	*ppos += count;
+
+	pr_info("Read %zu bytes from file\n", count);
 	return count;
 }
 
+// Write the given data to the internal file data buffer, resizing if necessary.
+static ssize_t myfs_write_file(struct file *file, const char __user *buf,
+				   size_t count, loff_t *ppos)
+{
+
+	struct myfs_file_data *file_data = file->private_data;
+	if (!file_data) {
+		pr_err("No file->private_data in file\n");
+		return -EIO;
+	}
+
+	// Allocate memory for the file data, if necessary
+	if (!file_data->data) {
+		myfs_file_data_alloc_buffer(file_data, count);
+		if (!file_data->data)
+			return -ENOMEM;
+	} else if (*ppos + count > file_data->size) {
+		// Resize file_data->data to accommodate more data
+		myfs_file_data_realloc_buffer(file_data, *ppos + count);
+		if (!file_data->data)
+			return -ENOMEM;
+	}
+
+	if (copy_from_user(file_data->data + *ppos, buf, count))
+		return -EFAULT;
+
+	*ppos += count;
+
+	pr_info("Wrote %zu bytes to file\n", count);
+	pr_info("File data: %s (%zu bytes)\n", file_data->data, file_data->size);
+	return count;
+}
+
+static int myfs_file_open(struct inode *inode, struct file *file)
+{
+	// Allocate some memory for the file
+	if (!file->private_data) {
+		file->private_data = myfs_file_data_alloc();
+		if (!file->private_data)
+			return -ENOMEM;
+	}
+
+	return 0;
+}
+
 static const struct file_operations myfs_file_operations = {
-	.read	= default_read_file,
-	.write	= default_write_file,
-	.open	= simple_open,
+	.read	= myfs_read_file,
+	.write	= myfs_write_file,
+	.open	= myfs_file_open,
 	.llseek	= noop_llseek,
 };
 
@@ -105,8 +195,27 @@ const struct inode_operations myfs_dir_inode_operations = {
 	.getattr	= simple_getattr,
 };
 
+static void myfs_evict_inode(struct inode *inode)
+{
+	struct myfs_file_data *file_data = inode->i_private;
+
+	if (file_data) {
+		myfs_file_data_free(file_data);
+	}
+
+	clear_inode(inode); // Clears VFS inode references
+}
+
+static void myfs_put_super(struct super_block *sb)
+{
+	// TODO: Free any resources associated with the superblock
+	pr_info("myfs_put_super called\n");
+}
+
 static const struct super_operations myfs_super_operations = {
 	.statfs = simple_statfs,
+	.evict_inode = myfs_evict_inode,
+	.put_super = myfs_put_super,
 };
 
 static const struct dentry_operations myfs_dentry_operations = {
