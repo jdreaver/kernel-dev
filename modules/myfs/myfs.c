@@ -143,7 +143,7 @@ static const struct inode_operations myfs_file_inode_operations = {
 
 const struct inode_operations myfs_dir_inode_operations;
 
-static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *dir, umode_t mode, dev_t dev)
+static struct inode *myfs_get_inode(struct super_block *sb, struct mnt_idmap *idmap, const struct inode *dir, umode_t mode, dev_t dev)
 {
 	struct inode *inode = new_inode(sb);
 	if (!inode)
@@ -151,7 +151,7 @@ static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *
 
 	inode->i_ino = get_next_ino();
 	inode->i_sb = sb;
-	inode_init_owner(&nop_mnt_idmap, inode, dir, mode);
+	inode_init_owner(idmap, inode, dir, mode);
 	simple_inode_init_ts(inode);
 
 	switch (mode & S_IFMT) {
@@ -170,13 +170,14 @@ static struct inode *myfs_get_inode(struct super_block *sb, const struct inode *
 		break;
 	}
 	pr_info("Created inode %lu\n", inode->i_ino);
+	pr_info("inode i_nlink: %u\n", inode->i_nlink);
 	return inode;
 }
 
 static int myfs_mknod(struct mnt_idmap *idmap, struct inode *dir,
 			   struct dentry *dentry, umode_t mode, dev_t dev)
 {
-	struct inode *inode = myfs_get_inode(dir->i_sb, dir, mode, dev);
+	struct inode *inode = myfs_get_inode(dir->i_sb, idmap, dir, mode, dev);
 	if (!inode)
 		return -ENOSPC;
 	d_instantiate(dentry, inode);
@@ -278,7 +279,7 @@ static int myfs_fill_super(struct super_block *sb, struct fs_context *fc)
 
 	// Allocate root inode
 	// TODO: Locking here?
-	struct inode *root_inode = myfs_get_inode(sb, NULL, S_IFDIR | 0755, 0);
+	struct inode *root_inode = myfs_get_inode(sb, &nop_mnt_idmap, NULL, S_IFDIR | 0755, 0);
 	if (!root_inode)
 		return -ENOMEM;
 
