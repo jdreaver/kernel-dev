@@ -59,6 +59,24 @@ static struct debugfs_short_fops mydebugfs_counter_ops = {
 	.write = mydebugfs_write_counter,
 };
 
+// Simpler version of counter code
+static u64 simple_counter = 0;
+
+static int mydebug_simple_counter_get(void *data, u64 *val)
+{
+	*val = simple_counter;
+	simple_counter++;
+	return 0;
+}
+
+static int mydebug_simple_counter_set(void *data, u64 val)
+{
+	simple_counter = val;
+	return 0;
+}
+
+DEFINE_SIMPLE_ATTRIBUTE(mydebugfs_simple_counter_fops, mydebug_simple_counter_get, mydebug_simple_counter_set, "%llu\n");
+
 static int mydebugfs_init(void)
 {
 	pr_info("Registered mydebugfs\n");
@@ -70,6 +88,7 @@ static int mydebugfs_init(void)
 	}
 
 	debugfs_create_file("mycounter", 0644, mydebugfs_root, NULL, &mydebugfs_counter_ops);
+	debugfs_create_file("simple_counter", 0644, mydebugfs_root, NULL, &mydebugfs_simple_counter_fops);
 	debugfs_create_bool("mybool", 0644, mydebugfs_root, &mybool);
 
 	return 0;

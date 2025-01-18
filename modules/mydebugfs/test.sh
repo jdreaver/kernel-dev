@@ -37,3 +37,12 @@ cat "$mydebugfs_root/mycounter"
 echo 0 > "$mydebugfs_root/mycounter"
 cat "$mydebugfs_root/mycounter"
 cat "$mydebugfs_root/mycounter"
+
+# simple_counter
+cat "$mydebugfs_root/simple_counter"
+cat "$mydebugfs_root/simple_counter"
+echo 5 > "$mydebugfs_root/simple_counter"
+cat "$mydebugfs_root/simple_counter"
+echo 0 > "$mydebugfs_root/simple_counter"
+cat "$mydebugfs_root/simple_counter"
+cat "$mydebugfs_root/simple_counter"

@@ -1,6 +1,6 @@
 # `mydebugfs`, a kernel module implementing an in-memory filesystem using `debugfs`
 
-This kernel module is a followup to [`myfs`](../myfs). It uses `debugfs` to show some data to the user.
+This kernel module is a followup to [`myfs`](../myfs). It uses `debugfs` to show some data to the user. It also uses `libfs`.
 
 ## Example usage
 
@@ -36,4 +36,16 @@ N
 + cat /sys/kernel/debug/mydebugfs/mycounter
 0
 + cat /sys/kernel/debug/mydebugfs/mycounter
++ cat /sys/kernel/debug/mydebugfs/simple_counter
+0
++ cat /sys/kernel/debug/mydebugfs/simple_counter
+1
++ echo 5
++ cat /sys/kernel/debug/mydebugfs/simple_counter
+5
++ echo 0
++ cat /sys/kernel/debug/mydebugfs/simple_counter
+0
++ cat /sys/kernel/debug/mydebugfs/simple_counter
+1
 ```
