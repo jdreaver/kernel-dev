@@ -125,6 +125,7 @@
 
           # Kernel tools
           coccinelle
+          cppcheck
           sparse
           smatch
           # qt5.full # for make xconfig

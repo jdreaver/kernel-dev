@@ -8,16 +8,32 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
-# Remove old mount point if it exists
-mount_point=/mnt/mydebugfs
-umount -f "$mount_point" || true
-rm -rf "$mount_point"
-
 # Remove old version of module if it exists
 if lsmod | grep -q "mydebugfs"; then
     rmmod mydebugfs
-    sleep 3 # Give it a sec to get removed
+    sleep 1 # Give it a sec to get removed
 fi
 
 # Insert module
 insmod mydebugfs.ko
+
+# Test it out
+mydebugfs_root=/sys/kernel/debug/mydebugfs
+
+ls -lah "$mydebugfs_root"
+
+# mybool
+cat "$mydebugfs_root/mybool"
+echo true > "$mydebugfs_root/mybool"
+cat "$mydebugfs_root/mybool"
+echo 0 > "$mydebugfs_root/mybool"
+cat "$mydebugfs_root/mybool"
+
+# mycounter
+cat "$mydebugfs_root/mycounter"
+cat "$mydebugfs_root/mycounter"
+echo 5 > "$mydebugfs_root/mycounter"
+cat "$mydebugfs_root/mycounter"
+echo 0 > "$mydebugfs_root/mycounter"
+cat "$mydebugfs_root/mycounter"
+cat "$mydebugfs_root/mycounter"
