@@ -1,0 +1,74 @@
+From ac745ac426a52c461cf7617788577f9777010c1d Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Sun, 19 Jan 2025 10:14:44 -0800
+Subject: [PATCH 2/2] samples: Make sample_kernfs filesystem mountable
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ samples/kernfs/sample_kernfs.c | 48 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
+index 82d4b73a4534..57c604fc38a7 100644
+--- a/samples/kernfs/sample_kernfs.c
++++ b/samples/kernfs/sample_kernfs.c
+@@ -6,11 +6,59 @@
+ 
+ #define pr_fmt(fmt) "%s: " fmt, __func__
+ 
++#include <linux/fs.h>
++#include <linux/fs_context.h>
++#include <linux/kernfs.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ 
++#define SAMPLE_KERNFS_MAGIC 0x8d000ff0
++
++static struct kernfs_root *sample_kernfs_root;
++struct kernfs_node *sample_kernfs_root_kn;
++
++static int sample_kernfs_get_tree(struct fs_context *fc)
++{
++	return kernfs_get_tree(fc);
++}
++
++static const struct fs_context_operations sample_kernfs_fs_context_ops = {
++	.get_tree	= sample_kernfs_get_tree,
++};
++
++static int sample_kernfs_init_fs_context(struct fs_context *fc)
++{
++	struct kernfs_fs_context *kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
++	if (!kfc)
++		return -ENOMEM;
++
++	kfc->root = sample_kernfs_root;
++	kfc->magic = SAMPLE_KERNFS_MAGIC;
++	fc->fs_private = kfc;
++	fc->ops = &sample_kernfs_fs_context_ops;
++	fc->global = true;
++	return 0;
++}
++
++static struct file_system_type sample_kernfs_fs_type = {
++	.name			= "sample_kernfs",
++	.init_fs_context	= sample_kernfs_init_fs_context,
++	.kill_sb		= kernfs_kill_sb,
++	.fs_flags		= FS_USERNS_MOUNT,
++};
++
+ static int __init sample_kernfs_init(void)
+ {
++	sample_kernfs_root = kernfs_create_root(NULL, 0, NULL);
++	if (IS_ERR(sample_kernfs_root))
++		return PTR_ERR(sample_kernfs_root);
++
++	int err = register_filesystem(&sample_kernfs_fs_type);
++	if (err) {
++		kernfs_destroy_root(sample_kernfs_root);
++		return err;
++	}
++
+ 	pr_info("Loaded sample_kernfs module.\n");
+ 	return 0;
+ }

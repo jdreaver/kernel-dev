@@ -14,6 +14,10 @@ Patches:
 - [2025-01-08-virtio-console-kmap-local-page](./2025-01-08-virtio-console-kmap-local-page)
 - [2025-01-10-pm-snapshot-kmap-local-page](./2025-01-10-pm-snapshot-kmap-local-page)
 
+## `sample_kernfs` patch series
+
+- [2025-01-19-sample-kernfs](./2025-01-19-sample-kernfs)
+
 ## Misc
 
 - [2022-06-25-scripts-get-feat-usr-bin-env-perl](./2022-06-25-scripts-get-feat-usr-bin-env-perl)

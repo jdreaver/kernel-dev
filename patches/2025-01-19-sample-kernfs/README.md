@@ -7,3 +7,16 @@ cd ~/git/kernel-dev/linux
 git switch davidreaver/sample-kernfs
 git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 ```
+
+## TODO
+
+- Add `counter` and file to root directory
+- Allow adding sub-directories with auto-populated `counter` file
+- Implement `sums` file
+- In cover letter, mention how patches are split up (to demonstrate the "steps" of building a pseudo-filesystem on top of `kernfs`, where each step adds a feature).
+- Either add documentation for `kernfs` in this patch series or mention that I want to add documentation.
+
+## Cover letter (WIP)
+
+This patch series creates a pseudo-filesystem built on top of kernfs in
+samples/kernfs/.
