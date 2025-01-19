@@ -53,6 +53,7 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
   ```
 
 - Implement `sums` file
+- (maybe feature creep) Allow multiple, independent mounts instead of global mount
 - In cover letter, mention how patches are split up (to demonstrate the "steps" of building a pseudo-filesystem on top of `kernfs`, where each step adds a feature).
 - Either add documentation for `kernfs` in this patch series or mention that I want to add documentation.
 
