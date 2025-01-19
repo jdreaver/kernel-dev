@@ -1,0 +1,162 @@
+From 0f0083cf229237861205b2235894a40b98ecf945 Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Sun, 19 Jan 2025 09:54:40 -0800
+Subject: [PATCH] samples: Adds boilerplate for the sample_kernfs
+ pseudo-filesystem
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ samples/Kconfig                |  6 +++
+ samples/Makefile               |  1 +
+ samples/kernfs/Makefile        |  3 ++
+ samples/kernfs/README.rst      | 67 ++++++++++++++++++++++++++++++++++
+ samples/kernfs/sample_kernfs.c | 27 ++++++++++++++
+ 5 files changed, 104 insertions(+)
+ create mode 100644 samples/kernfs/Makefile
+ create mode 100644 samples/kernfs/README.rst
+ create mode 100644 samples/kernfs/sample_kernfs.c
+
+diff --git a/samples/Kconfig b/samples/Kconfig
+index b288d9991d27..968294ffb35d 100644
+--- a/samples/Kconfig
++++ b/samples/Kconfig
+@@ -291,6 +291,12 @@ config SAMPLE_CGROUP
+ 	help
+ 	  Build samples that demonstrate the usage of the cgroup API.
+ 
++config SAMPLE_KERNFS
++	bool "Build sample_kernfs pseudo-filesystem."
++	help
++	  Build a sample pseudo-filesystem that demonstrates the use of the
++	  kernfs API. The filesystem name is sample_kernfs.
++
+ source "samples/rust/Kconfig"
+ 
+ endif # SAMPLES
+diff --git a/samples/Makefile b/samples/Makefile
+index b85fa64390c5..e024e76e396d 100644
+--- a/samples/Makefile
++++ b/samples/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_SAMPLE_CONNECTOR)		+= connector/
+ obj-$(CONFIG_SAMPLE_FANOTIFY_ERROR)	+= fanotify/
+ subdir-$(CONFIG_SAMPLE_HIDRAW)		+= hidraw
+ obj-$(CONFIG_SAMPLE_HW_BREAKPOINT)	+= hw_breakpoint/
++obj-$(CONFIG_SAMPLE_KERNFS)		+= kernfs/
+ obj-$(CONFIG_SAMPLE_KDB)		+= kdb/
+ obj-$(CONFIG_SAMPLE_KFIFO)		+= kfifo/
+ obj-$(CONFIG_SAMPLE_KOBJECT)		+= kobject/
+diff --git a/samples/kernfs/Makefile b/samples/kernfs/Makefile
+new file mode 100644
+index 000000000000..3bd2e4773b91
+--- /dev/null
++++ b/samples/kernfs/Makefile
+@@ -0,0 +1,3 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++obj-$(CONFIG_SAMPLE_KERNFS) += sample_kernfs.o
+diff --git a/samples/kernfs/README.rst b/samples/kernfs/README.rst
+new file mode 100644
+index 000000000000..721d79c8ebd4
+--- /dev/null
++++ b/samples/kernfs/README.rst
+@@ -0,0 +1,67 @@
++===================================================
++Sample pseudo-filesystem built on top of ``kernfs``
++===================================================
++
++This directory contains a kernel module that implements a pseudo-filesystem
++built on top of ``kernfs`` and it demonstrates the basic of how to use ``kernfs``.
++
++Usage
++=====
++
++Compile your kernel with ``CONFIG_SAMPLE_KERNFS=y`` and create a
++``sample_kernfs`` mount with::
++
++  # mkdir /sample_kernfs
++  # mount -t sample_kernfs none /sample_kernfs
++
++Filesystem layout
++=================
++
++The filesystem contains a tree of counters. A user can create sub-directories to
++add more counters. Nodes can also show the counts for all of their children.
++Here is an example, where ``sample_kernfs`` is mounted at ``/sample_kernfs``::
++
++  /sample_kernfs
++  ├── counter
++  ├── sums
++  ├── sub1/
++  │   ├── counter
++  │   └── sums
++  └── sub2/
++      ├── counter
++      ├── sums
++      ├── sub3/
++      │   ├── counter
++      │   └── sums
++      └── sub4/
++          ├── counter
++          └── sums
++
++When a directory is created, it is automatically populated with two files:
++``counter`` and ``sums``.
++
++- ``counter`` reports the current count for that node, and every time it is read
++  it increments by 1. It can be set to any number by writing that number to the
++  file::
++
++    $ cat counter
++    0
++    $ cat counter
++    1
++    $ echo 5 > counter
++    $ cat counter
++    5
++    $ cat counter
++    6
++
++- ``sums`` reports the cumulative sum of counts for the current node plus all
++  children. It doesn't not modify ``counter`` for any nodes::
++
++    $ cat /sample_kernfs/sub2/sub3/sums
++    sub3/ 5
++    $ cat /sample_kernfs/sums
++    sub1/ 5
++    sub2/sub3/ 4
++    sub2/sub4/ 7
++    sub2/ 11
++    / 16
+diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
+new file mode 100644
+index 000000000000..631596aef23c
+--- /dev/null
++++ b/samples/kernfs/sample_kernfs.c
+@@ -0,0 +1,27 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * A sample kernel module showing how to build a pseudo-filesystem on top of
++ * kernfs.
++ */
++
++#define pr_fmt(fmt) "%s: " fmt, __func__
++
++#include <linux/kernel.h>
++#include <linux/kernfs.h>
++#include <linux/module.h>
++
++static struct kernfs_root *mykernfs_root;
++
++static int __init sample_kernfs_init(void)
++{
++	mykernfs_root = kernfs_create_root(NULL, 0, NULL);
++	if (IS_ERR(mykernfs_root))
++		return PTR_ERR(mykernfs_root);
++
++	pr_info("Loaded sample_kernfs module.\n");
++	return 0;
++}
++
++module_init(sample_kernfs_init)
++MODULE_DESCRIPTION("Sample kernel module showing how to use kernfs");
++MODULE_LICENSE("GPL");
