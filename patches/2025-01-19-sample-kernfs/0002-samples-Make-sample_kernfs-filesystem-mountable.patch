@@ -1,18 +1,18 @@
-From ac745ac426a52c461cf7617788577f9777010c1d Mon Sep 17 00:00:00 2001
+From 92c08af7951dc3898e335ff122c7c138f2975fc4 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 10:14:44 -0800
-Subject: [PATCH 2/2] samples: Make sample_kernfs filesystem mountable
+Subject: [PATCH 2/3] samples: Make sample_kernfs filesystem mountable
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 48 ++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
+ samples/kernfs/sample_kernfs.c | 47 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 82d4b73a4534..57c604fc38a7 100644
+index 82d4b73a4534..55d2513d6757 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -6,11 +6,59 @@
+@@ -6,11 +6,58 @@
  
  #define pr_fmt(fmt) "%s: " fmt, __func__
  
@@ -25,7 +25,6 @@ index 82d4b73a4534..57c604fc38a7 100644
 +#define SAMPLE_KERNFS_MAGIC 0x8d000ff0
 +
 +static struct kernfs_root *sample_kernfs_root;
-+struct kernfs_node *sample_kernfs_root_kn;
 +
 +static int sample_kernfs_get_tree(struct fs_context *fc)
 +{

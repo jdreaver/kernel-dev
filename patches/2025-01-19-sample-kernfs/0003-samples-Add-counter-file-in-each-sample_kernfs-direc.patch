@@ -1,0 +1,101 @@
+From bba797e8f6f9ef1401931b16fccda863b55833ed Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Sun, 19 Jan 2025 11:30:01 -0800
+Subject: [PATCH 3/3] samples: Add counter file in each sample_kernfs directory
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ samples/kernfs/sample_kernfs.c | 68 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 65 insertions(+), 3 deletions(-)
+
+diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
+index 55d2513d6757..535af8f5ab2d 100644
+--- a/samples/kernfs/sample_kernfs.c
++++ b/samples/kernfs/sample_kernfs.c
+@@ -16,6 +16,60 @@
+ 
+ static struct kernfs_root *sample_kernfs_root;
+ 
++struct sample_kernfs_counter_file {
++	// TODO: Locking
++	u64 count;
++};
++
++static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
++{
++	// Extract our counter file from the kernfs node's private data.
++	struct kernfs_open_file *of = sf->private;
++	struct sample_kernfs_counter_file *counter_file = of->kn->priv;
++
++	seq_printf(sf, "%llu\n", counter_file->count);
++	counter_file->count++;
++	return 0;
++}
++
++static struct kernfs_ops sample_kernfs_counter_kf_ops = {
++	.seq_show	= sample_kernfs_counter_seq_show,
++};
++
++static int sample_kernfs_add_counter_file(struct kernfs_node *parent_kn)
++{
++	// We allocate a struct to hold the counter, which gets stuffed into the
++	// kernfs node's private data.
++	//
++	// TODO: Need a way to free this. Perhaps we should have a struct for
++	// the _directory_, which contains the count. Then we can free the
++	// directory in the rmdir callback.
++	struct sample_kernfs_counter_file *counter_file;
++	counter_file = kzalloc(sizeof(struct sample_kernfs_counter_file), GFP_KERNEL);
++	if (!counter_file)
++		return -ENOMEM;
++
++	struct kernfs_node *kn;
++	kn = __kernfs_create_file(parent_kn, "counter", 0666, current_fsuid(),
++				  current_fsgid(), 0,
++				  &sample_kernfs_counter_kf_ops, counter_file,
++				  NULL, NULL);
++
++	if (IS_ERR(kn))
++		return PTR_ERR(kn);
++
++	return 0;
++}
++
++static int sample_kernfs_populate_dir(struct kernfs_node *parent_kn)
++{
++	int err = sample_kernfs_add_counter_file(parent_kn);
++	if (err)
++		return err;
++
++	return 0;
++}
++
+ static int sample_kernfs_get_tree(struct fs_context *fc)
+ {
+ 	return kernfs_get_tree(fc);
+@@ -52,14 +106,22 @@ static int __init sample_kernfs_init(void)
+ 	if (IS_ERR(sample_kernfs_root))
+ 		return PTR_ERR(sample_kernfs_root);
+ 
+-	int err = register_filesystem(&sample_kernfs_fs_type);
++	int err = sample_kernfs_populate_dir(kernfs_root_to_node(sample_kernfs_root));
+ 	if (err) {
+-		kernfs_destroy_root(sample_kernfs_root);
+-		return err;
++		goto cleanup;
++	}
++
++	err = register_filesystem(&sample_kernfs_fs_type);
++	if (err) {
++		goto cleanup;
+ 	}
+ 
+ 	pr_info("Loaded sample_kernfs module.\n");
+ 	return 0;
++
++cleanup:
++	kernfs_destroy_root(sample_kernfs_root);
++	return err;
+ }
+ 
+ module_init(sample_kernfs_init)
