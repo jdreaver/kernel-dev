@@ -26,3 +26,8 @@ mount -t sample_kernfs sample_kernfs "$mount_point"
 cat "$mount_point/counter"
 cat "$mount_point/counter"
 cat "$mount_point/counter"
+
+mkdir -p "$mount_point/sub1"
+cat "$mount_point/sub1/counter"
+cat "$mount_point/sub1/counter"
+cat "$mount_point/sub1/counter"

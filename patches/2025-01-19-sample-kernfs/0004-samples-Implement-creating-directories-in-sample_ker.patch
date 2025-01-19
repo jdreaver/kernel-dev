@@ -1,0 +1,86 @@
+From 6f1b40d36cbe3b878de2af825b8e59bcfb285b9c Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Sun, 19 Jan 2025 14:02:01 -0800
+Subject: [PATCH 4/4] samples: Implement creating directories in sample_kernfs
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ samples/kernfs/sample_kernfs.c | 44 ++++++++++++++++++++++++++++------
+ 1 file changed, 37 insertions(+), 7 deletions(-)
+
+diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
+index ea81f38e6be5..09199bec7d63 100644
+--- a/samples/kernfs/sample_kernfs.c
++++ b/samples/kernfs/sample_kernfs.c
+@@ -52,11 +52,8 @@ static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)
+ 
+ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+ {
+-	// We allocate a struct to hold the counter, which gets stuffed into the
+-	// private data of the kernfs_node for this directory.
+-	//
+-	// TODO: When we implement creating/removing directories, ensure we free
+-	// this.
++	// We allocate a struct to hold directory information, which gets
++	// stuffed into the private data of the kernfs_node for this directory.
+ 	struct sample_kernfs_directory *dir;
+ 	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
+ 	if (!dir)
+@@ -70,6 +67,38 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+ 	return 0;
+ }
+ 
++static int sample_kernfs_mkdir(struct kernfs_node *parent_kn, const char *name, umode_t mode)
++{
++	// N.B. Pass NULL for as the priv argument. It is allocated and assigned
++	// in sample_kernfs_populate_dir so the root directory gets it too.
++	struct kernfs_node *dir_kn;
++	dir_kn = kernfs_create_dir_ns(parent_kn, name, mode, current_fsuid(),
++				      current_fsgid(), NULL, NULL);
++
++	// TODO: Special check for EEXIST to warn about duplicate directories? I
++	// don't think so.
++	if (IS_ERR(dir_kn))
++		return PTR_ERR(dir_kn);
++
++	return sample_kernfs_populate_dir(dir_kn);
++}
++
++static int sample_kernfs_rmdir(struct kernfs_node *kn)
++{
++	// Free our sample_kernfs_directory struct, stored in the node's private
++	// data.
++	if (kn->priv)
++		kfree(kn->priv);
++
++	kernfs_remove(kn);
++	return 0;
++}
++
++static struct kernfs_syscall_ops sample_kernfs_kf_syscall_ops = {
++	.mkdir		= sample_kernfs_mkdir,
++	.rmdir		= sample_kernfs_rmdir,
++};
++
+ static int sample_kernfs_get_tree(struct fs_context *fc)
+ {
+ 	return kernfs_get_tree(fc);
+@@ -81,7 +110,8 @@ static const struct fs_context_operations sample_kernfs_fs_context_ops = {
+ 
+ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+ {
+-	struct kernfs_fs_context *kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
++	struct kernfs_fs_context *kfc;
++	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
+ 	if (!kfc)
+ 		return -ENOMEM;
+ 
+@@ -102,7 +132,7 @@ static struct file_system_type sample_kernfs_fs_type = {
+ 
+ static int __init sample_kernfs_init(void)
+ {
+-	sample_kernfs_root = kernfs_create_root(NULL, 0, NULL);
++	sample_kernfs_root = kernfs_create_root(&sample_kernfs_kf_syscall_ops, 0, NULL);
+ 	if (IS_ERR(sample_kernfs_root))
+ 		return PTR_ERR(sample_kernfs_root);
+ 
