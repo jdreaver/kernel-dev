@@ -1,0 +1,13 @@
+.mykernfs*
+Module*
+mykernfs.mod*
+mykernfs.o
+mykernfs.ko
+.modules*
+.Module*
+modules.order
+*.o.cmd
+*.o
+.ccls-cache/
+compile_commands*
+.compile_commands*
