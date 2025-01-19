@@ -1,18 +1,18 @@
-From 92c08af7951dc3898e335ff122c7c138f2975fc4 Mon Sep 17 00:00:00 2001
+From 62aae895a4f9216374cff336892e0c8e93b95d95 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 10:14:44 -0800
 Subject: [PATCH 2/4] samples: Make sample_kernfs filesystem mountable
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 47 ++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+ samples/kernfs/sample_kernfs.c | 53 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 82d4b73a4534..55d2513d6757 100644
+index 82d4b73a4534..452a6f49ac06 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -6,11 +6,58 @@
+@@ -6,11 +6,64 @@
  
  #define pr_fmt(fmt) "%s: " fmt, __func__
  
@@ -23,8 +23,6 @@ index 82d4b73a4534..55d2513d6757 100644
  #include <linux/module.h>
  
 +#define SAMPLE_KERNFS_MAGIC 0x8d000ff0
-+
-+static struct kernfs_root *sample_kernfs_root;
 +
 +static int sample_kernfs_get_tree(struct fs_context *fc)
 +{
@@ -37,36 +35,44 @@ index 82d4b73a4534..55d2513d6757 100644
 +
 +static int sample_kernfs_init_fs_context(struct fs_context *fc)
 +{
-+	struct kernfs_fs_context *kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
++	struct kernfs_fs_context *kfc;
++	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
 +	if (!kfc)
 +		return -ENOMEM;
 +
-+	kfc->root = sample_kernfs_root;
++	struct kernfs_root *root;
++	root = kernfs_create_root(NULL, 0, NULL);
++	if (IS_ERR(root))
++		return PTR_ERR(root);
++
++	kfc->root = root;
 +	kfc->magic = SAMPLE_KERNFS_MAGIC;
 +	fc->fs_private = kfc;
 +	fc->ops = &sample_kernfs_fs_context_ops;
 +	fc->global = true;
++
 +	return 0;
++}
++
++static void sample_kernfs_kill_sb (struct super_block *sb)
++{
++	struct kernfs_root *root = kernfs_root_from_sb(sb);
++	kernfs_kill_sb(sb);
++	kernfs_destroy_root(root);
 +}
 +
 +static struct file_system_type sample_kernfs_fs_type = {
 +	.name			= "sample_kernfs",
 +	.init_fs_context	= sample_kernfs_init_fs_context,
-+	.kill_sb		= kernfs_kill_sb,
++	.kill_sb		= sample_kernfs_kill_sb,
 +	.fs_flags		= FS_USERNS_MOUNT,
 +};
 +
  static int __init sample_kernfs_init(void)
  {
-+	sample_kernfs_root = kernfs_create_root(NULL, 0, NULL);
-+	if (IS_ERR(sample_kernfs_root))
-+		return PTR_ERR(sample_kernfs_root);
-+
 +	int err = register_filesystem(&sample_kernfs_fs_type);
-+	if (err) {
-+		kernfs_destroy_root(sample_kernfs_root);
++	if (err)
 +		return err;
-+	}
 +
  	pr_info("Loaded sample_kernfs module.\n");
  	return 0;

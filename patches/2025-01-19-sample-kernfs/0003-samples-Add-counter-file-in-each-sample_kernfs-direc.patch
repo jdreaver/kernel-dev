@@ -1,20 +1,20 @@
-From c17226bf9a3a3473b23a76280a739c2a30faca0a Mon Sep 17 00:00:00 2001
+From 22df86252033fb1f4028138ae6dc23e032750d47 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 19 Jan 2025 11:30:01 -0800
+Date: Sun, 19 Jan 2025 14:37:16 -0800
 Subject: [PATCH 3/4] samples: Add counter file in each sample_kernfs directory
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 70 +++++++++++++++++++++++++++++++---
- 1 file changed, 65 insertions(+), 5 deletions(-)
+ samples/kernfs/sample_kernfs.c | 60 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 55d2513d6757..ea81f38e6be5 100644
+index 452a6f49ac06..edc569a043f0 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -16,6 +16,60 @@
+@@ -14,6 +14,60 @@
  
- static struct kernfs_root *sample_kernfs_root;
+ #define SAMPLE_KERNFS_MAGIC 0x8d000ff0
  
 +struct sample_kernfs_directory {
 +	atomic64_t count;
@@ -73,29 +73,16 @@ index 55d2513d6757..ea81f38e6be5 100644
  static int sample_kernfs_get_tree(struct fs_context *fc)
  {
  	return kernfs_get_tree(fc);
-@@ -52,14 +106,20 @@ static int __init sample_kernfs_init(void)
- 	if (IS_ERR(sample_kernfs_root))
- 		return PTR_ERR(sample_kernfs_root);
+@@ -41,6 +95,12 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+ 	fc->ops = &sample_kernfs_fs_context_ops;
+ 	fc->global = true;
  
--	int err = register_filesystem(&sample_kernfs_fs_type);
--	if (err) {
--		kernfs_destroy_root(sample_kernfs_root);
--		return err;
--	}
-+	int err = sample_kernfs_populate_dir(kernfs_root_to_node(sample_kernfs_root));
-+	if (err)
-+		goto cleanup_root;
++	int err = sample_kernfs_populate_dir(kernfs_root_to_node(root));
++	if (err) {
++		kernfs_destroy_root(root);
++		return err;
++	}
 +
-+	err = register_filesystem(&sample_kernfs_fs_type);
-+	if (err)
-+		goto cleanup_root;
- 
- 	pr_info("Loaded sample_kernfs module.\n");
  	return 0;
-+
-+cleanup_root:
-+	kernfs_destroy_root(sample_kernfs_root);
-+	return err;
  }
  
- module_init(sample_kernfs_init)

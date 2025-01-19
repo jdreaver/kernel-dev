@@ -10,7 +10,8 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 
 ## TODO
 
-- Don't use a global mount. Requires editing initial patches and rebasing imo.
+- Fix removing directories
+- Test multiple sample_kernfs roots at once
 - Implement resetting count
 - Implement `sums` file
   - Consider reimplementing this as getting the sum of all _parents_ instead of children. I suspect parents is easier.

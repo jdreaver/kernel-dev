@@ -1,18 +1,18 @@
-From 6f1b40d36cbe3b878de2af825b8e59bcfb285b9c Mon Sep 17 00:00:00 2001
+From c0b45fdfe277d9ab500c506055e9633bb52d1b74 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 19 Jan 2025 14:02:01 -0800
+Date: Sun, 19 Jan 2025 14:39:05 -0800
 Subject: [PATCH 4/4] samples: Implement creating directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 44 ++++++++++++++++++++++++++++------
- 1 file changed, 37 insertions(+), 7 deletions(-)
+ samples/kernfs/sample_kernfs.c | 41 +++++++++++++++++++++++++++++-----
+ 1 file changed, 35 insertions(+), 6 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index ea81f38e6be5..09199bec7d63 100644
+index edc569a043f0..b79d2b9f7f67 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -52,11 +52,8 @@ static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)
+@@ -50,11 +50,8 @@ static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)
  
  static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  {
@@ -26,7 +26,7 @@ index ea81f38e6be5..09199bec7d63 100644
  	struct sample_kernfs_directory *dir;
  	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
  	if (!dir)
-@@ -70,6 +67,38 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -68,6 +65,38 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -65,22 +65,12 @@ index ea81f38e6be5..09199bec7d63 100644
  static int sample_kernfs_get_tree(struct fs_context *fc)
  {
  	return kernfs_get_tree(fc);
-@@ -81,7 +110,8 @@ static const struct fs_context_operations sample_kernfs_fs_context_ops = {
- 
- static int sample_kernfs_init_fs_context(struct fs_context *fc)
- {
--	struct kernfs_fs_context *kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
-+	struct kernfs_fs_context *kfc;
-+	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
- 	if (!kfc)
+@@ -85,7 +114,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  		return -ENOMEM;
  
-@@ -102,7 +132,7 @@ static struct file_system_type sample_kernfs_fs_type = {
- 
- static int __init sample_kernfs_init(void)
- {
--	sample_kernfs_root = kernfs_create_root(NULL, 0, NULL);
-+	sample_kernfs_root = kernfs_create_root(&sample_kernfs_kf_syscall_ops, 0, NULL);
- 	if (IS_ERR(sample_kernfs_root))
- 		return PTR_ERR(sample_kernfs_root);
+ 	struct kernfs_root *root;
+-	root = kernfs_create_root(NULL, 0, NULL);
++	root = kernfs_create_root(&sample_kernfs_kf_syscall_ops, 0, NULL);
+ 	if (IS_ERR(root))
+ 		return PTR_ERR(root);
  
