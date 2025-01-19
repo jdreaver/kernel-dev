@@ -1,5 +1,7 @@
 # `mykernfs`, a kernel module implementing an psuedo-filesystem using `kernfs`
 
+(**NOTE:** The kernel doesn't actually export the necessary `kernfs` modules, so I'll have to move this to an in-tree filesystem and record what I do on a branch.)
+
 This kernel module is a followup to [`myfs`](../myfs) and [`mydebugfs`](../mydebugfs). It uses `kernfs` to build a toy pseudo-filesystem.
 
 ## Usage
