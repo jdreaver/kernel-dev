@@ -1,4 +1,4 @@
-From 97c2934975d60b465e76534089d7a3b6ff4c265b Mon Sep 17 00:00:00 2001
+From 54c33271017f5de102e8f756e4b5c46ff931489f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 08:23:42 -0800
 Subject: [PATCH 7/7] samples: Implement changing counter increment in
@@ -10,7 +10,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 57 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 5d8e2bfce29e..975ccd248bae 100644
+index 334aa3133bfa..fc30447afe7a 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -16,6 +16,7 @@

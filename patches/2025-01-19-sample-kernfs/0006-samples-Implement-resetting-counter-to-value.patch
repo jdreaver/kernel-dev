@@ -1,4 +1,4 @@
-From f853204450284d04781901d51485901cd3f0de39 Mon Sep 17 00:00:00 2001
+From e2cf017b566b1fd843de65edf2b0b3abd3ddd999 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 19:00:41 -0800
 Subject: [PATCH 6/7] samples: Implement resetting counter to value
@@ -9,7 +9,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 19 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 05ef68561e49..5d8e2bfce29e 100644
+index 208b61da308a..334aa3133bfa 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -29,8 +29,27 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)

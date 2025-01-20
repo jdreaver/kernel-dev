@@ -1,18 +1,18 @@
-From 505c1707ee80e517fc41b801ea0e3af4f7b205c1 Mon Sep 17 00:00:00 2001
+From ffca82b538d7e3cb8f010010c80c9adf7fb48261 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 10:14:44 -0800
 Subject: [PATCH 2/7] samples: Make sample_kernfs filesystem mountable
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 57 ++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ samples/kernfs/sample_kernfs.c | 61 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 82d4b73a4534..e0a606a36d31 100644
+index 82d4b73a4534..b1409862547e 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -6,11 +6,68 @@
+@@ -6,11 +6,72 @@
  
  #define pr_fmt(fmt) "%s: " fmt, __func__
  
@@ -24,13 +24,17 @@ index 82d4b73a4534..e0a606a36d31 100644
  
 +#define SAMPLE_KERNFS_MAGIC 0x8d000ff0
 +
-+static int sample_kernfs_get_tree(struct fs_context *fc)
++static void sample_kernfs_fs_context_free(struct fs_context *fc)
 +{
-+	return kernfs_get_tree(fc);
++	struct kernfs_fs_context *kfc = fc->fs_private;
++
++	kernfs_free_fs_context(fc);
++	kfree(kfc);
 +}
 +
 +static const struct fs_context_operations sample_kernfs_fs_context_ops = {
-+	.get_tree	= sample_kernfs_get_tree,
++	.get_tree	= kernfs_get_tree,
++	.free		= sample_kernfs_fs_context_free,
 +};
 +
 +static int sample_kernfs_init_fs_context(struct fs_context *fc)

@@ -58,6 +58,7 @@ if [ -n "${DEBUG:-}" ]; then
     --set-val CONFIG_DETECT_HUNG_TASK y \
     --set-val CONFIG_DEFAULT_HUNG_TASK_TIMEOUT 60 \
     --set-val CONFIG_WQ_WATCHDOG y \
+    --set-val CONFIG_DEBUG_OBJECTS y \
     --set-val CONFIG_DEBUG_OBJECTS_RCU_HEAD y
 fi
 

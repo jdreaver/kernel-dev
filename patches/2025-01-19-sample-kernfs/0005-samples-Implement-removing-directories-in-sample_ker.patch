@@ -1,4 +1,4 @@
-From 87ba844a8b467c28525cdcc7a874c4c7deea2aab Mon Sep 17 00:00:00 2001
+From 63ea85f5caf06d56c3df284b5f0ebd1cd6b8d6bd Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 16:45:48 -0800
 Subject: [PATCH 5/7] samples: Implement removing directories in sample_kernfs
@@ -9,7 +9,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 16 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 56950aff9796..05ef68561e49 100644
+index 9bd6f077a0b2..208b61da308a 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -82,8 +82,24 @@ static int sample_kernfs_mkdir(struct kernfs_node *parent_kn, const char *name,
@@ -36,4 +36,4 @@ index 56950aff9796..05ef68561e49 100644
 +	.rmdir		= sample_kernfs_rmdir,
  };
  
- static int sample_kernfs_get_tree(struct fs_context *fc)
+ static void sample_kernfs_fs_context_free(struct fs_context *fc)

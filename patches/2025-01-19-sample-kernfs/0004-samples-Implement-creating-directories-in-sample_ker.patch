@@ -1,6 +1,6 @@
-From 5e5a37149bd3626b76402540b20e573bbaf7694a Mon Sep 17 00:00:00 2001
+From 2dc917741e4d2a4e70da63df158f8cdfafce5ba0 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 20 Jan 2025 08:34:51 -0800
+Date: Mon, 20 Jan 2025 09:39:12 -0800
 Subject: [PATCH 4/7] samples: Implement creating directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
@@ -9,7 +9,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 861b47aba517..56950aff9796 100644
+index 3224945442d4..9bd6f077a0b2 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -67,6 +67,25 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
@@ -35,10 +35,10 @@ index 861b47aba517..56950aff9796 100644
 +	.mkdir		= sample_kernfs_mkdir,
 +};
 +
- static int sample_kernfs_get_tree(struct fs_context *fc)
+ static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
- 	return kernfs_get_tree(fc);
-@@ -86,7 +105,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+ 	struct kernfs_fs_context *kfc = fc->fs_private;
+@@ -90,7 +109,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	if (!kfc)
  		return -ENOMEM;
  
