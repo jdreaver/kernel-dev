@@ -49,6 +49,7 @@ if [ -n "${DEBUG:-}" ]; then
     --set-val CONFIG_PROVE_RCU y \
     --set-val CONFIG_PROVE_LOCKING y \
     --set-val CONFIG_LOCKDEP y \
+    --set-val CONFIG_DEBUG_LOCKDEP y \
     --set-val CONFIG_GDB_SCRIPTS y \
     --set-val CONFIG_RANDOMIZE_BASE n \
     --set-val CONFIG_DYNAMIC_DEBUB y \
