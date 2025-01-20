@@ -42,6 +42,7 @@ if [ -n "${DEBUG:-}" ]; then
     --set-val CONFIG_DEBUG_PREEMPT y \
     --set-val CONFIG_SLUB_DEBUG y \
     --set-val CONFIG_DEBUG_PAGEALLOC y \
+    --set-val CONFIG_DEBUG_KMEMLEAK y \
     --set-val CONFIG_DEBUG_MUTEXES y \
     --set-val CONFIG_DEBUG_SPINLOCK y \
     --set-val CONFIG_DEBUG_ATOMIC_SLEEP y \
