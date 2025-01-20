@@ -10,9 +10,18 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 
 ## TODO
 
-- When the root is removed, ensure we free memory for all `struct sample_kern_directory`s. If not, we might have to manually recurse to do that. (Change commit "samples: Add counter file in each sample_kernfs directory", and possibly the rmdir commit.)
+Code:
+
+- Memory leaks
+  - Free the `kernfs_fs_context` we alloc
+  - When the root is removed, ensure we free memory for all `struct sample_kern_directory`s. If not, we might have to manually recurse to do that. (Change commit "samples: Add counter file in each sample_kernfs directory", and possibly the rmdir commit.)
+- If we end up having to write a function to recursively remove nodes, consider bringing back `sums` file idea instead of the `inc` file
+- Nuke `sample_kernfs_get_tree` if it does nothing
 - Consider squashing the patches to create and remove directories into one
 - Test multiple sample_kernfs roots at once
+
+Patches:
+
 - Fill out patch descriptions more
 - Write cover letter
 - Ensure each commit compiles and works as intended!
