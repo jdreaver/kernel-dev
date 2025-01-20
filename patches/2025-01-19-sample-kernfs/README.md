@@ -14,10 +14,12 @@ Code:
 
 - Memory leaks
   - Fix kmemleak for `kernfs_create_root`. How does cgroups/sysfs do it?
+- Re-read `list_head` docs and make sure I'm using them correctly. (Maybe search for "`list_head` tree" or something)
 - Ensure we have locking for any parent/child relationship modifications in `sample_kern_directory`.
   - Check if `kernfs` provides top-level locks on all of these actions. We don't want to add extra locks! If `kernfs` locks, document it.
     - In particular, does `kernfs_remove_self` (which removes self-protection) kill our locking?
 - If we end up having to write a function to recursively remove nodes, consider bringing back `sums` file idea instead of the `inc` file
+  - Check if we need locking! I bet we do on reads. It is different than rmdir/mkdir.
 - If I iterate through child directories, avoid recursion (unless it makes the code extremely complicated)
 - Consider moving my own data structures to a separate file if I have to manipulate them a lot
 - Test multiple sample_kernfs roots at once

@@ -1,4 +1,4 @@
-From a27c7ff8cbd4a3cc9af14b99b2c6ece4f36c1a0d Mon Sep 17 00:00:00 2001
+From 976a02e4ce9e9acafe25c90169994cda93adfb66 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:39:12 -0800
 Subject: [PATCH 4/6] samples: Implement creating/removing directories in
@@ -10,30 +10,32 @@ samples: Implement removing directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 69 +++++++++++++++++++++++++++++++++-
- 1 file changed, 67 insertions(+), 2 deletions(-)
+ samples/kernfs/sample_kernfs.c | 71 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 69 insertions(+), 2 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 0c94506cf4b8..7d5c6ebb6275 100644
+index 0c94506cf4b8..13b4a274e681 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -16,6 +16,7 @@
+@@ -16,6 +16,8 @@
  
  struct sample_kernfs_directory {
  	atomic64_t count;
 +	struct list_head subdirs;
++	struct list_head siblings;
  };
  
  static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
-@@ -58,6 +59,7 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -58,6 +60,8 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
  	if (!dir)
  		return -ENOMEM;
 +	INIT_LIST_HEAD(&dir->subdirs);
++	INIT_LIST_HEAD(&dir->siblings);
  	dir_kn->priv = dir;
  
  	err = sample_kernfs_add_counter_file(dir_kn);
-@@ -67,6 +69,69 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -67,6 +71,69 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -60,7 +62,7 @@ index 0c94506cf4b8..7d5c6ebb6275 100644
 +	// Add directory to parent->subdirs
 +	parent_dir = parent_kn->priv;
 +	child_dir = dir_kn->priv;
-+	list_add(&child_dir->subdirs, &parent_dir->subdirs);
++	list_add(&child_dir->siblings, &parent_dir->subdirs);
 +
 +	return 0;
 +}
@@ -70,9 +72,9 @@ index 0c94506cf4b8..7d5c6ebb6275 100644
 +	struct sample_kernfs_directory *child, *tmp;
 +
 +	// Recursively remove children
-+	list_for_each_entry_safe(child, tmp, &dir->subdirs, subdirs) {
++	list_for_each_entry_safe(child, tmp, &dir->subdirs, siblings) {
++		list_del(&child->siblings);
 +		sample_kernfs_remove_subtree(child);
-+		list_del(&child->subdirs);
 +	}
 +
 +	kfree(dir);
@@ -103,7 +105,7 @@ index 0c94506cf4b8..7d5c6ebb6275 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -90,7 +155,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -90,7 +157,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	if (!kfc)
  		return -ENOMEM;
  
@@ -112,7 +114,7 @@ index 0c94506cf4b8..7d5c6ebb6275 100644
  	if (IS_ERR(root))
  		return PTR_ERR(root);
  
-@@ -116,8 +181,8 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
+@@ -116,8 +183,8 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
  	struct sample_kernfs_directory *root_dir = root_kn->priv;
  
  	kernfs_kill_sb(sb);
