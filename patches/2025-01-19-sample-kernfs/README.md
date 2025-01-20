@@ -11,12 +11,15 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 ## TODO
 
 - Test multiple sample_kernfs roots at once
-- Implement resetting count
-- Implement `inc` file
-- In cover letter, mention how patches are split up (to demonstrate the "steps" of building a pseudo-filesystem on top of `kernfs`, where each step adds a feature).
+- Write cover letter
 - Either add documentation for `kernfs` in this patch series or mention that I want to add documentation.
 
 ## Cover letter (WIP)
 
 This patch series creates a pseudo-filesystem built on top of kernfs in
 samples/kernfs/.
+
+TODO:
+
+- Mention how patches are split up (to demonstrate the "steps" of building a pseudo-filesystem on top of `kernfs`, where each step adds a feature).
+- Is the `inc` file too much? Should I remove it?

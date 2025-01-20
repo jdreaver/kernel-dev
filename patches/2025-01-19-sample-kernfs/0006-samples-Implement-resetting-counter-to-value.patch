@@ -1,0 +1,41 @@
+From 25b5ee069fc24f8b6dbdace75914b46ab8af31dd Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Sun, 19 Jan 2025 19:00:41 -0800
+Subject: [PATCH 6/7] samples: Implement resetting counter to value
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ samples/kernfs/sample_kernfs.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
+index 175771e63fc7..52c31570de23 100644
+--- a/samples/kernfs/sample_kernfs.c
++++ b/samples/kernfs/sample_kernfs.c
+@@ -29,8 +29,26 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
+ 	return 0;
+ }
+ 
++static ssize_t sample_kernfs_counter_write(struct kernfs_open_file *of, char *buf,
++					   size_t nbytes, loff_t off)
++{
++	struct kernfs_node *dir_kn = kernfs_get_parent(of->kn);
++	struct sample_kernfs_directory *counter_dir = dir_kn->priv;
++
++	// N.B. kernfs handles ensuring the given buffer is nul-terminated.
++	u64 new_value;
++	int ret = kstrtou64(strstrip(buf), 10, &new_value);
++	if (ret)
++		return ret;
++
++	atomic64_set(&counter_dir->count, new_value);
++
++	return nbytes;
++}
++
+ static struct kernfs_ops sample_kernfs_counter_kf_ops = {
+ 	.seq_show	= sample_kernfs_counter_seq_show,
++	.write		= sample_kernfs_counter_write,
+ };
+ 
+ static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)

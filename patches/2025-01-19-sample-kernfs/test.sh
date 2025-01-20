@@ -27,13 +27,23 @@ cat "$mount_point/counter"
 cat "$mount_point/counter"
 cat "$mount_point/counter"
 
+echo 100 > "$mount_point/counter"
+cat "$mount_point/counter"
+cat "$mount_point/counter"
+
 # Test a subdirectory
 mkdir "$mount_point/sub1"
 cat "$mount_point/sub1/counter"
 cat "$mount_point/sub1/counter"
 cat "$mount_point/sub1/counter"
 
-# TODO (once we have rmdir implemented): Recreate sub1 and counters should reset
+cat "$mount_point/sub1/inc"
+echo 5 > "$mount_point/sub1/inc"
+cat "$mount_point/sub1/inc"
+cat "$mount_point/sub1/counter"
+cat "$mount_point/sub1/counter"
+
+# Test that removing and recreating the directory resets counters
 rmdir "$mount_point/sub1"
 mkdir "$mount_point/sub1"
 cat "$mount_point/sub1/counter"

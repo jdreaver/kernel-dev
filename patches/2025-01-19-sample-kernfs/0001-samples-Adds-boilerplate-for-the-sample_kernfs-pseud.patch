@@ -1,7 +1,7 @@
-From c3961e7638cdf18d3f562324059adcafb014880f Mon Sep 17 00:00:00 2001
+From 93ce5da944034fa88ca2e9a2bb35e5d1f83a9528 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 09:54:40 -0800
-Subject: [PATCH 1/5] samples: Adds boilerplate for the sample_kernfs
+Subject: [PATCH 1/7] samples: Adds boilerplate for the sample_kernfs
  pseudo-filesystem
 
 Signed-off-by: David Reaver <me@davidreaver.com>
@@ -69,7 +69,7 @@ index 000000000000..3bd2e4773b91
 +obj-$(CONFIG_SAMPLE_KERNFS) += sample_kernfs.o
 diff --git a/samples/kernfs/README.rst b/samples/kernfs/README.rst
 new file mode 100644
-index 000000000000..0322283a7767
+index 000000000000..7a264ddd8bf1
 --- /dev/null
 +++ b/samples/kernfs/README.rst
 @@ -0,0 +1,55 @@
@@ -115,14 +115,14 @@ index 000000000000..0322283a7767
 +
 +When a directory is created, it is automatically populated with two files:
 +``counter`` and ``inc``. ``counter`` reports the current count for that node,
-+and every time it is read it increments by the value in ``inc``. It can be reset
-+by writing the string ``"reset"`` to the ``counter`` file::
++and every time it is read it increments by the value in ``inc``. ``counter`` can
++be reset to a given value by writing that value to the ``counter`` file::
 +
 +    $ cat counter
-+    0
-+    $ cat counter
 +    1
-+    $ echo reset > counter
++    $ cat counter
++    2
++    $ echo 4 > counter
 +    $ cat counter
 +    5
 +    $ echo 3 > inc

@@ -1,27 +1,26 @@
-From 6dc8b3d862f8991486d18e4a3e02fdd33cd3b8c0 Mon Sep 17 00:00:00 2001
+From 5d40c69a522388f3949fb9788f94704dfc8fb959 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 16:45:48 -0800
-Subject: [PATCH 5/5] samples: Implement removing directories in sample_kernfs
+Subject: [PATCH 5/7] samples: Implement removing directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ samples/kernfs/sample_kernfs.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 70640365cc3f..8ba8d18427c3 100644
+index f83be68ccbbe..175771e63fc7 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -79,8 +79,25 @@ static int sample_kernfs_mkdir(struct kernfs_node *parent_kn, const char *name,
+@@ -78,8 +78,24 @@ static int sample_kernfs_mkdir(struct kernfs_node *parent_kn, const char *name,
  	return sample_kernfs_populate_dir(dir_kn);
  }
  
 +static int sample_kernfs_rmdir(struct kernfs_node *kn)
 +{
-+  	// Free our sample_kernfs_directory struct, stored in the node's private
-+  	// data.
-+  	if (kn->priv)
-+  		kfree(kn->priv);
++	// Free our sample_kernfs_directory struct, stored in the node's private
++	// data.
++	kfree(kn->priv);
 +
 +	// kernfs_remove_self safely removes the node while also breaking out of
 +	// kernfs active protection (see kernfs_break_active_protection). This
@@ -29,7 +28,7 @@ index 70640365cc3f..8ba8d18427c3 100644
 +	// called rmdir is holding the lock.
 +	kernfs_remove_self(kn);
 +
-+  	return 0;
++	return 0;
 +}
 +
  static struct kernfs_syscall_ops sample_kernfs_kf_syscall_ops = {
