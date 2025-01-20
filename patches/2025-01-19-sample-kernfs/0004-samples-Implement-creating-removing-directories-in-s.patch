@@ -1,6 +1,6 @@
-From 976a02e4ce9e9acafe25c90169994cda93adfb66 Mon Sep 17 00:00:00 2001
+From 8e61617961c4f3480dd1e1eda999f7e7982a406b Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 20 Jan 2025 09:39:12 -0800
+Date: Mon, 20 Jan 2025 12:31:50 -0800
 Subject: [PATCH 4/6] samples: Implement creating/removing directories in
  sample_kernfs
 
@@ -14,7 +14,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 69 insertions(+), 2 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 0c94506cf4b8..13b4a274e681 100644
+index 2cf650555fc7..13b4a274e681 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -16,6 +16,8 @@
@@ -114,12 +114,11 @@ index 0c94506cf4b8..13b4a274e681 100644
  	if (IS_ERR(root))
  		return PTR_ERR(root);
  
-@@ -116,8 +183,8 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
- 	struct sample_kernfs_directory *root_dir = root_kn->priv;
+@@ -117,7 +184,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
  
  	kernfs_kill_sb(sb);
--	kfree(root_dir);
  	kernfs_destroy_root(root);
+-	kfree(root_dir);
 +	sample_kernfs_remove_subtree(root_dir);
  }
  

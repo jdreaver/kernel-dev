@@ -1,4 +1,4 @@
-From 399e1650e5a6b3c187e87def5e90803407a03808 Mon Sep 17 00:00:00 2001
+From fbec6e3b701602d1888c7b062c3ba3e93760cb10 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:38:38 -0800
 Subject: [PATCH 3/6] samples: Add counter file in each sample_kernfs directory
@@ -9,7 +9,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 63 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index b1409862547e..0c94506cf4b8 100644
+index b1409862547e..2cf650555fc7 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -14,6 +14,59 @@
@@ -80,7 +80,7 @@ index b1409862547e..0c94506cf4b8 100644
  
  	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
  	if (!kfc)
-@@ -46,14 +100,23 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -46,15 +100,24 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	fc->ops = &sample_kernfs_fs_context_ops;
  	fc->global = true;
  
@@ -100,7 +100,8 @@ index b1409862547e..0c94506cf4b8 100644
 +	struct sample_kernfs_directory *root_dir = root_kn->priv;
  
  	kernfs_kill_sb(sb);
-+	kfree(root_dir);
  	kernfs_destroy_root(root);
++	kfree(root_dir);
  }
  
+ static struct file_system_type sample_kernfs_fs_type = {
