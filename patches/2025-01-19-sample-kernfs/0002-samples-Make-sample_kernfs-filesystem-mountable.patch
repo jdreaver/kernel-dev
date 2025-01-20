@@ -1,18 +1,18 @@
-From 3852dd33a05ea55d86c78bb5a03d127d69211523 Mon Sep 17 00:00:00 2001
+From 505c1707ee80e517fc41b801ea0e3af4f7b205c1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 10:14:44 -0800
 Subject: [PATCH 2/7] samples: Make sample_kernfs filesystem mountable
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 53 ++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+ samples/kernfs/sample_kernfs.c | 57 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 82d4b73a4534..9803fa3fa47d 100644
+index 82d4b73a4534..e0a606a36d31 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -6,11 +6,64 @@
+@@ -6,11 +6,68 @@
  
  #define pr_fmt(fmt) "%s: " fmt, __func__
  
@@ -36,11 +36,12 @@ index 82d4b73a4534..9803fa3fa47d 100644
 +static int sample_kernfs_init_fs_context(struct fs_context *fc)
 +{
 +	struct kernfs_fs_context *kfc;
++	struct kernfs_root *root;
++
 +	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
 +	if (!kfc)
 +		return -ENOMEM;
 +
-+	struct kernfs_root *root;
 +	root = kernfs_create_root(NULL, 0, NULL);
 +	if (IS_ERR(root))
 +		return PTR_ERR(root);
@@ -57,6 +58,7 @@ index 82d4b73a4534..9803fa3fa47d 100644
 +static void sample_kernfs_kill_sb(struct super_block *sb)
 +{
 +	struct kernfs_root *root = kernfs_root_from_sb(sb);
++
 +	kernfs_kill_sb(sb);
 +	kernfs_destroy_root(root);
 +}
@@ -70,7 +72,9 @@ index 82d4b73a4534..9803fa3fa47d 100644
 +
  static int __init sample_kernfs_init(void)
  {
-+	int err = register_filesystem(&sample_kernfs_fs_type);
++	int err;
++
++	err = register_filesystem(&sample_kernfs_fs_type);
 +	if (err)
 +		return err;
 +

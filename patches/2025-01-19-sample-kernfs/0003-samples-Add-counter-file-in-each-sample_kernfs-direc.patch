@@ -1,18 +1,18 @@
-From ec002d9c0565d085607b15f3e82204c49b2180fa Mon Sep 17 00:00:00 2001
+From fedee0c3dbb1a79eed3549d866a280cfbf271270 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 14:37:16 -0800
 Subject: [PATCH 3/7] samples: Add counter file in each sample_kernfs directory
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 59 ++++++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+ samples/kernfs/sample_kernfs.c | 63 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 9803fa3fa47d..8c41f6c365da 100644
+index e0a606a36d31..ed5437b1e316 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -14,6 +14,59 @@
+@@ -14,6 +14,62 @@
  
  #define SAMPLE_KERNFS_MAGIC 0x8d000ff0
  
@@ -25,8 +25,8 @@ index 9803fa3fa47d..8c41f6c365da 100644
 +	struct kernfs_open_file *of = sf->private;
 +	struct kernfs_node *dir_kn = kernfs_get_parent(of->kn);
 +	struct sample_kernfs_directory *counter_dir = dir_kn->priv;
-+
 +	u64 count = atomic64_inc_return(&counter_dir->count);
++
 +	seq_printf(sf, "%llu\n", count);
 +	return 0;
 +}
@@ -38,6 +38,7 @@ index 9803fa3fa47d..8c41f6c365da 100644
 +static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)
 +{
 +	struct kernfs_node *kn;
++
 +	kn = __kernfs_create_file(dir_kn, "counter", 0666, current_fsuid(),
 +				  current_fsgid(), 0,
 +				  &sample_kernfs_counter_kf_ops, NULL,
@@ -51,18 +52,20 @@ index 9803fa3fa47d..8c41f6c365da 100644
 +
 +static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
 +{
++	struct sample_kernfs_directory *dir;
++	int err;
++
 +	// We allocate a struct to hold the counter, which gets stuffed into the
 +	// private data of the kernfs_node for this directory.
 +	//
 +	// TODO: When we implement creating/removing directories, ensure we free
 +	// this.
-+	struct sample_kernfs_directory *dir;
 +	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
 +	if (!dir)
 +		return -ENOMEM;
 +	dir_kn->priv = dir;
 +
-+	int err = sample_kernfs_add_counter_file(dir_kn);
++	err = sample_kernfs_add_counter_file(dir_kn);
 +	if (err)
 +		return err;
 +
@@ -72,11 +75,19 @@ index 9803fa3fa47d..8c41f6c365da 100644
  static int sample_kernfs_get_tree(struct fs_context *fc)
  {
  	return kernfs_get_tree(fc);
-@@ -41,6 +94,12 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -27,6 +83,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+ {
+ 	struct kernfs_fs_context *kfc;
+ 	struct kernfs_root *root;
++	int err;
+ 
+ 	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
+ 	if (!kfc)
+@@ -42,6 +99,12 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	fc->ops = &sample_kernfs_fs_context_ops;
  	fc->global = true;
  
-+	int err = sample_kernfs_populate_dir(kernfs_root_to_node(root));
++	err = sample_kernfs_populate_dir(kernfs_root_to_node(root));
 +	if (err) {
 +		kernfs_destroy_root(root);
 +		return err;

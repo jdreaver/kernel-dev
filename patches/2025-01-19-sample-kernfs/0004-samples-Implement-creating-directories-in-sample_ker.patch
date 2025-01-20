@@ -1,21 +1,21 @@
-From 828ac86501da82fb559ff14e42b147b21e430cb8 Mon Sep 17 00:00:00 2001
+From 2aa875bfdfb49d18c0eaf5f67addc31da9d64953 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 19 Jan 2025 14:39:05 -0800
+Date: Mon, 20 Jan 2025 08:19:49 -0800
 Subject: [PATCH 4/7] samples: Implement creating directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 27 +++++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
+ samples/kernfs/sample_kernfs.c | 28 ++++++++++++++++++++++------
+ 1 file changed, 22 insertions(+), 6 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 8c41f6c365da..f83be68ccbbe 100644
+index ed5437b1e316..56950aff9796 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -49,11 +49,8 @@ static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)
+@@ -53,11 +53,8 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+ 	struct sample_kernfs_directory *dir;
+ 	int err;
  
- static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
- {
 -	// We allocate a struct to hold the counter, which gets stuffed into the
 -	// private data of the kernfs_node for this directory.
 -	//
@@ -23,18 +23,19 @@ index 8c41f6c365da..f83be68ccbbe 100644
 -	// this.
 +	// We allocate a struct to hold directory information, which gets
 +	// stuffed into the private data of the kernfs_node for this directory.
- 	struct sample_kernfs_directory *dir;
  	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
  	if (!dir)
-@@ -67,6 +64,24 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+ 		return -ENOMEM;
+@@ -70,6 +67,25 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
 +static int sample_kernfs_mkdir(struct kernfs_node *parent_kn, const char *name, umode_t mode)
 +{
++	struct kernfs_node *dir_kn;
++
 +	// N.B. Pass NULL for as the priv argument. It is allocated and assigned
 +	// in sample_kernfs_populate_dir so the root directory gets it too.
-+	struct kernfs_node *dir_kn;
 +	dir_kn = kernfs_create_dir_ns(parent_kn, name, mode, current_fsuid(),
 +				      current_fsgid(), NULL, NULL);
 +
@@ -51,10 +52,10 @@ index 8c41f6c365da..f83be68ccbbe 100644
  static int sample_kernfs_get_tree(struct fs_context *fc)
  {
  	return kernfs_get_tree(fc);
-@@ -84,7 +99,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -89,7 +105,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+ 	if (!kfc)
  		return -ENOMEM;
  
- 	struct kernfs_root *root;
 -	root = kernfs_create_root(NULL, 0, NULL);
 +	root = kernfs_create_root(&sample_kernfs_kf_syscall_ops, 0, NULL);
  	if (IS_ERR(root))
