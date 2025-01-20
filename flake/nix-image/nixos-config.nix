@@ -10,6 +10,19 @@
   boot.loader.initScript.enable = true;
 
   networking.firewall.enable = false;
+  networking.interfaces.eth0 = {
+    # This is kind of weird. We set usDHCP = true and we set a static IP. The IP
+    # is what I get when I run DHCP in QEMU. By seeding with a static IP I seem
+    # make DHCP much faster (without it I need to wait 10 seconds for DHCP to
+    # run).
+    useDHCP = true;
+    ipv4.addresses = [
+      {
+        address = "10.0.2.15";
+        prefixLength = 24;
+      }
+    ];
+  };
 
   # Enable serial console. See https://github.com/NixOS/nixpkgs/issues/84105
   boot.kernelParams = [
