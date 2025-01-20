@@ -1,4 +1,4 @@
-From 06f798ba551d2b26611b28420b619497f3794bb1 Mon Sep 17 00:00:00 2001
+From a27c7ff8cbd4a3cc9af14b99b2c6ece4f36c1a0d Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:39:12 -0800
 Subject: [PATCH 4/6] samples: Implement creating/removing directories in
@@ -10,20 +10,38 @@ samples: Implement removing directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 37 +++++++++++++++++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
+ samples/kernfs/sample_kernfs.c | 69 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 67 insertions(+), 2 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 0c94506cf4b8..a0705ed3513d 100644
+index 0c94506cf4b8..7d5c6ebb6275 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -67,6 +67,41 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -16,6 +16,7 @@
+ 
+ struct sample_kernfs_directory {
+ 	atomic64_t count;
++	struct list_head subdirs;
+ };
+ 
+ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
+@@ -58,6 +59,7 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+ 	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
+ 	if (!dir)
+ 		return -ENOMEM;
++	INIT_LIST_HEAD(&dir->subdirs);
+ 	dir_kn->priv = dir;
+ 
+ 	err = sample_kernfs_add_counter_file(dir_kn);
+@@ -67,6 +69,69 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
 +static int sample_kernfs_mkdir(struct kernfs_node *parent_kn, const char *name, umode_t mode)
 +{
 +	struct kernfs_node *dir_kn;
++	struct sample_kernfs_directory *parent_dir, *child_dir;
++	int ret;
 +
 +	// N.B. Pass NULL for as the priv argument. It is allocated and assigned
 +	// in sample_kernfs_populate_dir so the root directory gets it too.
@@ -33,20 +51,46 @@ index 0c94506cf4b8..a0705ed3513d 100644
 +	if (IS_ERR(dir_kn))
 +		return PTR_ERR(dir_kn);
 +
-+	return sample_kernfs_populate_dir(dir_kn);
++	ret = sample_kernfs_populate_dir(dir_kn);
++	if (ret) {
++		kernfs_remove(dir_kn);
++		return ret;
++	}
++
++	// Add directory to parent->subdirs
++	parent_dir = parent_kn->priv;
++	child_dir = dir_kn->priv;
++	list_add(&child_dir->subdirs, &parent_dir->subdirs);
++
++	return 0;
++}
++
++static void sample_kernfs_remove_subtree(struct sample_kernfs_directory *dir)
++{
++	struct sample_kernfs_directory *child, *tmp;
++
++	// Recursively remove children
++	list_for_each_entry_safe(child, tmp, &dir->subdirs, subdirs) {
++		sample_kernfs_remove_subtree(child);
++		list_del(&child->subdirs);
++	}
++
++	kfree(dir);
 +}
 +
 +static int sample_kernfs_rmdir(struct kernfs_node *kn)
 +{
-+	// Free our sample_kernfs_directory struct, stored in the node's private
-+	// data.
-+	kfree(kn->priv);
++	struct sample_kernfs_directory *dir = kn->priv;
 +
 +	// kernfs_remove_self safely removes the node while also breaking out of
 +	// kernfs active protection (see kernfs_break_active_protection). This
 +	// is necessary to avoid a deadlock because the kernfs function that
 +	// called rmdir is holding the lock.
 +	kernfs_remove_self(kn);
++
++	// Recursively destroy sample_kernfs_directory _after_ we destroy kernfs
++	// nodes.
++	sample_kernfs_remove_subtree(dir);
 +
 +	return 0;
 +}
@@ -59,7 +103,7 @@ index 0c94506cf4b8..a0705ed3513d 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -90,7 +125,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -90,7 +155,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	if (!kfc)
  		return -ENOMEM;
  
@@ -68,3 +112,13 @@ index 0c94506cf4b8..a0705ed3513d 100644
  	if (IS_ERR(root))
  		return PTR_ERR(root);
  
+@@ -116,8 +181,8 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
+ 	struct sample_kernfs_directory *root_dir = root_kn->priv;
+ 
+ 	kernfs_kill_sb(sb);
+-	kfree(root_dir);
+ 	kernfs_destroy_root(root);
++	sample_kernfs_remove_subtree(root_dir);
+ }
+ 
+ static struct file_system_type sample_kernfs_fs_type = {

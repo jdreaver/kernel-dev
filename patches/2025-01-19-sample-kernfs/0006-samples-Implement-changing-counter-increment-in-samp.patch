@@ -1,6 +1,6 @@
-From 32b674387792cdbd619c2f3a67b4241eaba0b772 Mon Sep 17 00:00:00 2001
+From a971e6e99e5db5668a16d282bdefcecfec3f96e8 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 20 Jan 2025 08:23:42 -0800
+Date: Mon, 20 Jan 2025 11:40:47 -0800
 Subject: [PATCH 6/6] samples: Implement changing counter increment in
  sample_kernfs
 
@@ -10,7 +10,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 57 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 8c387852ddfe..3d147766b6fc 100644
+index 269ab9eeb22d..394321ea149c 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -16,6 +16,7 @@
@@ -18,10 +18,10 @@ index 8c387852ddfe..3d147766b6fc 100644
  struct sample_kernfs_directory {
  	atomic64_t count;
 +	atomic64_t inc;
+ 	struct list_head subdirs;
  };
  
- static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
-@@ -23,7 +24,8 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
+@@ -24,7 +25,8 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
  	struct kernfs_open_file *of = sf->private;
  	struct kernfs_node *dir_kn = kernfs_get_parent(of->kn);
  	struct sample_kernfs_directory *counter_dir = dir_kn->priv;
@@ -31,7 +31,7 @@ index 8c387852ddfe..3d147766b6fc 100644
  
  	seq_printf(sf, "%llu\n", count);
  	return 0;
-@@ -67,6 +69,55 @@ static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)
+@@ -68,6 +70,55 @@ static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -87,14 +87,15 @@ index 8c387852ddfe..3d147766b6fc 100644
  static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  {
  	struct sample_kernfs_directory *dir;
-@@ -77,12 +128,17 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -78,6 +129,7 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
  	if (!dir)
  		return -ENOMEM;
 +	atomic64_set(&dir->inc, 1);
+ 	INIT_LIST_HEAD(&dir->subdirs);
  	dir_kn->priv = dir;
  
- 	err = sample_kernfs_add_counter_file(dir_kn);
+@@ -85,6 +137,10 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	if (err)
  		return err;
  

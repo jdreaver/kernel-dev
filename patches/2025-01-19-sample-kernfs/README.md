@@ -13,8 +13,10 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 Code:
 
 - Memory leaks
-  - When the root is removed, ensure we free memory for all `struct sample_kern_directory`s. If not, we might have to manually recurse to do that. (Change commit "samples: Add counter file in each sample_kernfs directory", and possibly the rmdir commit.)
-  - Ensure whatever we do for recursively deleting directories applies to root as well! Replace the kfree on root_kn->priv with whatever recursive function we use.
+  - Fix kmemleak for `kernfs_create_root`. How does cgroups/sysfs do it?
+- Ensure we have locking for any parent/child relationship modifications in `sample_kern_directory`.
+  - Check if `kernfs` provides top-level locks on all of these actions. We don't want to add extra locks! If `kernfs` locks, document it.
+    - In particular, does `kernfs_remove_self` (which removes self-protection) kill our locking?
 - If we end up having to write a function to recursively remove nodes, consider bringing back `sums` file idea instead of the `inc` file
 - If I iterate through child directories, avoid recursion (unless it makes the code extremely complicated)
 - Consider moving my own data structures to a separate file if I have to manipulate them a lot
