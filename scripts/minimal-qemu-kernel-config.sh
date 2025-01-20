@@ -46,9 +46,16 @@ if [ -n "${DEBUG:-}" ]; then
     --set-val CONFIG_DEBUG_SPINLOCK y \
     --set-val CONFIG_DEBUG_ATOMIC_SLEEP y \
     --set-val CONFIG_PROVE_RCU y \
+    --set-val CONFIG_PROVE_LOCKING y \
+    --set-val CONFIG_LOCKDEP y \
     --set-val CONFIG_GDB_SCRIPTS y \
     --set-val CONFIG_RANDOMIZE_BASE n \
     --set-val CONFIG_DYNAMIC_DEBUB y \
+    --set-val CONFIG_SOFTLOCKUP_DETECTOR y \
+    --set-val CONFIG_HARDLOCKUP_DETECTOR y \
+    --set-val CONFIG_DETECT_HUNG_TASK y \
+    --set-val CONFIG_DEFAULT_HUNG_TASK_TIMEOUT 60 \
+    --set-val CONFIG_WQ_WATCHDOG y \
     --set-val CONFIG_DEBUG_OBJECTS_RCU_HEAD y
 fi
 

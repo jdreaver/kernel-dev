@@ -30,6 +30,9 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
   };
   ```
 
+  - Probably locks!
+    - cgroup calls `cgroup_kn_lock_live` which removes kernfs locks, it seems
+    - sysfs doesn't get `rmdir` called in the context of VFS, so it doesn't have to deal with a kernfs lock
   - ChatGPT told me to remove `kernfs_remove`, which fixed the hang, but it says I need to be careful with locks and still remove the `kernfs` node somehow <https://chatgpt.com/c/678d91e1-ccec-8008-a3e1-93560dedaec7>
   - `rmdir` seems to be stuck in "State: D (disk sleep)". Is there something else I'm not doing?
     - Maybe some filesystem attribute I'm missing?
@@ -45,7 +48,8 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 
   - Debug tips:
     - Turn on debug logging
-    - Try using perf to see where `rmdir` is stuck
+    - Lockup detection
+    - ~~Try using perf to see where `rmdir` is stuck~~ (stuck in State: D (disk sleep))
 - Test multiple sample_kernfs roots at once
 - Implement resetting count
 - Implement `sums` file
