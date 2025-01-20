@@ -10,8 +10,8 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 
 ## TODO
 
+- When the root is removed, ensure we free memory for all `struct sample_kern_directory`s. If not, we might have to manually recurse to do that. (Change commit "samples: Add counter file in each sample_kernfs directory", and possibly the rmdir commit.)
 - Consider squashing the patches to create and remove directories into one
-  - Also remove the TODO in "samples: Implement creating directories in sample_kernfs"
 - Test multiple sample_kernfs roots at once
 - Fill out patch descriptions more
 - Write cover letter

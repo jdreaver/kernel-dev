@@ -1,32 +1,18 @@
-From 2aa875bfdfb49d18c0eaf5f67addc31da9d64953 Mon Sep 17 00:00:00 2001
+From 5e5a37149bd3626b76402540b20e573bbaf7694a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 20 Jan 2025 08:19:49 -0800
+Date: Mon, 20 Jan 2025 08:34:51 -0800
 Subject: [PATCH 4/7] samples: Implement creating directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
+ samples/kernfs/sample_kernfs.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index ed5437b1e316..56950aff9796 100644
+index 861b47aba517..56950aff9796 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -53,11 +53,8 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
- 	struct sample_kernfs_directory *dir;
- 	int err;
- 
--	// We allocate a struct to hold the counter, which gets stuffed into the
--	// private data of the kernfs_node for this directory.
--	//
--	// TODO: When we implement creating/removing directories, ensure we free
--	// this.
-+	// We allocate a struct to hold directory information, which gets
-+	// stuffed into the private data of the kernfs_node for this directory.
- 	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
- 	if (!dir)
- 		return -ENOMEM;
-@@ -70,6 +67,25 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -67,6 +67,25 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -52,7 +38,7 @@ index ed5437b1e316..56950aff9796 100644
  static int sample_kernfs_get_tree(struct fs_context *fc)
  {
  	return kernfs_get_tree(fc);
-@@ -89,7 +105,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -86,7 +105,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	if (!kfc)
  		return -ENOMEM;
  

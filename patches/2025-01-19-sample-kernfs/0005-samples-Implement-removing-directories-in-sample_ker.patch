@@ -1,4 +1,4 @@
-From 3bfa9da8625b1ea39b82f4f45f1366c653c40199 Mon Sep 17 00:00:00 2001
+From 87ba844a8b467c28525cdcc7a874c4c7deea2aab Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 16:45:48 -0800
 Subject: [PATCH 5/7] samples: Implement removing directories in sample_kernfs

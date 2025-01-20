@@ -1,4 +1,4 @@
-From f657829623c9f5b3bdcdf1a2fbbf703525a4935b Mon Sep 17 00:00:00 2001
+From f853204450284d04781901d51485901cd3f0de39 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 19:00:41 -0800
 Subject: [PATCH 6/7] samples: Implement resetting counter to value
