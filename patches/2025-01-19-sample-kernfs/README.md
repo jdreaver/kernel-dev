@@ -10,6 +10,8 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 
 ## TODO
 
+- Move variable declarations to the top of functions in each patch
+- Consider squashing the patches to create and remove directories into one
 - Test multiple sample_kernfs roots at once
 - Write cover letter
 - Either add documentation for `kernfs` in this patch series or mention that I want to add documentation.
