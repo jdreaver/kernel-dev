@@ -1,18 +1,23 @@
-From c933dd9a3ce60e45be959d14f5f8ba2679496b45 Mon Sep 17 00:00:00 2001
+From 06f798ba551d2b26611b28420b619497f3794bb1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:39:12 -0800
-Subject: [PATCH 4/7] samples: Implement creating directories in sample_kernfs
+Subject: [PATCH 4/6] samples: Implement creating/removing directories in
+ sample_kernfs
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+
+samples: Implement removing directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+ samples/kernfs/sample_kernfs.c | 37 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 0c94506cf4b8..1dd239e6f5c4 100644
+index 0c94506cf4b8..a0705ed3513d 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -67,6 +67,25 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -67,6 +67,41 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -31,14 +36,30 @@ index 0c94506cf4b8..1dd239e6f5c4 100644
 +	return sample_kernfs_populate_dir(dir_kn);
 +}
 +
++static int sample_kernfs_rmdir(struct kernfs_node *kn)
++{
++	// Free our sample_kernfs_directory struct, stored in the node's private
++	// data.
++	kfree(kn->priv);
++
++	// kernfs_remove_self safely removes the node while also breaking out of
++	// kernfs active protection (see kernfs_break_active_protection). This
++	// is necessary to avoid a deadlock because the kernfs function that
++	// called rmdir is holding the lock.
++	kernfs_remove_self(kn);
++
++	return 0;
++}
++
 +static struct kernfs_syscall_ops sample_kernfs_kf_syscall_ops = {
 +	.mkdir		= sample_kernfs_mkdir,
++	.rmdir		= sample_kernfs_rmdir,
 +};
 +
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -90,7 +109,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -90,7 +125,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	if (!kfc)
  		return -ENOMEM;
  

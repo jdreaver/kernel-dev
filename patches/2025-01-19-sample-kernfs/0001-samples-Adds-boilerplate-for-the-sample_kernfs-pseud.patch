@@ -1,7 +1,7 @@
 From 93ce5da944034fa88ca2e9a2bb35e5d1f83a9528 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 09:54:40 -0800
-Subject: [PATCH 1/7] samples: Adds boilerplate for the sample_kernfs
+Subject: [PATCH 1/6] samples: Adds boilerplate for the sample_kernfs
  pseudo-filesystem
 
 Signed-off-by: David Reaver <me@davidreaver.com>

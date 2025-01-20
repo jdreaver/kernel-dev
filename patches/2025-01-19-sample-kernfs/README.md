@@ -18,8 +18,6 @@ Code:
 - If we end up having to write a function to recursively remove nodes, consider bringing back `sums` file idea instead of the `inc` file
 - If I iterate through child directories, avoid recursion (unless it makes the code extremely complicated)
 - Consider moving my own data structures to a separate file if I have to manipulate them a lot
-- Nuke `sample_kernfs_get_tree` if it does nothing
-- Consider squashing the patches to create and remove directories into one
 - Test multiple sample_kernfs roots at once
 - Run through all of these cool tools to find undefined behavior, memory leaks, etc <https://docs.kernel.org/dev-tools/index.html>
 
