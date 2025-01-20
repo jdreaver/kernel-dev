@@ -12,8 +12,7 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 
 - Test multiple sample_kernfs roots at once
 - Implement resetting count
-- Implement `sums` file
-  - Consider reimplementing this as getting the sum of all _parents_ instead of children. I suspect parents is easier.
+- Implement `inc` file
 - In cover letter, mention how patches are split up (to demonstrate the "steps" of building a pseudo-filesystem on top of `kernfs`, where each step adds a feature).
 - Either add documentation for `kernfs` in this patch series or mention that I want to add documentation.
 

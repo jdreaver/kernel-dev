@@ -1,4 +1,4 @@
-From 2b5ecebb862fb7a48bbf76dcc37d274e0645506a Mon Sep 17 00:00:00 2001
+From c3961e7638cdf18d3f562324059adcafb014880f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 09:54:40 -0800
 Subject: [PATCH 1/5] samples: Adds boilerplate for the sample_kernfs
@@ -7,12 +7,12 @@ Subject: [PATCH 1/5] samples: Adds boilerplate for the sample_kernfs
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
  MAINTAINERS                    |  1 +
- samples/Kconfig                |  6 +++
+ samples/Kconfig                |  6 ++++
  samples/Makefile               |  1 +
  samples/kernfs/Makefile        |  3 ++
- samples/kernfs/README.rst      | 67 ++++++++++++++++++++++++++++++++++
- samples/kernfs/sample_kernfs.c | 20 ++++++++++
- 6 files changed, 98 insertions(+)
+ samples/kernfs/README.rst      | 55 ++++++++++++++++++++++++++++++++++
+ samples/kernfs/sample_kernfs.c | 20 +++++++++++++
+ 6 files changed, 86 insertions(+)
  create mode 100644 samples/kernfs/Makefile
  create mode 100644 samples/kernfs/README.rst
  create mode 100644 samples/kernfs/sample_kernfs.c
@@ -69,10 +69,10 @@ index 000000000000..3bd2e4773b91
 +obj-$(CONFIG_SAMPLE_KERNFS) += sample_kernfs.o
 diff --git a/samples/kernfs/README.rst b/samples/kernfs/README.rst
 new file mode 100644
-index 000000000000..721d79c8ebd4
+index 000000000000..0322283a7767
 --- /dev/null
 +++ b/samples/kernfs/README.rst
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,55 @@
 +===================================================
 +Sample pseudo-filesystem built on top of ``kernfs``
 +===================================================
@@ -93,53 +93,41 @@ index 000000000000..721d79c8ebd4
 +=================
 +
 +The filesystem contains a tree of counters. A user can create sub-directories to
-+add more counters. Nodes can also show the counts for all of their children.
-+Here is an example, where ``sample_kernfs`` is mounted at ``/sample_kernfs``::
++add more counters. Lastly, they can reset counters and also set the amount the
++counter increments when it is read. Here is an example, where ``sample_kernfs``
++is mounted at ``/sample_kernfs``::
 +
 +  /sample_kernfs
 +  ├── counter
-+  ├── sums
++  ├── inc
 +  ├── sub1/
 +  │   ├── counter
-+  │   └── sums
++  │   └── inc
 +  └── sub2/
 +      ├── counter
-+      ├── sums
++      ├── inc
 +      ├── sub3/
 +      │   ├── counter
-+      │   └── sums
++      │   └── inc
 +      └── sub4/
 +          ├── counter
-+          └── sums
++          └── inc
 +
 +When a directory is created, it is automatically populated with two files:
-+``counter`` and ``sums``.
-+
-+- ``counter`` reports the current count for that node, and every time it is read
-+  it increments by 1. It can be set to any number by writing that number to the
-+  file::
++``counter`` and ``inc``. ``counter`` reports the current count for that node,
++and every time it is read it increments by the value in ``inc``. It can be reset
++by writing the string ``"reset"`` to the ``counter`` file::
 +
 +    $ cat counter
 +    0
 +    $ cat counter
 +    1
-+    $ echo 5 > counter
++    $ echo reset > counter
 +    $ cat counter
 +    5
++    $ echo 3 > inc
 +    $ cat counter
-+    6
-+
-+- ``sums`` reports the cumulative sum of counts for the current node plus all
-+  children. It doesn't not modify ``counter`` for any nodes::
-+
-+    $ cat /sample_kernfs/sub2/sub3/sums
-+    sub3/ 5
-+    $ cat /sample_kernfs/sums
-+    sub1/ 5
-+    sub2/sub3/ 4
-+    sub2/sub4/ 7
-+    sub2/ 11
-+    / 16
++    8
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
 new file mode 100644
 index 000000000000..82d4b73a4534

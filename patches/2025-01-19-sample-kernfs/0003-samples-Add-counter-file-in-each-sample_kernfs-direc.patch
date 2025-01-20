@@ -1,4 +1,4 @@
-From 22df86252033fb1f4028138ae6dc23e032750d47 Mon Sep 17 00:00:00 2001
+From 222d233759d516de43c26403dfa82973cd804f71 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 14:37:16 -0800
 Subject: [PATCH 3/5] samples: Add counter file in each sample_kernfs directory

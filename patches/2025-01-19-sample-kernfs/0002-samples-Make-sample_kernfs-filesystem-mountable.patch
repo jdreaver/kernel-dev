@@ -1,4 +1,4 @@
-From 62aae895a4f9216374cff336892e0c8e93b95d95 Mon Sep 17 00:00:00 2001
+From dfe5159d2adfb9bf402a6679843f6c310c35e274 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 10:14:44 -0800
 Subject: [PATCH 2/5] samples: Make sample_kernfs filesystem mountable

@@ -1,4 +1,4 @@
-From df0f0e962146991fa09aa0cc5dd51a75a265213e Mon Sep 17 00:00:00 2001
+From 84c0fe583998fbbaa589db26aa04b512b569760f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 14:39:05 -0800
 Subject: [PATCH 4/5] samples: Implement creating directories in sample_kernfs
