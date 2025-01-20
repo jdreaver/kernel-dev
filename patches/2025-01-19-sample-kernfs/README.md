@@ -12,6 +12,9 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 
 Code:
 
+- Fix kernel oops/segfault when I run `./test.sh` twice
+  - I think it might have to do with `kernfs_remove_self` and locking?
+  - I also saw a segfault in `list_for_each_entry_safe` in `sample_kernfs_remove_subtree`. This was a straight up null pointer deref.
 - Memory leaks
   - Fix kmemleak for `kernfs_create_root`. How does cgroups/sysfs do it?
 - Re-read `list_head` docs and make sure I'm using them correctly. (Maybe search for "`list_head` tree" or something)
