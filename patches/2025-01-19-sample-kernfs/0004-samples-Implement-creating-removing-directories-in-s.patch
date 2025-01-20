@@ -1,4 +1,4 @@
-From 2dc168801e18ca09e90c0954947132c28c1468fc Mon Sep 17 00:00:00 2001
+From 0f2acf359af0b6107826aceb410002944b144f3b Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 12:31:50 -0800
 Subject: [PATCH 4/6] samples: Implement creating/removing directories in
@@ -14,7 +14,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 71 insertions(+), 2 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 2cf650555fc7..cfe236145c1a 100644
+index 6a9f7224a4da..4f795696ead5 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -16,6 +16,8 @@
@@ -25,8 +25,8 @@ index 2cf650555fc7..cfe236145c1a 100644
 +	struct list_head siblings;
  };
  
- static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
-@@ -58,6 +60,8 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+ static struct sample_kernfs_directory *kernfs_of_to_dir(struct kernfs_open_file *of)
+@@ -69,6 +71,8 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
  	if (!dir)
  		return -ENOMEM;
@@ -35,7 +35,7 @@ index 2cf650555fc7..cfe236145c1a 100644
  	dir_kn->priv = dir;
  
  	err = sample_kernfs_add_counter_file(dir_kn);
-@@ -67,6 +71,71 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -78,6 +82,71 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -107,7 +107,7 @@ index 2cf650555fc7..cfe236145c1a 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -90,7 +159,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -101,7 +170,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	if (!kfc)
  		return -ENOMEM;
  
@@ -116,7 +116,7 @@ index 2cf650555fc7..cfe236145c1a 100644
  	if (IS_ERR(root))
  		return PTR_ERR(root);
  
-@@ -117,7 +186,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
+@@ -128,7 +197,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
  
  	kernfs_kill_sb(sb);
  	kernfs_destroy_root(root);

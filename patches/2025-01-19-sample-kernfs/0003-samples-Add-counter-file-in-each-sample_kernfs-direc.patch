@@ -1,18 +1,18 @@
-From fbec6e3b701602d1888c7b062c3ba3e93760cb10 Mon Sep 17 00:00:00 2001
+From d4e5b1347a38874cfab80ef747f8ff94f769e57f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:38:38 -0800
 Subject: [PATCH 3/6] samples: Add counter file in each sample_kernfs directory
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 63 ++++++++++++++++++++++++++++++++++
- 1 file changed, 63 insertions(+)
+ samples/kernfs/sample_kernfs.c | 74 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index b1409862547e..2cf650555fc7 100644
+index b1409862547e..6a9f7224a4da 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -14,6 +14,59 @@
+@@ -14,6 +14,70 @@
  
  #define SAMPLE_KERNFS_MAGIC 0x8d000ff0
  
@@ -20,11 +20,22 @@ index b1409862547e..2cf650555fc7 100644
 +	atomic64_t count;
 +};
 +
++static struct sample_kernfs_directory *kernfs_of_to_dir(struct kernfs_open_file *of)
++{
++	struct kernfs_node *dir_kn = kernfs_get_parent(of->kn);
++	struct sample_kernfs_directory *dir = dir_kn->priv;
++
++	// N.B. kernfs_get_parent returns a kernfs_node with an active reference
++	// that we need to drop with kernfs_put.
++	kernfs_put(dir_kn);
++
++	return dir;
++}
++
 +static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
 +{
 +	struct kernfs_open_file *of = sf->private;
-+	struct kernfs_node *dir_kn = kernfs_get_parent(of->kn);
-+	struct sample_kernfs_directory *counter_dir = dir_kn->priv;
++	struct sample_kernfs_directory *counter_dir = kernfs_of_to_dir(of);
 +	u64 count = atomic64_inc_return(&counter_dir->count);
 +
 +	seq_printf(sf, "%llu\n", count);
@@ -72,7 +83,7 @@ index b1409862547e..2cf650555fc7 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -31,6 +84,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -31,6 +95,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc;
  	struct kernfs_root *root;
@@ -80,7 +91,7 @@ index b1409862547e..2cf650555fc7 100644
  
  	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
  	if (!kfc)
-@@ -46,15 +100,24 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -46,15 +111,24 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	fc->ops = &sample_kernfs_fs_context_ops;
  	fc->global = true;
  
