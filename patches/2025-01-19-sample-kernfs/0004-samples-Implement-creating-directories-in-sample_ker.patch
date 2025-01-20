@@ -1,4 +1,4 @@
-From 2dc917741e4d2a4e70da63df158f8cdfafce5ba0 Mon Sep 17 00:00:00 2001
+From c933dd9a3ce60e45be959d14f5f8ba2679496b45 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:39:12 -0800
 Subject: [PATCH 4/7] samples: Implement creating directories in sample_kernfs
@@ -9,7 +9,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 3224945442d4..9bd6f077a0b2 100644
+index 0c94506cf4b8..1dd239e6f5c4 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -67,6 +67,25 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)

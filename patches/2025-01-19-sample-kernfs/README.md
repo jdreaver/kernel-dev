@@ -14,6 +14,7 @@ Code:
 
 - Memory leaks
   - When the root is removed, ensure we free memory for all `struct sample_kern_directory`s. If not, we might have to manually recurse to do that. (Change commit "samples: Add counter file in each sample_kernfs directory", and possibly the rmdir commit.)
+  - Ensure whatever we do for recursively deleting directories applies to root as well! Replace the kfree on root_kn->priv with whatever recursive function we use.
 - If we end up having to write a function to recursively remove nodes, consider bringing back `sums` file idea instead of the `inc` file
 - If I iterate through child directories, avoid recursion (unless it makes the code extremely complicated)
 - Consider moving my own data structures to a separate file if I have to manipulate them a lot
