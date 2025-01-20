@@ -1,7 +1,7 @@
-From 0b5842ade443d2715ec16824531059a7d4cdbeb2 Mon Sep 17 00:00:00 2001
+From 418fc2ecb41f13761d0beaf73a51873e2ae5fcc9 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 14:00:44 -0800
-Subject: [PATCH 6/6] samples: Implement changing counter increment in
+Subject: [PATCH 5/5] samples: Implement changing counter increment in
  sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>

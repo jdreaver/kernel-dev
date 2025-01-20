@@ -1,7 +1,7 @@
-From 93ce5da944034fa88ca2e9a2bb35e5d1f83a9528 Mon Sep 17 00:00:00 2001
+From 2436eeac8a6864d28e3ee8dfe2f8dfc3f85519ab Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 09:54:40 -0800
-Subject: [PATCH 1/6] samples: Adds boilerplate for the sample_kernfs
+Subject: [PATCH 1/5] samples: Adds boilerplate for the sample_kernfs
  pseudo-filesystem
 
 Signed-off-by: David Reaver <me@davidreaver.com>
@@ -10,9 +10,9 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  samples/Kconfig                |  6 ++++
  samples/Makefile               |  1 +
  samples/kernfs/Makefile        |  3 ++
- samples/kernfs/README.rst      | 55 ++++++++++++++++++++++++++++++++++
+ samples/kernfs/README.rst      | 53 ++++++++++++++++++++++++++++++++++
  samples/kernfs/sample_kernfs.c | 20 +++++++++++++
- 6 files changed, 86 insertions(+)
+ 6 files changed, 84 insertions(+)
  create mode 100644 samples/kernfs/Makefile
  create mode 100644 samples/kernfs/README.rst
  create mode 100644 samples/kernfs/sample_kernfs.c
@@ -69,10 +69,10 @@ index 000000000000..3bd2e4773b91
 +obj-$(CONFIG_SAMPLE_KERNFS) += sample_kernfs.o
 diff --git a/samples/kernfs/README.rst b/samples/kernfs/README.rst
 new file mode 100644
-index 000000000000..7a264ddd8bf1
+index 000000000000..c2d8232ce0f6
 --- /dev/null
 +++ b/samples/kernfs/README.rst
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,53 @@
 +===================================================
 +Sample pseudo-filesystem built on top of ``kernfs``
 +===================================================
@@ -92,10 +92,8 @@ index 000000000000..7a264ddd8bf1
 +Filesystem layout
 +=================
 +
-+The filesystem contains a tree of counters. A user can create sub-directories to
-+add more counters. Lastly, they can reset counters and also set the amount the
-+counter increments when it is read. Here is an example, where ``sample_kernfs``
-+is mounted at ``/sample_kernfs``::
++The filesystem contains a tree of counters. Here is an example, where
++``sample_kernfs`` is mounted at ``/sample_kernfs``::
 +
 +  /sample_kernfs
 +  ├── counter

@@ -33,6 +33,7 @@ Patches:
 - Fill out patch descriptions more
 - Write cover letter
 - Ensure each commit compiles and works as intended!
+- Maybe make this an `[RFC]`
 - Either add documentation for `kernfs` in this patch series or mention that I want to add documentation.
 
 ## Cover letter (WIP)
@@ -43,4 +44,5 @@ samples/kernfs/.
 TODO:
 
 - Mention how patches are split up (to demonstrate the "steps" of building a pseudo-filesystem on top of `kernfs`, where each step adds a feature).
+  - Offer to squash it all
 - Is the `inc` file too much? Should I remove it?

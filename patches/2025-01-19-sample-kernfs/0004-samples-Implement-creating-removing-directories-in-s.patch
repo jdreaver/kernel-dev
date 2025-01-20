@@ -1,12 +1,8 @@
-From 0f2acf359af0b6107826aceb410002944b144f3b Mon Sep 17 00:00:00 2001
+From 537cb1f33dd91facfaaa9efb22f4f99866e4adc8 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 12:31:50 -0800
-Subject: [PATCH 4/6] samples: Implement creating/removing directories in
+Subject: [PATCH 4/5] samples: Implement creating/removing directories in
  sample_kernfs
-
-Signed-off-by: David Reaver <me@davidreaver.com>
-
-samples: Implement removing directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
@@ -14,7 +10,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 71 insertions(+), 2 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 6a9f7224a4da..4f795696ead5 100644
+index f5c307030e62..954f10ea8cd0 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -16,6 +16,8 @@
@@ -26,7 +22,7 @@ index 6a9f7224a4da..4f795696ead5 100644
  };
  
  static struct sample_kernfs_directory *kernfs_of_to_dir(struct kernfs_open_file *of)
-@@ -69,6 +71,8 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -87,6 +89,8 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
  	if (!dir)
  		return -ENOMEM;
@@ -35,7 +31,7 @@ index 6a9f7224a4da..4f795696ead5 100644
  	dir_kn->priv = dir;
  
  	err = sample_kernfs_add_counter_file(dir_kn);
-@@ -78,6 +82,71 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -96,6 +100,71 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -107,7 +103,7 @@ index 6a9f7224a4da..4f795696ead5 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -101,7 +170,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -119,7 +188,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	if (!kfc)
  		return -ENOMEM;
  
@@ -116,7 +112,7 @@ index 6a9f7224a4da..4f795696ead5 100644
  	if (IS_ERR(root))
  		return PTR_ERR(root);
  
-@@ -128,7 +197,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
+@@ -146,7 +215,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
  
  	kernfs_kill_sb(sb);
  	kernfs_destroy_root(root);
