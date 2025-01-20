@@ -21,8 +21,12 @@ Code:
   - We could use the `kernfs_root` rwsem, I think (since we are reading)
 - If I iterate through child directories, avoid recursion (unless it makes the code extremely complicated)
 - Consider moving my own data structures to a separate file if I have to manipulate them a lot
-- Test multiple sample_kernfs roots at once
 - Run through all of these cool tools to find undefined behavior, memory leaks, etc <https://docs.kernel.org/dev-tools/index.html>
+
+Ideas besides `inc`:
+
+- Whenever count is incremented in a subdirectory, increment all parents. Locking might be simpler here (or even unnecessary?)
+- Recursive sum in `sums` file. I kind of don't like this because it probably requires a `rwsem`
 
 Patches:
 
