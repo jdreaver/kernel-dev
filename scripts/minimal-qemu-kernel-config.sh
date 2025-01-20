@@ -50,9 +50,12 @@ if [ -n "${DEBUG:-}" ]; then
     --set-val CONFIG_PROVE_LOCKING y \
     --set-val CONFIG_LOCKDEP y \
     --set-val CONFIG_DEBUG_LOCKDEP y \
+    --set-val CONFIG_DEBUG_LIST y \
+    --set-val CONFIG_BUG_ON_DATA_CORRUPTION y \
     --set-val CONFIG_GDB_SCRIPTS y \
     --set-val CONFIG_RANDOMIZE_BASE n \
-    --set-val CONFIG_DYNAMIC_DEBUB y \
+    --set-val CONFIG_DYNAMIC_DEBUG y \
+    --set-val CONFIG_DYNAMIC_DEBUG_CORE y \
     --set-val CONFIG_SOFTLOCKUP_DETECTOR y \
     --set-val CONFIG_HARDLOCKUP_DETECTOR y \
     --set-val CONFIG_DETECT_HUNG_TASK y \
