@@ -10,7 +10,42 @@ git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
 
 ## TODO
 
-- Fix removing directories
+- Implement removing directories (kernfs_remove hangs when I do this)
+
+  ```
+  static int sample_kernfs_rmdir(struct kernfs_node *kn)
+  {
+  	// Free our sample_kernfs_directory struct, stored in the node's private
+  	// data.
+  	if (kn->priv)
+  		kfree(kn->priv);
+
+  	kernfs_remove(kn);
+  	return 0;
+  }
+
+  static struct kernfs_syscall_ops sample_kernfs_kf_syscall_ops = {
+  	.mkdir		= sample_kernfs_mkdir,
+  	.rmdir		= sample_kernfs_rmdir,
+  };
+  ```
+
+  - ChatGPT told me to remove `kernfs_remove`, which fixed the hang, but it says I need to be careful with locks and still remove the `kernfs` node somehow <https://chatgpt.com/c/678d91e1-ccec-8008-a3e1-93560dedaec7>
+  - `rmdir` seems to be stuck in "State: D (disk sleep)". Is there something else I'm not doing?
+    - Maybe some filesystem attribute I'm missing?
+  - See how cgroups and sysfs do it.
+    - They both seem to delete all children first. See `sysfs_remove_group` -> `sysfs/group.c:remove_files()`
+  - Weird, maybe I have my new directories pointing to themselves as parents? Why is `sub1` a descendant?
+
+    ```
+    [   29.097861] kernfs sub1: removing descendants
+    [   29.098449] kernfs sub1: removing leftmost descendant counter
+    [   29.099352] kernfs sub1: removing leftmost descendant sub1
+    ```
+
+  - Debug tips:
+    - Turn on debug logging
+    - Try using perf to see where `rmdir` is stuck
 - Test multiple sample_kernfs roots at once
 - Implement resetting count
 - Implement `sums` file

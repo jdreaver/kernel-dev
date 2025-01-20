@@ -1,15 +1,15 @@
-From c0b45fdfe277d9ab500c506055e9633bb52d1b74 Mon Sep 17 00:00:00 2001
+From df0f0e962146991fa09aa0cc5dd51a75a265213e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 14:39:05 -0800
 Subject: [PATCH 4/4] samples: Implement creating directories in sample_kernfs
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 41 +++++++++++++++++++++++++++++-----
- 1 file changed, 35 insertions(+), 6 deletions(-)
+ samples/kernfs/sample_kernfs.c | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index edc569a043f0..b79d2b9f7f67 100644
+index edc569a043f0..70640365cc3f 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -50,11 +50,8 @@ static int sample_kernfs_add_counter_file(struct kernfs_node *dir_kn)
@@ -26,7 +26,7 @@ index edc569a043f0..b79d2b9f7f67 100644
  	struct sample_kernfs_directory *dir;
  	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
  	if (!dir)
-@@ -68,6 +65,38 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -68,6 +65,24 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -38,34 +38,20 @@ index edc569a043f0..b79d2b9f7f67 100644
 +	dir_kn = kernfs_create_dir_ns(parent_kn, name, mode, current_fsuid(),
 +				      current_fsgid(), NULL, NULL);
 +
-+	// TODO: Special check for EEXIST to warn about duplicate directories? I
-+	// don't think so.
 +	if (IS_ERR(dir_kn))
 +		return PTR_ERR(dir_kn);
 +
 +	return sample_kernfs_populate_dir(dir_kn);
 +}
 +
-+static int sample_kernfs_rmdir(struct kernfs_node *kn)
-+{
-+	// Free our sample_kernfs_directory struct, stored in the node's private
-+	// data.
-+	if (kn->priv)
-+		kfree(kn->priv);
-+
-+	kernfs_remove(kn);
-+	return 0;
-+}
-+
 +static struct kernfs_syscall_ops sample_kernfs_kf_syscall_ops = {
 +	.mkdir		= sample_kernfs_mkdir,
-+	.rmdir		= sample_kernfs_rmdir,
 +};
 +
  static int sample_kernfs_get_tree(struct fs_context *fc)
  {
  	return kernfs_get_tree(fc);
-@@ -85,7 +114,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -85,7 +100,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  		return -ENOMEM;
  
  	struct kernfs_root *root;
