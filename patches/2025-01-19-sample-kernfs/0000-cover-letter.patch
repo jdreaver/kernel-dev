@@ -1,6 +1,6 @@
-From 994ae6d64685c036c714dcb989a9dca976f3e2d4 Mon Sep 17 00:00:00 2001
+From b39f0bf0e7c0e027999ab95b55279b8fdd6c219a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 20 Jan 2025 16:34:52 -0800
+Date: Mon, 20 Jan 2025 18:15:23 -0800
 Subject: [PATCH 0/5] *** SUBJECT HERE ***
 
 *** BLURB HERE ***
@@ -17,8 +17,8 @@ David Reaver (5):
  samples/Makefile               |   1 +
  samples/kernfs/Makefile        |   3 +
  samples/kernfs/README.rst      |  55 ++++++
- samples/kernfs/sample_kernfs.c | 296 +++++++++++++++++++++++++++++++++
- 6 files changed, 362 insertions(+)
+ samples/kernfs/sample_kernfs.c | 298 +++++++++++++++++++++++++++++++++
+ 6 files changed, 364 insertions(+)
  create mode 100644 samples/kernfs/Makefile
  create mode 100644 samples/kernfs/README.rst
  create mode 100644 samples/kernfs/sample_kernfs.c

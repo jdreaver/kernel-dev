@@ -12,7 +12,6 @@ rm -f ../patches/2025-01-19-sample-kernfs/*.patch && git format-patch master...H
 
 Code:
 
-- Leave a comment about recursion, perhaps avoid it if possible.
 - Re-read `list_head` docs and make sure I'm using them correctly. (Maybe search for "`list_head` tree" or something)
 - Ensure we have locking for any parent/child relationship modifications in `sample_kern_directory`.
   - Check if `kernfs` provides top-level locks on all of these actions. We don't want to add extra locks! If `kernfs` locks, document it.

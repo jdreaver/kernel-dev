@@ -1,4 +1,4 @@
-From cabd75396402cdb26ff085f5060b0d2786bdc02b Mon Sep 17 00:00:00 2001
+From 028b48d1777a6c21af3447f680892889dfc5a958 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 12:31:50 -0800
 Subject: [PATCH 4/5] samples/kernfs: Allow creating and removing directories
@@ -16,11 +16,11 @@ motivation for using kernfs_remove_self().
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 73 +++++++++++++++++++++++++++++++++-
- 1 file changed, 71 insertions(+), 2 deletions(-)
+ samples/kernfs/sample_kernfs.c | 75 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 73 insertions(+), 2 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index f5c307030e62..954f10ea8cd0 100644
+index f5c307030e62..fe5c841ebbe5 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -16,6 +16,8 @@
@@ -41,7 +41,7 @@ index f5c307030e62..954f10ea8cd0 100644
  	dir_kn->priv = dir;
  
  	err = sample_kernfs_add_counter_file(dir_kn);
-@@ -96,6 +100,71 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -96,6 +100,73 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -77,7 +77,9 @@ index f5c307030e62..954f10ea8cd0 100644
 +{
 +	struct sample_kernfs_directory *child, *tmp;
 +
-+	// Recursively remove children
++	// Recursively remove children. Note that recursion is usually frowned
++	// upon in the kernel. If this were a real filesystem we would create a
++	// way to iterate through children without recursion.
 +	list_for_each_entry_safe(child, tmp, &dir->subdirs, siblings) {
 +		sample_kernfs_remove_subtree(child);
 +	}
@@ -113,7 +115,7 @@ index f5c307030e62..954f10ea8cd0 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -119,7 +188,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -119,7 +190,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	if (!kfc)
  		return -ENOMEM;
  
@@ -122,7 +124,7 @@ index f5c307030e62..954f10ea8cd0 100644
  	if (IS_ERR(root))
  		return PTR_ERR(root);
  
-@@ -146,7 +215,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
+@@ -146,7 +217,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
  
  	kernfs_kill_sb(sb);
  	kernfs_destroy_root(root);
