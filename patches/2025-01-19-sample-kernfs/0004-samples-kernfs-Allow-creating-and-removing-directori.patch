@@ -1,4 +1,4 @@
-From 5273d53f35caf4736086634d2961a61b0cb31b7f Mon Sep 17 00:00:00 2001
+From f4b645b7ac1115019c10d98d2868b2ed3047affa Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 12:31:50 -0800
 Subject: [PATCH 4/5] samples/kernfs: Allow creating and removing directories
@@ -16,11 +16,11 @@ motivation for using kernfs_remove_self().
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 90 ++++++++++++++++++++++++++++++++--
- 1 file changed, 87 insertions(+), 3 deletions(-)
+ samples/kernfs/sample_kernfs.c | 93 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 90 insertions(+), 3 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index b6d44fc3b935..67ab2fb6c9ce 100644
+index b6d44fc3b935..c56004d49b21 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -17,9 +17,13 @@
@@ -47,7 +47,7 @@ index b6d44fc3b935..67ab2fb6c9ce 100644
  	return dir;
  }
  
-@@ -101,6 +108,83 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -101,6 +108,86 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
@@ -59,6 +59,10 @@ index b6d44fc3b935..67ab2fb6c9ce 100644
 +	 * Recursively remove children. Note that recursion is usually frowned
 +	 * upon in the kernel. If this were a real filesystem we would create a
 +	 * way to iterate through children without recursion.
++	 *
++	 * Also, we could be more careful with locking our lists, but kernfs
++	 * holds a tree-wide lock before calling our rmdir, so we should be
++	 * safe.
 +	 */
 +	list_for_each_entry_safe(child, tmp, &dir->subdirs, siblings) {
 +		sample_kernfs_remove_subtree(child);
@@ -111,10 +115,9 @@ index b6d44fc3b935..67ab2fb6c9ce 100644
 +	struct sample_kernfs_directory *dir = kn->priv;
 +
 +	/*
-+	 * kernfs_remove_self safely removes the node while also breaking out of
-+	 * kernfs active protection (see kernfs_break_active_protection). This
-+	 * is necessary to avoid a deadlock because the kernfs function that
-+	 * called rmdir is holding the lock.
++	 * kernfs_remove_self avoids a deadlock by breaking active protection;
++	 * see kernfs_break_active_protection(). This is required since
++	 * kernfs_iop_rmdir() holds a tree-wide lock.
 +	 */
 +	kernfs_remove_self(kn);
 +
@@ -131,7 +134,7 @@ index b6d44fc3b935..67ab2fb6c9ce 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -132,7 +216,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -132,7 +219,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	}
  
  	/* dir gets stored in root->priv so we can access it later. */
@@ -140,7 +143,7 @@ index b6d44fc3b935..67ab2fb6c9ce 100644
  	if (IS_ERR(root)) {
  		err = PTR_ERR(root);
  		goto err_free_dir;
-@@ -153,7 +237,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -153,7 +240,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  err_free_root:
  	kernfs_destroy_root(root);
  err_free_dir:
@@ -149,7 +152,7 @@ index b6d44fc3b935..67ab2fb6c9ce 100644
  err_free_kfc:
  	kfree(kfc);
  	return err;
-@@ -167,7 +251,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
+@@ -167,7 +254,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
  
  	kernfs_kill_sb(sb);
  	kernfs_destroy_root(root);

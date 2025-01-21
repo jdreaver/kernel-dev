@@ -15,10 +15,7 @@ Code:
 - Style/comments
   - Use kernfs code style as an example!
   - Use KernelDoc <https://docs.kernel.org/doc-guide/kernel-doc.html>
-    - For the main struct
-    - Any important functions
-  - Explain that kernfs serializes rmdir for us, so we don't need a lock in `sample_kernfs_remove_subtree` (verify this)
-  - Consider function descriptions
+    - Any important function descriptions
 
 - Rebase against git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
 - Ensure we have locking for any parent/child relationship modifications in `sample_kern_directory`.
