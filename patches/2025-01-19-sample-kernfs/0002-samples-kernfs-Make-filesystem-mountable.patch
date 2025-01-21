@@ -1,4 +1,4 @@
-From 787b8e33f19c654a0cb9f0189213f65948fa6932 Mon Sep 17 00:00:00 2001
+From 8ac64b664bf00f9dd5b99392230625770f2c7d2a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 10:14:44 -0800
 Subject: [PATCH 2/5] samples/kernfs: Make filesystem mountable
@@ -8,14 +8,14 @@ sample_kernfs filesystem.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 61 ++++++++++++++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
+ samples/kernfs/sample_kernfs.c | 62 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 61 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 82d4b73a4534..b1409862547e 100644
+index 82d4b73a4534..8b4346973136 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -6,11 +6,72 @@
+@@ -6,12 +6,72 @@
  
  #define pr_fmt(fmt) "%s: " fmt, __func__
  
@@ -79,12 +79,13 @@ index 82d4b73a4534..b1409862547e 100644
 +
  static int __init sample_kernfs_init(void)
  {
+-	pr_info("Loaded sample_kernfs module.\n");
 +	int err;
 +
 +	err = register_filesystem(&sample_kernfs_fs_type);
 +	if (err)
 +		return err;
 +
- 	pr_info("Loaded sample_kernfs module.\n");
  	return 0;
  }
+ 

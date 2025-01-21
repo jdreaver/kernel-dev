@@ -13,15 +13,12 @@ rm -f ../patches/2025-01-19-sample-kernfs/*.patch && git format-patch master...H
 Code:
 
 - Style/comments
-  - Remove the `pr_info("Loaded sample_kernfs module.\n");`
   - Use kernfs code style as an example!
-  - Just use `/*   */` for all comments
-  - Always have space before final return
   - Explain that kernfs serializes rmdir for us, so we don't need a lock in `sample_kernfs_remove_subtree` (verify this)
   - Consider function descriptions
-  - Shorten up comment language
-  - Comment `sample_kernfs_directory` fields
 
+- Reject writes not at *off = 0
+  - Consider DRY'ing write functions?
 - Rebase against git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
 - Ensure we have locking for any parent/child relationship modifications in `sample_kern_directory`.
   - Check if `kernfs` provides top-level locks on all of these actions. We don't want to add extra locks! If `kernfs` locks, document it.

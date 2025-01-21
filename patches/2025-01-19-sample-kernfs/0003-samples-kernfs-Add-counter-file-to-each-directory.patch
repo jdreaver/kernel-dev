@@ -1,4 +1,4 @@
-From ab269b218b843d6ce6214dce2af7bccaa2f57916 Mon Sep 17 00:00:00 2001
+From 761985867036d9e9658a2ad1cf9a01bb2c21e28f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:38:38 -0800
 Subject: [PATCH 3/5] samples/kernfs: Add counter file to each directory
@@ -11,18 +11,19 @@ integer values to/from kernfs files.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 100 ++++++++++++++++++++++++++++++++-
- 1 file changed, 99 insertions(+), 1 deletion(-)
+ samples/kernfs/sample_kernfs.c | 102 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 101 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index b1409862547e..1cb261539bfc 100644
+index 8b4346973136..e3484a921b07 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -14,6 +14,88 @@
+@@ -14,6 +14,90 @@
  
  #define SAMPLE_KERNFS_MAGIC 0x8d000ff0
  
 +struct sample_kernfs_directory {
++	/* Holds the current count in the counter file */
 +	atomic64_t count;
 +};
 +
@@ -42,7 +43,7 @@ index b1409862547e..1cb261539bfc 100644
 +	struct kernfs_node *dir_kn = kernfs_get_parent(of->kn);
 +	struct sample_kernfs_directory *dir = dir_kn->priv;
 +
-+	// kernfs_get_parent adds a reference; drop it with kernfs_put
++	/* kernfs_get_parent adds a reference; drop it with kernfs_put */
 +	kernfs_put(dir_kn);
 +
 +	return dir;
@@ -55,6 +56,7 @@ index b1409862547e..1cb261539bfc 100644
 +	u64 count = atomic64_inc_return(&counter_dir->count);
 +
 +	seq_printf(sf, "%llu\n", count);
++
 +	return 0;
 +}
 +
@@ -107,7 +109,7 @@ index b1409862547e..1cb261539bfc 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -30,13 +112,20 @@ static const struct fs_context_operations sample_kernfs_fs_context_ops = {
+@@ -30,13 +114,20 @@ static const struct fs_context_operations sample_kernfs_fs_context_ops = {
  static int sample_kernfs_init_fs_context(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc;
@@ -124,12 +126,12 @@ index b1409862547e..1cb261539bfc 100644
 +	if (!dir)
 +		return -ENOMEM;
 +
-+	// dir gets stored in root->priv so we can access it later.
++	/* dir gets stored in root->priv so we can access it later. */
 +	root = kernfs_create_root(NULL, 0, dir);
  	if (IS_ERR(root))
  		return PTR_ERR(root);
  
-@@ -46,15 +135,24 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -46,15 +137,24 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	fc->ops = &sample_kernfs_fs_context_ops;
  	fc->global = true;
  
