@@ -12,7 +12,7 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     Krister Johansen <kjlx@templeofstupid.com>,
     linux-fsdevel@vger.kernel.org
 
-This patch series creates a pseudo-filesystem built on top of kernfs in
+This patch series creates a toy pseudo-filesystem built on top of kernfs in
 samples/kernfs/.
 
 kernfs underpins the sysfs and cgroup filesystems. Many kernel developers have
