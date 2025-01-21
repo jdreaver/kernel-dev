@@ -1,4 +1,4 @@
-From 7f93c185bfaa851a72ee1d04464685851b18ff86 Mon Sep 17 00:00:00 2001
+From 46ee05e75cfaac913d715459adaa017d893a58a3 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 12:31:50 -0800
 Subject: [PATCH 4/5] samples/kernfs: Allow creating and removing directories
@@ -12,7 +12,9 @@ to keep track of child nodes ourselves in sample_kernfs_directory.
 
 Removing a directory is surprisingly tricky and can deadlock if you use
 kernfs_remove() instead of kernfs_remove_self(), so a comment explains the
-motivation for using kernfs_remove_self().
+motivation for using kernfs_remove_self(). I also added a comment
+explaining the lack of locking when manipulating the subdirs/children
+lists.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---

@@ -1,4 +1,4 @@
-From a0822bc7c6b54b89be05e19e7d5dc0603eb3156a Mon Sep 17 00:00:00 2001
+From f0cc08aea82dac1877074fc137cfd8d43b3e6ecb Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 14:00:44 -0800
 Subject: [PATCH 5/5] samples/kernfs: Add inc file to allow changing counter

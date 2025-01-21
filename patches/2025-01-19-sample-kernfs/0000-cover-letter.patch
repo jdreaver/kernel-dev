@@ -1,6 +1,6 @@
-From a0822bc7c6b54b89be05e19e7d5dc0603eb3156a Mon Sep 17 00:00:00 2001
+From f0cc08aea82dac1877074fc137cfd8d43b3e6ecb Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 20 Jan 2025 21:12:49 -0800
+Date: Tue, 21 Jan 2025 07:16:40 -0800
 Subject: [PATCH 0/5] samples/kernfs: Add a pseudo-filesystem to demonstrate kernfs usage
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Tejun Heo <tj@kernel.org>
