@@ -5,7 +5,7 @@ I'm working in my own `linux` tree in a branch called `davidreaver/sample-kernfs
 ```sh
 cd ~/git/kernel-dev/linux
 git switch davidreaver/sample-kernfs
-git format-patch master...HEAD -o ../patches/2025-01-19-sample-kernfs/
+rm -f "../patches/2025-01-19-sample-kernfs/*.patch" && git format-patch master...HEAD --base=origin/master -o ../patches/2025-01-19-sample-kernfs/ --cover-letter
 ```
 
 ## TODO

@@ -1,6 +1,6 @@
 From 418fc2ecb41f13761d0beaf73a51873e2ae5fcc9 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 20 Jan 2025 15:55:42 -0800
+Date: Mon, 20 Jan 2025 16:04:40 -0800
 Subject: [PATCH 0/5] *** SUBJECT HERE ***
 
 *** BLURB HERE ***
@@ -23,3 +23,5 @@ David Reaver (5):
  create mode 100644 samples/kernfs/README.rst
  create mode 100644 samples/kernfs/sample_kernfs.c
 
+
+base-commit: fda5e3f284002ea55dac1c98c1498d6dd684046e
