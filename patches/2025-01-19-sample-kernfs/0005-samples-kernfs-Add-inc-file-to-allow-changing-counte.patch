@@ -1,4 +1,4 @@
-From 4354dc3d89688f50257f14fef8d1f08761537612 Mon Sep 17 00:00:00 2001
+From ae302462c89ba83ff5714fee76ebefe1aad2522c Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 14:00:44 -0800
 Subject: [PATCH 5/5] samples/kernfs: Add inc file to allow changing counter
@@ -11,24 +11,28 @@ are read.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 43 +++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+ samples/kernfs/sample_kernfs.c | 42 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 41 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 87b41a8e64b1..a928141941ce 100644
+index 67ab2fb6c9ce..b601397e46a2 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -18,6 +18,9 @@ struct sample_kernfs_directory {
- 	/* Holds the current count in the counter file */
+@@ -17,11 +17,13 @@
+ /**
+  * struct sample_kernfs_directory - Represents a directory in the pseudo-filesystem
+  * @count: Holds the current count in the counter file.
++ * @inc: Amount to increment count by. Value of inc file.
+  * @subdirs: Holds the list of this directory's subdirectories.
+  * @siblings: Used to add this dir to parent's subdirs list.
+  */
+ struct sample_kernfs_directory {
  	atomic64_t count;
- 
-+	/* Amount to increment count by. Value of inc file. */
 +	atomic64_t inc;
-+
- 	/* Holds the list of this directory's subdirectories */
  	struct list_head subdirs;
- 
-@@ -33,6 +36,7 @@ static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
+ 	struct list_head siblings;
+ };
+@@ -34,6 +36,7 @@ static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
  	if (!dir)
  		return NULL;
  
@@ -36,7 +40,7 @@ index 87b41a8e64b1..a928141941ce 100644
  	INIT_LIST_HEAD(&dir->subdirs);
  	INIT_LIST_HEAD(&dir->siblings);
  
-@@ -54,7 +58,8 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
+@@ -55,7 +58,8 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
  {
  	struct kernfs_open_file *of = sf->private;
  	struct sample_kernfs_directory *counter_dir = kernfs_of_to_dir(of);
@@ -46,7 +50,7 @@ index 87b41a8e64b1..a928141941ce 100644
  
  	seq_printf(sf, "%llu\n", count);
  
-@@ -82,6 +87,38 @@ static struct kernfs_ops counter_kf_ops = {
+@@ -83,6 +87,38 @@ static struct kernfs_ops counter_kf_ops = {
  	.write		= sample_kernfs_counter_write,
  };
  
@@ -85,7 +89,7 @@ index 87b41a8e64b1..a928141941ce 100644
  static int sample_kernfs_add_file(struct kernfs_node *dir_kn, const char *name,
  				  struct kernfs_ops *ops)
  {
-@@ -104,6 +141,10 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -105,6 +141,10 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	if (err)
  		return err;
  

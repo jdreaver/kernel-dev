@@ -1,4 +1,4 @@
-From 8ac64b664bf00f9dd5b99392230625770f2c7d2a Mon Sep 17 00:00:00 2001
+From a62ed76160b311519b35c3880d528c3b56dc3a29 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 10:14:44 -0800
 Subject: [PATCH 2/5] samples/kernfs: Make filesystem mountable
@@ -8,14 +8,14 @@ sample_kernfs filesystem.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 62 +++++++++++++++++++++++++++++++++-
- 1 file changed, 61 insertions(+), 1 deletion(-)
+ samples/kernfs/sample_kernfs.c | 69 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 68 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 82d4b73a4534..8b4346973136 100644
+index 82d4b73a4534..3ea8411a72ae 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -6,12 +6,72 @@
+@@ -6,12 +6,79 @@
  
  #define pr_fmt(fmt) "%s: " fmt, __func__
  
@@ -44,14 +44,17 @@ index 82d4b73a4534..8b4346973136 100644
 +{
 +	struct kernfs_fs_context *kfc;
 +	struct kernfs_root *root;
++	int err;
 +
 +	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
 +	if (!kfc)
 +		return -ENOMEM;
 +
 +	root = kernfs_create_root(NULL, 0, NULL);
-+	if (IS_ERR(root))
-+		return PTR_ERR(root);
++	if (IS_ERR(root)) {
++		err = PTR_ERR(root);
++		goto err_free_kfc;
++	}
 +
 +	kfc->root = root;
 +	kfc->magic = SAMPLE_KERNFS_MAGIC;
@@ -60,6 +63,10 @@ index 82d4b73a4534..8b4346973136 100644
 +	fc->global = true;
 +
 +	return 0;
++
++err_free_kfc:
++	kfree(kfc);
++	return err;
 +}
 +
 +static void sample_kernfs_kill_sb(struct super_block *sb)

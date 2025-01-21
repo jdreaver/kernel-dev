@@ -14,19 +14,16 @@ Code:
 
 - Style/comments
   - Use kernfs code style as an example!
+  - Use KernelDoc <https://docs.kernel.org/doc-guide/kernel-doc.html>
+    - For the main struct
+    - Any important functions
   - Explain that kernfs serializes rmdir for us, so we don't need a lock in `sample_kernfs_remove_subtree` (verify this)
   - Consider function descriptions
 
-- Reject writes not at *off = 0
-  - Consider DRY'ing write functions?
 - Rebase against git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
 - Ensure we have locking for any parent/child relationship modifications in `sample_kern_directory`.
   - Check if `kernfs` provides top-level locks on all of these actions. We don't want to add extra locks! If `kernfs` locks, document it.
     - In particular, does `kernfs_remove_self` (which removes self-protection) kill our locking?
-- If we end up having to write a function to recursively remove nodes, consider bringing back `sums` file idea instead of the `inc` file
-  - Check if we need locking! I bet we do on reads. It is different than rmdir/mkdir.
-  - We could use the `kernfs_root` rwsem, I think (since we are reading)
-- Consider moving my own data structures to a separate file if I have to manipulate them a lot
 - Run through all of these cool tools to find undefined behavior, memory leaks, etc <https://docs.kernel.org/dev-tools/index.html>
 
 Ideas besides `inc`:
