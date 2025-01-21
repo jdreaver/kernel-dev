@@ -1,7 +1,18 @@
 From 6f070b93430d35de243c04b4244bc6629d2736a6 Mon Sep 17 00:00:00 2001
+In-Reply-To: <20250121153646.37895-1-me@davidreaver.com>
+References: <20250121153646.37895-1-me@davidreaver.com>
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 09:54:40 -0800
 Subject: [PATCH 1/5] samples/kernfs: Adds boilerplate/README for sample_kernfs
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Tejun Heo <tj@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+    Christian Brauner <brauner@kernel.org>,
+    Al Viro <viro@zeniv.linux.org.uk>,
+    Jonathan Corbet <corbet@lwn.net>,
+    James Bottomley <James.Bottomley@HansenPartnership.com>,
+    Krister Johansen <kjlx@templeofstupid.com>,
+    linux-fsdevel@vger.kernel.org
 
 Adds the necessary Kconfig/Makefile boilerplate to get sample_kernfs
 compiled into the kernel. Also adds a README.rst file to describe how the
@@ -29,7 +40,7 @@ index 0fa7c5728f1e..5791aced4b93 100644
  F:	fs/kernfs/
  F:	include/linux/kernfs.h
 +F:	samples/kernfs/
- 
+
  KEXEC
  M:	Eric Biederman <ebiederm@xmission.com>
 diff --git a/samples/Kconfig b/samples/Kconfig
@@ -39,7 +50,7 @@ index b288d9991d27..968294ffb35d 100644
 @@ -291,6 +291,12 @@ config SAMPLE_CGROUP
  	help
  	  Build samples that demonstrate the usage of the cgroup API.
- 
+
 +config SAMPLE_KERNFS
 +	bool "Build sample_kernfs pseudo-filesystem."
 +	help
@@ -47,7 +58,7 @@ index b288d9991d27..968294ffb35d 100644
 +	  kernfs API. The filesystem name is sample_kernfs.
 +
  source "samples/rust/Kconfig"
- 
+
  endif # SAMPLES
 diff --git a/samples/Makefile b/samples/Makefile
 index b85fa64390c5..e024e76e396d 100644

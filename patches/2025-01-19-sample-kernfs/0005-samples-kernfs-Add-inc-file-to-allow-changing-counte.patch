@@ -1,8 +1,19 @@
 From f0cc08aea82dac1877074fc137cfd8d43b3e6ecb Mon Sep 17 00:00:00 2001
+In-Reply-To: <20250121153646.37895-1-me@davidreaver.com>
+References: <20250121153646.37895-1-me@davidreaver.com>
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 14:00:44 -0800
 Subject: [PATCH 5/5] samples/kernfs: Add inc file to allow changing counter
  increment
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Tejun Heo <tj@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+    Christian Brauner <brauner@kernel.org>,
+    Al Viro <viro@zeniv.linux.org.uk>,
+    Jonathan Corbet <corbet@lwn.net>,
+    James Bottomley <James.Bottomley@HansenPartnership.com>,
+    Krister Johansen <kjlx@templeofstupid.com>,
+    linux-fsdevel@vger.kernel.org
 
 A file called inc is automatically added to sample_kernfs directories.
 Users can read and write unsigned integers to this file. The value stored
@@ -35,11 +46,11 @@ index e632b5f66924..3d1e7fb4ecc5 100644
 @@ -34,6 +36,7 @@ static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
  	if (!dir)
  		return NULL;
- 
+
 +	atomic64_set(&dir->inc, 1);
  	INIT_LIST_HEAD(&dir->subdirs);
  	INIT_LIST_HEAD(&dir->siblings);
- 
+
 @@ -55,7 +58,8 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
  {
  	struct kernfs_open_file *of = sf->private;
@@ -47,13 +58,13 @@ index e632b5f66924..3d1e7fb4ecc5 100644
 -	u64 count = atomic64_inc_return(&counter_dir->count);
 +	u64 inc = atomic64_read(&counter_dir->inc);
 +	u64 count = atomic64_add_return(inc, &counter_dir->count);
- 
+
  	seq_printf(sf, "%llu\n", count);
- 
+
 @@ -83,6 +87,38 @@ static struct kernfs_ops counter_kf_ops = {
  	.write		= sample_kernfs_counter_write,
  };
- 
+
 +static int sample_kernfs_inc_seq_show(struct seq_file *sf, void *v)
 +{
 +	struct kernfs_open_file *of = sf->private;
@@ -92,11 +103,10 @@ index e632b5f66924..3d1e7fb4ecc5 100644
 @@ -105,6 +141,10 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	if (err)
  		return err;
- 
+
 +	err = sample_kernfs_add_file(dir_kn, "inc", &inc_kf_ops);
 +	if (err)
 +		return err;
 +
  	return 0;
  }
- 

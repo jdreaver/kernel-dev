@@ -1,7 +1,18 @@
 From 46ee05e75cfaac913d715459adaa017d893a58a3 Mon Sep 17 00:00:00 2001
+In-Reply-To: <20250121153646.37895-1-me@davidreaver.com>
+References: <20250121153646.37895-1-me@davidreaver.com>
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 12:31:50 -0800
 Subject: [PATCH 4/5] samples/kernfs: Allow creating and removing directories
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Tejun Heo <tj@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+    Christian Brauner <brauner@kernel.org>,
+    Al Viro <viro@zeniv.linux.org.uk>,
+    Jonathan Corbet <corbet@lwn.net>,
+    James Bottomley <James.Bottomley@HansenPartnership.com>,
+    Krister Johansen <kjlx@templeofstupid.com>,
+    linux-fsdevel@vger.kernel.org
 
 Users can mkdir and rmdir sample_kernfs directories, similar to how cgroups
 are added and removed in the cgroup pseudo-filesystem. New directories
@@ -37,22 +48,22 @@ index b6d44fc3b935..e632b5f66924 100644
 +	struct list_head subdirs;
 +	struct list_head siblings;
  };
- 
+
  static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
 @@ -30,6 +34,9 @@ static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
  	if (!dir)
  		return NULL;
- 
+
 +	INIT_LIST_HEAD(&dir->subdirs);
 +	INIT_LIST_HEAD(&dir->siblings);
 +
  	return dir;
  }
- 
+
 @@ -101,6 +108,87 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
- 
+
 +static void sample_kernfs_remove_subtree(struct sample_kernfs_directory *dir)
 +{
 +	struct sample_kernfs_directory *child, *tmp;
@@ -139,7 +150,7 @@ index b6d44fc3b935..e632b5f66924 100644
  	struct kernfs_fs_context *kfc = fc->fs_private;
 @@ -132,7 +220,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	}
- 
+
  	/* dir gets stored in root->priv so we can access it later. */
 -	root = kernfs_create_root(NULL, 0, root_dir);
 +	root = kernfs_create_root(&sample_kernfs_kf_syscall_ops, 0, root_dir);
@@ -156,11 +167,11 @@ index b6d44fc3b935..e632b5f66924 100644
  	kfree(kfc);
  	return err;
 @@ -167,7 +255,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
- 
+
  	kernfs_kill_sb(sb);
  	kernfs_destroy_root(root);
 -	kfree(root_dir);
 +	sample_kernfs_remove_subtree(root_dir);
  }
- 
+
  static struct file_system_type sample_kernfs_fs_type = {
