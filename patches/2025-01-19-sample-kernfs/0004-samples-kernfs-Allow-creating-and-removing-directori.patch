@@ -1,8 +1,18 @@
-From 537cb1f33dd91facfaaa9efb22f4f99866e4adc8 Mon Sep 17 00:00:00 2001
+From cabd75396402cdb26ff085f5060b0d2786bdc02b Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 12:31:50 -0800
-Subject: [PATCH 4/5] samples: Implement creating/removing directories in
- sample_kernfs
+Subject: [PATCH 4/5] samples/kernfs: Allow creating and removing directories
+
+Users can mkdir and rmdir sample_kernfs directories, similar to how cgroups
+are added and removed in the cgroup pseudo-filesystem. New directories
+automatically get a counter file.
+
+kernfs doesn't expose functions to traverse child nodes. We demonstrate how
+to keep track of child nodes ourselves in sample_kernfs_directory.
+
+Removing a directory is surprisingly tricky and can deadlock if you use
+kernfs_remove() instead of kernfs_remove_self(), so a comment explains the
+motivation for using kernfs_remove_self().
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---

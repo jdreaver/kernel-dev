@@ -1,7 +1,13 @@
-From ac0acc79c9848d3d28b021b47ee29ea971346115 Mon Sep 17 00:00:00 2001
+From 96680b29577bb9c8be1b50bf906f16e2c9484eeb Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:38:38 -0800
-Subject: [PATCH 3/5] samples: Add counter file in each sample_kernfs directory
+Subject: [PATCH 3/5] samples/kernfs: Add counter file to each directory
+
+The counter file is automatically added to all sample_kernfs
+directories (including the root directory). This demonstrates how to tie an
+internal datastructure -- sample_kernfs_directory in this case -- to kernfs
+nodes via kernfs_node->priv. Also demonstrates how to read and write simple
+integer values to/from kernfs files.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---

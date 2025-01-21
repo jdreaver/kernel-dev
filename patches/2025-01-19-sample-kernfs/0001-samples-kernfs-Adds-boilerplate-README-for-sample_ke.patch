@@ -1,8 +1,11 @@
-From 2436eeac8a6864d28e3ee8dfe2f8dfc3f85519ab Mon Sep 17 00:00:00 2001
+From 6f070b93430d35de243c04b4244bc6629d2736a6 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 19 Jan 2025 09:54:40 -0800
-Subject: [PATCH 1/5] samples: Adds boilerplate for the sample_kernfs
- pseudo-filesystem
+Subject: [PATCH 1/5] samples/kernfs: Adds boilerplate/README for sample_kernfs
+
+Adds the necessary Kconfig/Makefile boilerplate to get sample_kernfs
+compiled into the kernel. Also adds a README.rst file to describe how the
+filesystem works from a user's perspective.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
@@ -10,9 +13,9 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  samples/Kconfig                |  6 ++++
  samples/Makefile               |  1 +
  samples/kernfs/Makefile        |  3 ++
- samples/kernfs/README.rst      | 53 ++++++++++++++++++++++++++++++++++
+ samples/kernfs/README.rst      | 55 ++++++++++++++++++++++++++++++++++
  samples/kernfs/sample_kernfs.c | 20 +++++++++++++
- 6 files changed, 84 insertions(+)
+ 6 files changed, 86 insertions(+)
  create mode 100644 samples/kernfs/Makefile
  create mode 100644 samples/kernfs/README.rst
  create mode 100644 samples/kernfs/sample_kernfs.c
@@ -69,10 +72,12 @@ index 000000000000..3bd2e4773b91
 +obj-$(CONFIG_SAMPLE_KERNFS) += sample_kernfs.o
 diff --git a/samples/kernfs/README.rst b/samples/kernfs/README.rst
 new file mode 100644
-index 000000000000..c2d8232ce0f6
+index 000000000000..e0e747514df1
 --- /dev/null
 +++ b/samples/kernfs/README.rst
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,55 @@
++.. SPDX-License-Identifier: GPL-2.0
++
 +===================================================
 +Sample pseudo-filesystem built on top of ``kernfs``
 +===================================================

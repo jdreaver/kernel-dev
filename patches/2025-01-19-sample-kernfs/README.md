@@ -5,7 +5,7 @@ I'm working in my own `linux` tree in a branch called `davidreaver/sample-kernfs
 ```sh
 cd ~/git/kernel-dev/linux
 git switch davidreaver/sample-kernfs
-rm -f "../patches/2025-01-19-sample-kernfs/*.patch" && git format-patch master...HEAD --base=origin/master -o ../patches/2025-01-19-sample-kernfs/ --cover-letter
+rm -f ../patches/2025-01-19-sample-kernfs/*.patch && git format-patch master...HEAD --base=origin/master -o ../patches/2025-01-19-sample-kernfs/ --cover-letter
 ```
 
 ## TODO
@@ -43,6 +43,7 @@ samples/kernfs/.
 
 TODO:
 
+- Mention that kernfs is undocumented, and this step is the first step towards documentation.
 - Mention how patches are split up (to demonstrate the "steps" of building a pseudo-filesystem on top of `kernfs`, where each step adds a feature).
   - Offer to squash it all
 - Is the `inc` file too much? Should I remove it?

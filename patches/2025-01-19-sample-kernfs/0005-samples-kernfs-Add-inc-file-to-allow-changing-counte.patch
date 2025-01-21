@@ -1,8 +1,13 @@
-From 418fc2ecb41f13761d0beaf73a51873e2ae5fcc9 Mon Sep 17 00:00:00 2001
+From 994ae6d64685c036c714dcb989a9dca976f3e2d4 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 14:00:44 -0800
-Subject: [PATCH 5/5] samples: Implement changing counter increment in
- sample_kernfs
+Subject: [PATCH 5/5] samples/kernfs: Add inc file to allow changing counter
+ increment
+
+A file called inc is automatically added to sample_kernfs directories.
+Users can read and write unsigned integers to this file. The value stored
+in inc determines how much counter values are incremented every time they
+are read.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
