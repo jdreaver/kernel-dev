@@ -7,3 +7,7 @@ cd ~/git/kernel-dev/linux
 git switch davidreaver/sample-kernfs
 rm -f ../patches/2025-01-19-sample-kernfs/*.patch && git format-patch master...HEAD --base=origin/master -o ../patches/2025-01-19-sample-kernfs/ --cover-letter
 ```
+
+## Communication
+
+First patch series posted to mailing lists: <https://lore.kernel.org/linux-fsdevel/20250121153646.37895-1-me@davidreaver.com/T/#u>
