@@ -16,11 +16,6 @@ Code:
   - Use kernfs code style as an example!
   - Use KernelDoc <https://docs.kernel.org/doc-guide/kernel-doc.html>
     - Any important function descriptions
-
-- Rebase against git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
-- Ensure we have locking for any parent/child relationship modifications in `sample_kern_directory`.
-  - Check if `kernfs` provides top-level locks on all of these actions. We don't want to add extra locks! If `kernfs` locks, document it.
-    - In particular, does `kernfs_remove_self` (which removes self-protection) kill our locking?
 - Run through all of these cool tools to find undefined behavior, memory leaks, etc <https://docs.kernel.org/dev-tools/index.html>
 
 Ideas besides `inc`:
@@ -33,18 +28,17 @@ Patches:
 - Ensure each commit compiles and works as intended!
 - Maybe make this an `[RFC]`
 
-Cover letter:
-
 ## People to To/CC
 
-- To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-- To: Tejun Heo <tj@kernel.org>
-- Cc: Steven Rostedt <rostedt@goodmis.org>
-- Cc: Christian Brauner <brauner@kernel.org>
-- Cc: Al Viro <viro@zeniv.linux.org.uk>
-- Cc: Jonathan Corbet <corbet@lwn.net>
-- Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-- Cc: linux-fsdevel@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Tejun Heo <tj@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+    Christian Brauner <brauner@kernel.org>,
+    Al Viro <viro@zeniv.linux.org.uk>,
+    Jonathan Corbet <corbet@lwn.net>,
+    James Bottomley <James.Bottomley@HansenPartnership.com>,
+    Krister Johansen <kjlx@templeofstupid.com>,
+    linux-fsdevel@vger.kernel.org
 
 ## Cover letter (WIP)
 
@@ -54,8 +48,8 @@ This patch series creates a pseudo-filesystem built on top of kernfs in
 samples/kernfs/.
 
 kernfs underpins the sysfs and cgroup filesystems. Many kernel developers have
-considered kernfs for other pseudo-filesystems [1][2] and a draft patch was even
-put forth to investigate moving tracefs to kernfs [3]. One reason kernfs isn't
+considered kernfs for other pseudo-filesystems [1][2] and a draft patch was
+proposed to investigate moving tracefs to kernfs [3]. One reason kernfs isn't
 used more is it is almost entirely undocumented; I certainly had to read almost
 all of the kernfs code to implement this toy filesystem. This sample aims to
 improve kernfs documentation by way of an example.
@@ -81,6 +75,11 @@ options I could find and I ensured none of them report any issues. They were
 particularly useful when debugging a deadlock that required replacing
 kernfs_remove() with kernfs_remove_self(), and discovering a memory leak fixed
 with kernfs_put().
+
+In the future, I hope to contribute further by writing documentation for kernfs
+and exploring the possibility of porting debugfs and/or tracefs to kernfs (like
+completing the draft in [3]). I'm curious if the reviewers feel any of those
+ideas are worth doing right now.
 
 Link: https://lwn.net/Articles/960088/ [1]
 Link: https://lwn.net/Articles/981155/ [2]

@@ -1,4 +1,4 @@
-From bee04e23b0eee125b7b92b1fab445726f00c78e0 Mon Sep 17 00:00:00 2001
+From a0822bc7c6b54b89be05e19e7d5dc0603eb3156a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 14:00:44 -0800
 Subject: [PATCH 5/5] samples/kernfs: Add inc file to allow changing counter
@@ -15,7 +15,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  1 file changed, 41 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index c56004d49b21..2a436e2e24d0 100644
+index e632b5f66924..3d1e7fb4ecc5 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -17,11 +17,13 @@
