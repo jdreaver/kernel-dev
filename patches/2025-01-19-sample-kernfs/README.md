@@ -13,17 +13,16 @@ rm -f ../patches/2025-01-19-sample-kernfs/*.patch && git format-patch master...H
 Code:
 
 - Style/comments
-  - Proper multi-line comment format
+  - Remove the `pr_info("Loaded sample_kernfs module.\n");`
+  - Use kernfs code style as an example!
+  - Just use `/*   */` for all comments
+  - Always have space before final return
   - Explain that kernfs serializes rmdir for us, so we don't need a lock in `sample_kernfs_remove_subtree` (verify this)
-  - Use "N.B." less
   - Consider function descriptions
   - Shorten up comment language
-    - e.g. replace "N.B. kernfs_get_parent returns a kernfs_node with an active reference that we need to drop with kernfs_put." with "kernfs_get_parent adds a reference; drop it with kernfs_put."
   - Comment `sample_kernfs_directory` fields
-- Invert allocating internal struct so we can pass it as ->priv arg when creating dir and root node
 
 - Rebase against git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
-- Re-read `list_head` docs and make sure I'm using them correctly. (Maybe search for "`list_head` tree" or something)
 - Ensure we have locking for any parent/child relationship modifications in `sample_kern_directory`.
   - Check if `kernfs` provides top-level locks on all of these actions. We don't want to add extra locks! If `kernfs` locks, document it.
     - In particular, does `kernfs_remove_self` (which removes self-protection) kill our locking?

@@ -1,4 +1,4 @@
-From 90bff030a30a678ae64cb15e9073219e1ea5850b Mon Sep 17 00:00:00 2001
+From a0053304a41083854aa6ecb326c53a038b4cdbd2 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 14:00:44 -0800
 Subject: [PATCH 5/5] samples/kernfs: Add inc file to allow changing counter
@@ -11,11 +11,11 @@ are read.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 41 +++++++++++++++++++++++++++++++++-
- 1 file changed, 40 insertions(+), 1 deletion(-)
+ samples/kernfs/sample_kernfs.c | 40 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 39 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 4e37fc3e9b79..999e36914695 100644
+index df9b042b2ca8..cc167d2e4ce6 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -16,6 +16,7 @@
@@ -26,7 +26,15 @@ index 4e37fc3e9b79..999e36914695 100644
  	struct list_head subdirs;
  	struct list_head siblings;
  };
-@@ -36,7 +37,8 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
+@@ -28,6 +29,7 @@ static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
+ 	if (!dir)
+ 		return NULL;
+ 
++	atomic64_set(&dir->inc, 1);
+ 	INIT_LIST_HEAD(&dir->subdirs);
+ 	INIT_LIST_HEAD(&dir->siblings);
+ 
+@@ -49,7 +51,8 @@ static int sample_kernfs_counter_seq_show(struct seq_file *sf, void *v)
  {
  	struct kernfs_open_file *of = sf->private;
  	struct sample_kernfs_directory *counter_dir = kernfs_of_to_dir(of);
@@ -36,7 +44,7 @@ index 4e37fc3e9b79..999e36914695 100644
  
  	seq_printf(sf, "%llu\n", count);
  	return 0;
-@@ -64,6 +66,38 @@ static struct kernfs_ops counter_kf_ops = {
+@@ -76,6 +79,37 @@ static struct kernfs_ops counter_kf_ops = {
  	.write		= sample_kernfs_counter_write,
  };
  
@@ -57,7 +65,6 @@ index 4e37fc3e9b79..999e36914695 100644
 +	int ret;
 +	u64 new_value;
 +
-+	// N.B. kernfs handles ensuring the given buffer is nul-terminated.
 +	ret = kstrtou64(strstrip(buf), 10, &new_value);
 +	if (ret)
 +		return ret;
@@ -75,15 +82,7 @@ index 4e37fc3e9b79..999e36914695 100644
  static int sample_kernfs_add_file(struct kernfs_node *dir_kn, const char *name,
  				  struct kernfs_ops *ops)
  {
-@@ -88,6 +122,7 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
- 	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
- 	if (!dir)
- 		return -ENOMEM;
-+	atomic64_set(&dir->inc, 1);
- 	INIT_LIST_HEAD(&dir->subdirs);
- 	INIT_LIST_HEAD(&dir->siblings);
- 	dir_kn->priv = dir;
-@@ -96,6 +131,10 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -98,6 +132,10 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	if (err)
  		return err;
  

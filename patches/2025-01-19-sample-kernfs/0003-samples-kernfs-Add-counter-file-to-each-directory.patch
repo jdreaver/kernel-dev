@@ -1,4 +1,4 @@
-From a8d78ea65ba20a9e528d612227f6e54a91c16461 Mon Sep 17 00:00:00 2001
+From ab269b218b843d6ce6214dce2af7bccaa2f57916 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 09:38:38 -0800
 Subject: [PATCH 3/5] samples/kernfs: Add counter file to each directory
@@ -11,14 +11,14 @@ integer values to/from kernfs files.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 91 ++++++++++++++++++++++++++++++++++
- 1 file changed, 91 insertions(+)
+ samples/kernfs/sample_kernfs.c | 100 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 99 insertions(+), 1 deletion(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index b1409862547e..05ef2259372b 100644
+index b1409862547e..1cb261539bfc 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
-@@ -14,6 +14,87 @@
+@@ -14,6 +14,88 @@
  
  #define SAMPLE_KERNFS_MAGIC 0x8d000ff0
  
@@ -26,13 +26,23 @@ index b1409862547e..05ef2259372b 100644
 +	atomic64_t count;
 +};
 +
++static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
++{
++	struct sample_kernfs_directory *dir;
++
++	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
++	if (!dir)
++		return NULL;
++
++	return dir;
++}
++
 +static struct sample_kernfs_directory *kernfs_of_to_dir(struct kernfs_open_file *of)
 +{
 +	struct kernfs_node *dir_kn = kernfs_get_parent(of->kn);
 +	struct sample_kernfs_directory *dir = dir_kn->priv;
 +
-+	// N.B. kernfs_get_parent returns a kernfs_node with an active reference
-+	// that we need to drop with kernfs_put.
++	// kernfs_get_parent adds a reference; drop it with kernfs_put
 +	kernfs_put(dir_kn);
 +
 +	return dir;
@@ -55,7 +65,6 @@ index b1409862547e..05ef2259372b 100644
 +	int ret;
 +	u64 new_value;
 +
-+	// N.B. kernfs handles ensuring the given buffer is nul-terminated.
 +	ret = kstrtou64(strstrip(buf), 10, &new_value);
 +	if (ret)
 +		return ret;
@@ -86,15 +95,7 @@ index b1409862547e..05ef2259372b 100644
 +
 +static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
 +{
-+	struct sample_kernfs_directory *dir;
 +	int err;
-+
-+	// We allocate a struct to hold directory information, which gets
-+	// stuffed into the private data of the kernfs_node for this directory.
-+	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
-+	if (!dir)
-+		return -ENOMEM;
-+	dir_kn->priv = dir;
 +
 +	err = sample_kernfs_add_file(dir_kn, "counter", &counter_kf_ops);
 +	if (err)
@@ -106,15 +107,29 @@ index b1409862547e..05ef2259372b 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -31,6 +112,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+@@ -30,13 +112,20 @@ static const struct fs_context_operations sample_kernfs_fs_context_ops = {
+ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc;
++	struct sample_kernfs_directory *dir;
  	struct kernfs_root *root;
 +	int err;
  
  	kfc = kzalloc(sizeof(struct kernfs_fs_context), GFP_KERNEL);
  	if (!kfc)
-@@ -46,15 +128,24 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
+ 		return -ENOMEM;
+ 
+-	root = kernfs_create_root(NULL, 0, NULL);
++	dir = sample_kernfs_create_dir();
++	if (!dir)
++		return -ENOMEM;
++
++	// dir gets stored in root->priv so we can access it later.
++	root = kernfs_create_root(NULL, 0, dir);
+ 	if (IS_ERR(root))
+ 		return PTR_ERR(root);
+ 
+@@ -46,15 +135,24 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  	fc->ops = &sample_kernfs_fs_context_ops;
  	fc->global = true;
  

@@ -1,4 +1,4 @@
-From b2538d14e48114fc35a429af726b9bf3f5a45889 Mon Sep 17 00:00:00 2001
+From a97f53da41be253944c35459ba3b72fd8935b64f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 20 Jan 2025 12:31:50 -0800
 Subject: [PATCH 4/5] samples/kernfs: Allow creating and removing directories
@@ -16,11 +16,11 @@ motivation for using kernfs_remove_self().
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- samples/kernfs/sample_kernfs.c | 75 +++++++++++++++++++++++++++++++++-
- 1 file changed, 73 insertions(+), 2 deletions(-)
+ samples/kernfs/sample_kernfs.c | 80 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 78 insertions(+), 2 deletions(-)
 
 diff --git a/samples/kernfs/sample_kernfs.c b/samples/kernfs/sample_kernfs.c
-index 05ef2259372b..4e37fc3e9b79 100644
+index 1cb261539bfc..df9b042b2ca8 100644
 --- a/samples/kernfs/sample_kernfs.c
 +++ b/samples/kernfs/sample_kernfs.c
 @@ -16,6 +16,8 @@
@@ -31,30 +31,34 @@ index 05ef2259372b..4e37fc3e9b79 100644
 +	struct list_head siblings;
  };
  
- static struct sample_kernfs_directory *kernfs_of_to_dir(struct kernfs_open_file *of)
-@@ -86,6 +88,8 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
- 	dir = kzalloc(sizeof(struct sample_kernfs_directory), GFP_KERNEL);
+ static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
+@@ -26,6 +28,9 @@ static struct sample_kernfs_directory *sample_kernfs_create_dir(void)
  	if (!dir)
- 		return -ENOMEM;
+ 		return NULL;
+ 
 +	INIT_LIST_HEAD(&dir->subdirs);
 +	INIT_LIST_HEAD(&dir->siblings);
- 	dir_kn->priv = dir;
++
+ 	return dir;
+ }
  
- 	err = sample_kernfs_add_file(dir_kn, "counter", &counter_kf_ops);
-@@ -95,6 +99,73 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
+@@ -96,6 +101,77 @@ static int sample_kernfs_populate_dir(struct kernfs_node *dir_kn)
  	return 0;
  }
  
 +static int sample_kernfs_mkdir(struct kernfs_node *parent_kn, const char *name, umode_t mode)
 +{
 +	struct kernfs_node *dir_kn;
-+	struct sample_kernfs_directory *parent_dir, *child_dir;
++	struct sample_kernfs_directory *dir, *parent_dir;
 +	int ret;
 +
-+	// N.B. Pass NULL for as the priv argument. It is allocated and assigned
-+	// in sample_kernfs_populate_dir so the root directory gets it too.
++	dir = sample_kernfs_create_dir();
++	if (!dir)
++		return -ENOMEM;
++
++	// dir gets stored in dir_kn->priv so we can access it later.
 +	dir_kn = kernfs_create_dir_ns(parent_kn, name, mode, current_fsuid(),
-+				      current_fsgid(), NULL, NULL);
++				      current_fsgid(), dir, NULL);
 +
 +	if (IS_ERR(dir_kn))
 +		return PTR_ERR(dir_kn);
@@ -67,8 +71,7 @@ index 05ef2259372b..4e37fc3e9b79 100644
 +
 +	// Add directory to parent->subdirs
 +	parent_dir = parent_kn->priv;
-+	child_dir = dir_kn->priv;
-+	list_add(&child_dir->siblings, &parent_dir->subdirs);
++	list_add(&dir->siblings, &parent_dir->subdirs);
 +
 +	return 0;
 +}
@@ -77,9 +80,11 @@ index 05ef2259372b..4e37fc3e9b79 100644
 +{
 +	struct sample_kernfs_directory *child, *tmp;
 +
-+	// Recursively remove children. Note that recursion is usually frowned
-+	// upon in the kernel. If this were a real filesystem we would create a
-+	// way to iterate through children without recursion.
++	/*
++	 * Recursively remove children. Note that recursion is usually frowned
++	 * upon in the kernel. If this were a real filesystem we would create a
++	 * way to iterate through children without recursion.
++	 */
 +	list_for_each_entry_safe(child, tmp, &dir->subdirs, siblings) {
 +		sample_kernfs_remove_subtree(child);
 +	}
@@ -94,14 +99,14 @@ index 05ef2259372b..4e37fc3e9b79 100644
 +{
 +	struct sample_kernfs_directory *dir = kn->priv;
 +
-+	// kernfs_remove_self safely removes the node while also breaking out of
-+	// kernfs active protection (see kernfs_break_active_protection). This
-+	// is necessary to avoid a deadlock because the kernfs function that
-+	// called rmdir is holding the lock.
++	/*
++	 * kernfs_remove_self safely removes the node while also breaking out of
++	 * kernfs active protection (see kernfs_break_active_protection). This
++	 * is necessary to avoid a deadlock because the kernfs function that
++	 * called rmdir is holding the lock.
++	 */
 +	kernfs_remove_self(kn);
 +
-+	// Recursively destroy sample_kernfs_directory _after_ we destroy kernfs
-+	// nodes.
 +	sample_kernfs_remove_subtree(dir);
 +
 +	return 0;
@@ -115,16 +120,16 @@ index 05ef2259372b..4e37fc3e9b79 100644
  static void sample_kernfs_fs_context_free(struct fs_context *fc)
  {
  	struct kernfs_fs_context *kfc = fc->fs_private;
-@@ -118,7 +189,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
- 	if (!kfc)
+@@ -125,7 +201,7 @@ static int sample_kernfs_init_fs_context(struct fs_context *fc)
  		return -ENOMEM;
  
--	root = kernfs_create_root(NULL, 0, NULL);
-+	root = kernfs_create_root(&sample_kernfs_kf_syscall_ops, 0, NULL);
+ 	// dir gets stored in root->priv so we can access it later.
+-	root = kernfs_create_root(NULL, 0, dir);
++	root = kernfs_create_root(&sample_kernfs_kf_syscall_ops, 0, dir);
  	if (IS_ERR(root))
  		return PTR_ERR(root);
  
-@@ -145,7 +216,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
+@@ -152,7 +228,7 @@ static void sample_kernfs_kill_sb(struct super_block *sb)
  
  	kernfs_kill_sb(sb);
  	kernfs_destroy_root(root);
