@@ -28,7 +28,9 @@ Patches:
 - Ensure each commit compiles and works as intended!
 - Maybe make this an `[RFC]`
 
-## People to To/CC
+## Cover letter (Moved to actual cover letter file, iterate there)
+
+Subject: samples/kernfs: Add a pseudo-filesystem to demonstrate kernfs usage
 
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Tejun Heo <tj@kernel.org>
@@ -39,10 +41,6 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     James Bottomley <James.Bottomley@HansenPartnership.com>,
     Krister Johansen <kjlx@templeofstupid.com>,
     linux-fsdevel@vger.kernel.org
-
-## Cover letter (WIP)
-
-Subject: samples/kernfs: Add a pseudo-filesystem to demonstrate kernfs usage
 
 This patch series creates a pseudo-filesystem built on top of kernfs in
 samples/kernfs/.
