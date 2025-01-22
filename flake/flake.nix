@@ -114,11 +114,14 @@
           # Use GNU screen to connect to serial port (e.g. sudo screen /dev/ttyUSB0 115200)
           screen
 
-          # Cross-compilation to ARM
-          pkgsCross.aarch64-multiplatform.buildPackages.gcc
-          pkgsCross.armv7l-hf-multiplatform.buildPackages.gcc
-          pkgsCross.armv7l-hf-multiplatform.glibc.static # For libm and libresolv for busybox
-          gcc-arm-embedded
+          # Cross-compilation to ARM. TODO: Move these to a different shell so
+          # we don't stuff up the main shell. These add all kinds of warnings to
+          # x86 kernel builds.
+          #
+          # pkgsCross.aarch64-multiplatform.buildPackages.gcc
+          # pkgsCross.armv7l-hf-multiplatform.buildPackages.gcc
+          # pkgsCross.armv7l-hf-multiplatform.glibc.static # For libm and libresolv for busybox
+          # gcc-arm-embedded
 
           # busybox x86
           # glibc.static # For libm and libresolv for busybox
@@ -127,7 +130,7 @@
           coccinelle
           cppcheck
           sparse
-          smatch
+          #smatch
           # qt5.full # for make xconfig
           lz4
 
