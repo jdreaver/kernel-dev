@@ -18,44 +18,7 @@
         ply
       ];
       python-and-packages = pkgs.python3.withPackages python-packages;
-
-      # Use a consistent LLVM version throughout this flake. The default for
-      # nixpkgs is 11, while the latest is 16!
-      flake_llvmPackages = pkgs.llvmPackages_15;
-
-      # We need a specific version. See https://www.kernel.org/doc/html/next/rust/quick-start.html
-      rust-bindgen-0_56 = with pkgs; pkgs.rustPlatform.buildRustPackage rec {
-        pname = "bindgen";
-        version = "0.56.0";
-
-        src = fetchCrate {
-          inherit pname version;
-          sha256 = "sha256-ps5tkrq0PvTiGs6vVXhVlbUeGB0h4r9cCFyqETTLxUw=";
-        };
-
-        cargoHash = "sha256-dvKaiVLYJgvE3WISoWFeKUhaC0lAMmnuYvTCjIM/yYA=";
-
-        libclang = flake_llvmPackages.libclang.lib;
-        inherit bash;
-        buildInputs = [ libclang ];
-
-        configurePhase = ''
-          export LIBCLANG_PATH="${libclang}/lib"
-        '';
-        postInstall = ''
-          mv $out/bin/{bindgen,.bindgen-wrapped};
-          substituteAll ${./bindgen_0_56_wrapper.sh} $out/bin/bindgen
-          chmod +x $out/bin/bindgen
-            '';
-        doCheck = false;
-      };
     in {
-      # devShells.x86_64-linux.default = pkgs.mkShell {
-      #   # Use a slightly older GCC version so older kernels compile. When I
-      #   # tried to compile linux-staging in July 2023, nixpkgs used gcc 12 by
-      #   # default, and I needed to use gcc 11.
-      #   stdenv = pkgs.gcc11Stdenv;
-      # } {
       devShells.x86_64-linux.default = pkgs.mkShell {
         # Disable default hardening flags. These are very confusing when doing
         # development and they break builds of packages/systems that don't
@@ -64,6 +27,9 @@
         # - https://nixos.org/manual/nixpkgs/stable/#sec-hardening-in-nixpkgs
         # - https://nixos.wiki/wiki/C#Hardening_flags
         hardeningDisable = ["all"];
+
+        # Needed for Rust builds
+        RUST_LIB_SRC = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
 
         buildInputs = with pkgs; [
           # Kernel builds
@@ -87,19 +53,14 @@
           zlib
 
           # Clang kernel builds
-          flake_llvmPackages.clang
+          llvmPackages.clang
 
           # Rust. See https://www.kernel.org/doc/html/next/rust/quick-start.html
-          (rust-bin.stable."1.62.0".default.override { # Get version with `./scripts/min-tool-version.sh rustc` in kernel source
-            extensions = [
-              "rust-src"
-            ];
-            # targets = [
-            #   "x86_64-unknown-none"
-            # ];
-          })
-          rust-bindgen-0_56
-          flake_llvmPackages.bintools
+          rustc
+          rust-bindgen
+          rustfmt
+          clippy
+          llvmPackages.bintools
 
           # Non-standard build stuff
           gmp # for a gcc plugin used by some staging module

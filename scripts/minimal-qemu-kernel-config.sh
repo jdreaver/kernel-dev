@@ -16,6 +16,7 @@ scripts/config \
   --set-val DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT y \
   --set-val DEBUG y \
   --set-val GDB_SCRIPTS y \
+  --set-val CONFIG_RUST y \
   --set-val DEBUG_DRIVER y \
   --set-val CONFIG_DM_DEBUG y \
   --set-val CONFIG_IKCONFIG y \
