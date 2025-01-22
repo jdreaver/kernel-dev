@@ -34,9 +34,9 @@ scripts/config \
   --set-val CONFIG_BPF_JIT y \
   --set-val CONFIG_LOCALVERSION_AUTO y
 
-# If env var DEBUG is defined, add more debug options. Taken from
+# Add more more debug options unless DEBUG=no env var is set. Some of these taken from
 # https://docs.kernel.org/process/submit-checklist.html#test-your-code
-if [ -n "${DEBUG:-}" ]; then
+if [[ "${DEBUG:-}" != "no" ]]; then
   scripts/config \
     --set-val CONFIG_PREEMPT y \
     --set-val CONFIG_DEBUG_PREEMPT y \
