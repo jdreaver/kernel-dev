@@ -8,9 +8,11 @@ directory, but won't be committed to this repo.
 ## Usage
 
 Here is a typical workflow with bells and whistles:
+
 1. (Optional) Update the kernel source tree or get a new one
 
    ```bash
+   $ git clone <some-linux-tree>
    $ cd linux && git pull upstream master
    # or
    $ ./scripts/fetch-kernel-tarball.sh 5.18.6
