@@ -1,0 +1,28 @@
+From db5580d01ad643ff6270c722a956eb7c4a0eb544 Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Wed, 22 Jan 2025 14:19:58 -0800
+Subject: [PATCH 0/1] *** SUBJECT HERE ***
+To: Steven Rostedt <rostedt@goodmis.org>,
+    Masami Hiramatsu <mhiramat@kernel.org>,
+    Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Tejun Heo <tj@kernel.org>,
+    Christian Brauner <brauner@kernel.org>,
+    linux-trace-kernel@vger.kernel.org,
+    linux-fsdevel@vger.kernel.org,
+    linux-kernel@vger.kernel.org
+
+*** BLURB HERE ***
+
+David Reaver (1):
+  tracefs: Port internals to kernfs
+
+ fs/kernfs/inode.c       |  10 +
+ fs/tracefs/inode.c      | 569 ++++++++++++----------------------------
+ fs/tracefs/internal.h   |   3 +
+ include/linux/kernfs.h  |   3 +
+ include/linux/tracefs.h |  17 +-
+ 5 files changed, 197 insertions(+), 405 deletions(-)
+
+
+base-commit: 88e969fc18a25ab3ffe554a1c2e8e45c8ade6d3e
