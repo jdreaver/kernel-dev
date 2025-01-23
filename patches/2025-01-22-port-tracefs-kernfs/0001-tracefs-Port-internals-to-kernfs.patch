@@ -1,7 +1,7 @@
-From db5580d01ad643ff6270c722a956eb7c4a0eb544 Mon Sep 17 00:00:00 2001
+From 94643f94a540cad0deb6664e656e7fb2971fbf2b Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 22 Jan 2025 14:05:39 -0800
-Subject: [PATCH 1/1] tracefs: Port internals to kernfs
+Subject: [PATCH 1/2] tracefs: Port internals to kernfs
 To: Steven Rostedt <rostedt@goodmis.org>,
     Masami Hiramatsu <mhiramat@kernel.org>,
     Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
@@ -44,7 +44,7 @@ index b83054da68b3..9a2833f58cb5 100644
  {
  	kernfs_get(kn);
 diff --git a/fs/tracefs/inode.c b/fs/tracefs/inode.c
-index cfc614c638da..6d89ceaf6b0c 100644
+index cfc614c638da..74c5cd78a279 100644
 --- a/fs/tracefs/inode.c
 +++ b/fs/tracefs/inode.c
 @@ -24,7 +24,8 @@
@@ -62,8 +62,8 @@ index cfc614c638da..6d89ceaf6b0c 100644
  static LIST_HEAD(tracefs_inodes);
  
 -static struct inode *tracefs_alloc_inode(struct super_block *sb)
-+static ssize_t tracefs_kf_read(struct kernfs_open_file *of, char *buf,
-+				size_t count, loff_t pos)
++static ssize_t tracefs_kf_default_read(struct kernfs_open_file *of, char *buf,
++				       size_t count, loff_t pos)
  {
 -	struct tracefs_inode *ti;
 -	unsigned long flags;
@@ -81,8 +81,8 @@ index cfc614c638da..6d89ceaf6b0c 100644
  }
  
 -static void tracefs_free_inode(struct inode *inode)
-+static ssize_t tracefs_kf_write(struct kernfs_open_file *of, char *buf,
-+				 size_t count, loff_t pos)
++static ssize_t tracefs_kf_default_write(struct kernfs_open_file *of, char *buf,
++					size_t count, loff_t pos)
  {
 -	struct tracefs_inode *ti = get_tracefs(inode);
 -
@@ -91,8 +91,8 @@ index cfc614c638da..6d89ceaf6b0c 100644
  }
  
 -static void tracefs_destroy_inode(struct inode *inode)
-+static loff_t tracefs_kf_llseek(struct kernfs_open_file *of, loff_t offset,
-+				 int whence)
++static loff_t tracefs_kf_default_llseek(struct kernfs_open_file *of,
++					loff_t offset, int whence)
  {
 -	struct tracefs_inode *ti = get_tracefs(inode);
 -	unsigned long flags;
@@ -105,7 +105,7 @@ index cfc614c638da..6d89ceaf6b0c 100644
  
 -static ssize_t default_read_file(struct file *file, char __user *buf,
 -				 size_t count, loff_t *ppos)
-+static int tracefs_kf_open(struct kernfs_open_file *of)
++static int tracefs_kf_default_open(struct kernfs_open_file *of)
  {
  	return 0;
  }
@@ -121,11 +121,11 @@ index cfc614c638da..6d89ceaf6b0c 100644
 -	.write =	default_write_file,
 -	.open =		simple_open,
 -	.llseek =	noop_llseek,
-+static const struct kernfs_ops tracefs_file_kfops = {
-+	.read		= tracefs_kf_read,
-+	.write		= tracefs_kf_write,
-+	.open		= tracefs_kf_open,
-+	.llseek		= tracefs_kf_llseek,
++static const struct kernfs_ops tracefs_default_file_kfops = {
++	.read		= tracefs_kf_default_read,
++	.write		= tracefs_kf_default_write,
++	.open		= tracefs_kf_default_open,
++	.llseek		= tracefs_kf_default_llseek,
  };
  
  static struct tracefs_dir_ops {
@@ -676,7 +676,7 @@ index cfc614c638da..6d89ceaf6b0c 100644
 +	return __kernfs_create_file(parent ?: tracefs_kfs_root_node, name, mode,
 +				    kernfs_node_owner(parent),
 +				    kernfs_node_group(parent), PAGE_SIZE,
-+				    ops ? : &tracefs_file_kfops, data, NULL,
++				    ops ? : &tracefs_default_file_kfops, data, NULL,
 +				    NULL);
  }
  

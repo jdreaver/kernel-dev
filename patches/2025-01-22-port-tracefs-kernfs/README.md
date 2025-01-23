@@ -21,17 +21,27 @@ rm -f ../patches/2025-01-22-port-tracefs-kernfs/*.patch && \
       --cc 'linux-kernel@vger.kernel.org'
 ```
 
+Other tracing config options I need on top of my defaults
+
+```bash
+./scripts/config \
+    --set-val CONFIG_TRACER_MAX_TRACE y
+```
+
 ## TODO
 
 Code:
 
-- Fill out the read/write/seek/etc methods (see the stuff I deleted obviously)
+- Use tracing tree as base (not Linus') git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace.git
+- Need a prefactor in trace.c (and all other users of tracefs) to try using seq ops or some wrapper so when we migrate to `kernfs_ops` it isn't a massive pain
+- Compile entire kernel or find a way to find all users and ensure I'm compiling/enabling them
+  - Enable all `CONFIG_TRACE*` and `CONFIG_FTRACE*` stuff (search trace.c for stuff to enable)
+- Need to set `atomic_write_len` on all `kernfs_ops`?
 - Remove global info. Not sure why we need it?
+- Bring back llseek?
 - TODOs in the code
 
-Testing:
-
-- Do any testing :) add more items here
+- Testing!
 
 Before submitting:
 
