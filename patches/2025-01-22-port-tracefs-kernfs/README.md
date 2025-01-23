@@ -42,10 +42,12 @@ Other tracing config options I need on top of my defaults
 Prefactor:
 
 - Deal with using `inode->c_dev` to store CPU
+  - Maybe store in `ftrace_buffer_info`?
 - Need a prefactor in trace.c (and all other users of tracefs) to try using seq ops or some wrapper so when we migrate to `kernfs_ops` it isn't a massive pain
 - Most complicated `file_operations` is `tracing_buffers_fops`. poll, flush, splice_read, mmap, ioctl, etc
   - I wonder what people would think if we did `kernfs_inode()` as an escape hatch to set some of these to our own function?
   - Context on `flush()` at least <https://lore.kernel.org/linux-trace-kernel/20240308202432.107909457@goodmis.org/>
+- Also complicated is `tracing_pipe_fops`
 
 Code:
 

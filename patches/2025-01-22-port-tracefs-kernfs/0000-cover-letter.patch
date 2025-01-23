@@ -1,6 +1,6 @@
-From cba7400be3195c9cca35a92cd28d47c01fd9b75e Mon Sep 17 00:00:00 2001
+From 7a94b3fd8857cda216ce597f6564837fa5ffff28 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Thu, 23 Jan 2025 10:43:38 -0800
+Date: Thu, 23 Jan 2025 11:41:17 -0800
 Subject: [PATCH 0/4] *** SUBJECT HERE ***
 To: Steven Rostedt <rostedt@goodmis.org>,
     Masami Hiramatsu <mhiramat@kernel.org>,
@@ -26,9 +26,9 @@ David Reaver (4):
  fs/tracefs/internal.h   |   3 +
  include/linux/kernfs.h  |  17 +-
  include/linux/tracefs.h |  17 +-
- kernel/trace/trace.c    | 441 ++++++++++---------------------
+ kernel/trace/trace.c    | 569 +++++++++++++++-------------------------
  kernel/trace/trace.h    |  32 ++-
- 8 files changed, 428 insertions(+), 720 deletions(-)
+ 8 files changed, 488 insertions(+), 788 deletions(-)
 
 
 base-commit: 88e969fc18a25ab3ffe554a1c2e8e45c8ade6d3e
