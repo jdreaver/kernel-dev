@@ -1,7 +1,7 @@
-From b5113bf7a94a88f77e273e0cb7c5d455b8d148a7 Mon Sep 17 00:00:00 2001
+From f33f39efe585ab643eb3691097651b3c7cdae38f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 22 Jan 2025 16:08:55 -0800
-Subject: [PATCH 0/2] *** SUBJECT HERE ***
+Date: Wed, 22 Jan 2025 21:20:44 -0800
+Subject: [PATCH 0/4] *** SUBJECT HERE ***
 To: Steven Rostedt <rostedt@goodmis.org>,
     Masami Hiramatsu <mhiramat@kernel.org>,
     Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
@@ -14,18 +14,21 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 
 *** BLURB HERE ***
 
-David Reaver (2):
-  tracefs: Port internals to kernfs
-  trace: (incomplete) port trace to use new kernfs tracefs backend
+David Reaver (4):
+  kernfs: Add flush to struct file_operations
+  kernfs: Add splice_read to struct file_operations
+  kernfs: Add unlocked_ioctl to struct file_operations
+  tracefs: Port to kernfs
 
+ fs/kernfs/file.c        |  59 ++++-
  fs/kernfs/inode.c       |  10 +
  fs/tracefs/inode.c      | 569 ++++++++++++----------------------------
  fs/tracefs/internal.h   |   3 +
- include/linux/kernfs.h  |   3 +
+ include/linux/kernfs.h  |  17 +-
  include/linux/tracefs.h |  17 +-
- kernel/trace/trace.c    | 203 +++++++-------
- kernel/trace/trace.h    |  28 +-
- 7 files changed, 302 insertions(+), 531 deletions(-)
+ kernel/trace/trace.c    | 212 +++++++--------
+ kernel/trace/trace.h    |  30 +--
+ 8 files changed, 379 insertions(+), 538 deletions(-)
 
 
 base-commit: 88e969fc18a25ab3ffe554a1c2e8e45c8ade6d3e

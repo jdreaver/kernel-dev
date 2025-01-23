@@ -1,0 +1,73 @@
+From d1ef0884a6e03b1d866006539a745df0f500a228 Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Wed, 22 Jan 2025 21:05:34 -0800
+Subject: [PATCH 3/4] kernfs: Add unlocked_ioctl to struct file_operations
+To: Steven Rostedt <rostedt@goodmis.org>,
+    Masami Hiramatsu <mhiramat@kernel.org>,
+    Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Tejun Heo <tj@kernel.org>,
+    Christian Brauner <brauner@kernel.org>,
+    linux-trace-kernel@vger.kernel.org,
+    linux-fsdevel@vger.kernel.org,
+    linux-kernel@vger.kernel.org
+
+Adds unlocked_ioctl to kernfs struct file_operations so tracefs can use
+kernfs with a custom unlocked_ioctl function.
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ fs/kernfs/file.c       | 19 +++++++++++++++++++
+ include/linux/kernfs.h |  2 ++
+ 2 files changed, 21 insertions(+)
+
+diff --git a/fs/kernfs/file.c b/fs/kernfs/file.c
+index c2ed92f761ba..be5bbb141e24 100644
+--- a/fs/kernfs/file.c
++++ b/fs/kernfs/file.c
+@@ -927,6 +927,24 @@ static ssize_t kernfs_fop_splice_read(struct file *in, loff_t *ppos,
+ 	return ret;
+ }
+ 
++static long kernfs_fop_unlocked_ioctl(struct file *file, unsigned int cmd,
++				       unsigned long arg)
++{
++	struct kernfs_open_file *of = kernfs_of(file);
++	struct kernfs_node *kn = of->kn;
++	long ret = 0;
++
++	if (kn->attr.ops->flush) {
++		struct mutex *mutex;
++
++		mutex = kernfs_open_file_mutex_lock(kn);
++		ret = kn->attr.ops->unlocked_ioctl(file, cmd, arg);
++		mutex_unlock(mutex);
++	}
++
++	return ret;
++}
++
+ static void kernfs_notify_workfn(struct work_struct *work)
+ {
+ 	struct kernfs_node *kn;
+@@ -1038,6 +1056,7 @@ const struct file_operations kernfs_file_fops = {
+ 	.fsync		= noop_fsync,
+ 	.splice_read	= kernfs_fop_splice_read,
+ 	.splice_write	= iter_file_splice_write,
++	.unlocked_ioctl	= kernfs_fop_unlocked_ioctl,
+ };
+ 
+ /**
+diff --git a/include/linux/kernfs.h b/include/linux/kernfs.h
+index 3863b9fd22a7..02ee62e057a8 100644
+--- a/include/linux/kernfs.h
++++ b/include/linux/kernfs.h
+@@ -329,6 +329,8 @@ struct kernfs_ops {
+ 	ssize_t (*splice_read)(struct file *in, loff_t *ppos,
+ 			       struct pipe_inode_info *pipe, size_t len,
+ 			       unsigned int flags);
++	long (*unlocked_ioctl)(struct file *file, unsigned int cmd,
++			       unsigned long arg);
+ };
+ 
+ /*

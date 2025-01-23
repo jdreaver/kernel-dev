@@ -37,20 +37,15 @@ Other tracing config options I need on top of my defaults
 
 ## TODO
 
-- Use tracing tree as base (not Linus') git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace.git
+- (nevermind, can't find right branch) Use tracing tree as base (not Linus') git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace.git
 
 Prefactor:
 
+- Deal with fsnotify work queue thing. See `fsnotify_work` in `trace_create_maxlat_file`
 - Need a prefactor in trace.c (and all other users of tracefs) to try using seq ops or some wrapper so when we migrate to `kernfs_ops` it isn't a massive pain
 - Most complicated `file_operations` is `tracing_buffers_fops`. poll, flush, splice_read, mmap, ioctl, etc
   - I wonder what people would think if we did `kernfs_inode()` as an escape hatch to set some of these to our own function?
   - Context on `flush()` at least <https://lore.kernel.org/linux-trace-kernel/20240308202432.107909457@goodmis.org/>
-- kernfs_ops stuff to add (or override in tracing)
-  - flush (both to `kernfs_ops` and `kernfs_file_fops`)
-  - poll (just `kernfs_ops`)
-  - user-provided splice_read
-  - mmap
-  - unlocked_ioctl
 
 Code:
 

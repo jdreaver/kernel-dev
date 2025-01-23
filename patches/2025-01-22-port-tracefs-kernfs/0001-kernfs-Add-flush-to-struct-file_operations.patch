@@ -1,0 +1,76 @@
+From 1c53fdadf333fe142bdc81e9f449a5e6d203f7ec Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Wed, 22 Jan 2025 20:43:20 -0800
+Subject: [PATCH 1/4] kernfs: Add flush to struct file_operations
+To: Steven Rostedt <rostedt@goodmis.org>,
+    Masami Hiramatsu <mhiramat@kernel.org>,
+    Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Tejun Heo <tj@kernel.org>,
+    Christian Brauner <brauner@kernel.org>,
+    linux-trace-kernel@vger.kernel.org,
+    linux-fsdevel@vger.kernel.org,
+    linux-kernel@vger.kernel.org
+
+Adds flush to kernfs struct file_operations so tracefs can use kernfs with
+a custom flush function.
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ fs/kernfs/file.c       | 17 +++++++++++++++++
+ include/linux/kernfs.h |  3 ++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/fs/kernfs/file.c b/fs/kernfs/file.c
+index 8502ef68459b..cbea863c8990 100644
+--- a/fs/kernfs/file.c
++++ b/fs/kernfs/file.c
+@@ -770,6 +770,22 @@ static int kernfs_fop_release(struct inode *inode, struct file *filp)
+ 	return 0;
+ }
+ 
++static int kernfs_fop_flush(struct file *file, fl_owner_t id)
++{
++	struct kernfs_open_file *of = kernfs_of(file);
++	struct kernfs_node *kn = of->kn;
++
++	if (kn->attr.ops->flush) {
++		struct mutex *mutex;
++
++		mutex = kernfs_open_file_mutex_lock(kn);
++		kn->attr.ops->flush(of);
++		mutex_unlock(mutex);
++	}
++
++	return 0;
++}
++
+ bool kernfs_should_drain_open_files(struct kernfs_node *kn)
+ {
+ 	struct kernfs_open_node *on;
+@@ -996,6 +1012,7 @@ const struct file_operations kernfs_file_fops = {
+ 	.mmap		= kernfs_fop_mmap,
+ 	.open		= kernfs_fop_open,
+ 	.release	= kernfs_fop_release,
++	.flush		= kernfs_fop_flush,
+ 	.poll		= kernfs_fop_poll,
+ 	.fsync		= noop_fsync,
+ 	.splice_read	= copy_splice_read,
+diff --git a/include/linux/kernfs.h b/include/linux/kernfs.h
+index 87c79d076d6d..8d607213537e 100644
+--- a/include/linux/kernfs.h
++++ b/include/linux/kernfs.h
+@@ -270,11 +270,12 @@ struct kernfs_open_file {
+ 
+ struct kernfs_ops {
+ 	/*
+-	 * Optional open/release methods.  Both are called with
++	 * Optional open/release/flush methods.  All called with
+ 	 * @of->seq_file populated.
+ 	 */
+ 	int (*open)(struct kernfs_open_file *of);
+ 	void (*release)(struct kernfs_open_file *of);
++	void (*flush)(struct kernfs_open_file *of);
+ 
+ 	/*
+ 	 * Read is handled by either seq_file or raw_read().

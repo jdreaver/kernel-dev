@@ -1,0 +1,84 @@
+From f5bcd8d37e90630e9dcd2af6ba9ce7076efd947d Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Wed, 22 Jan 2025 20:59:30 -0800
+Subject: [PATCH 2/4] kernfs: Add splice_read to struct file_operations
+To: Steven Rostedt <rostedt@goodmis.org>,
+    Masami Hiramatsu <mhiramat@kernel.org>,
+    Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Tejun Heo <tj@kernel.org>,
+    Christian Brauner <brauner@kernel.org>,
+    linux-trace-kernel@vger.kernel.org,
+    linux-fsdevel@vger.kernel.org,
+    linux-kernel@vger.kernel.org
+
+Adds splice_read to kernfs struct file_operations so tracefs can use kernfs
+with a custom splice_read function.
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ fs/kernfs/file.c       | 23 ++++++++++++++++++++++-
+ include/linux/kernfs.h |  9 +++++++++
+ 2 files changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/fs/kernfs/file.c b/fs/kernfs/file.c
+index cbea863c8990..c2ed92f761ba 100644
+--- a/fs/kernfs/file.c
++++ b/fs/kernfs/file.c
+@@ -906,6 +906,27 @@ static loff_t kernfs_fop_llseek(struct file *file, loff_t offset, int whence)
+ 	return ret;
+ }
+ 
++static ssize_t kernfs_fop_splice_read(struct file *in, loff_t *ppos,
++				      struct pipe_inode_info *pipe,
++				      size_t len, unsigned int flags)
++{
++	struct kernfs_open_file *of = kernfs_of(in);
++	const struct kernfs_ops *ops;
++	ssize_t ret;
++
++	mutex_lock(&of->mutex);
++
++	ops = kernfs_ops(of->kn);
++	if (ops->splice_read)
++		ret = ops->splice_read(in, ppos, pipe, len, flags);
++	else
++		ret = copy_splice_read(in, ppos, pipe, len, flags);
++
++	mutex_unlock(&of->mutex);
++
++	return ret;
++}
++
+ static void kernfs_notify_workfn(struct work_struct *work)
+ {
+ 	struct kernfs_node *kn;
+@@ -1015,7 +1036,7 @@ const struct file_operations kernfs_file_fops = {
+ 	.flush		= kernfs_fop_flush,
+ 	.poll		= kernfs_fop_poll,
+ 	.fsync		= noop_fsync,
+-	.splice_read	= copy_splice_read,
++	.splice_read	= kernfs_fop_splice_read,
+ 	.splice_write	= iter_file_splice_write,
+ };
+ 
+diff --git a/include/linux/kernfs.h b/include/linux/kernfs.h
+index 8d607213537e..3863b9fd22a7 100644
+--- a/include/linux/kernfs.h
++++ b/include/linux/kernfs.h
+@@ -320,6 +320,15 @@ struct kernfs_ops {
+ 
+ 	int (*mmap)(struct kernfs_open_file *of, struct vm_area_struct *vma);
+ 	loff_t (*llseek)(struct kernfs_open_file *of, loff_t offset, int whence);
++
++	/*
++	 * Operations below are "bare" VFS (they don't use kernfs_open_file).
++	 * Perhaps once they have multiple users we can find the right
++	 * abstraction to use.
++         */
++	ssize_t (*splice_read)(struct file *in, loff_t *ppos,
++			       struct pipe_inode_info *pipe, size_t len,
++			       unsigned int flags);
+ };
+ 
+ /*
