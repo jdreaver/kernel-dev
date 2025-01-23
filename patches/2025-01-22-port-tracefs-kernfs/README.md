@@ -37,14 +37,12 @@ Other tracing config options I need on top of my defaults
 
 ## TODO
 
-- Elephant in the room: separating out eventfs is going to be a massive PITA. We might have to make `eventfs` an actual separate thing first.
-- (nevermind, can't find right branch) Use tracing tree as base (not Linus') git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace.git
-
 Prefactor:
 
+- Elephant in the room: separating out eventfs is going to be a massive PITA. We might have to make `eventfs` an actual separate thing first.
+- Perhaps we need opaque handles to wrap inodes, dentries, open files, etc so the actual patch to port to kernfs is smaller. Basically make a shim layer and the migrate the shim.
 - Deal with using `inode->c_dev` to store CPU
   - Maybe store in `ftrace_buffer_info`?
-- Need a prefactor in trace.c (and all other users of tracefs) to try using seq ops or some wrapper so when we migrate to `kernfs_ops` it isn't a massive pain
 - Most complicated `file_operations` is `tracing_buffers_fops`. poll, flush, splice_read, mmap, ioctl, etc
   - I wonder what people would think if we did `kernfs_inode()` as an escape hatch to set some of these to our own function?
   - Context on `flush()` at least <https://lore.kernel.org/linux-trace-kernel/20240308202432.107909457@goodmis.org/>
@@ -67,11 +65,14 @@ Before submitting:
 
 - Double check To:/Cc: lists
 
+Misc:
+
+- (nevermind, can't find right branch) Use tracing tree as base (not Linus') git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace.git
+
 ## Ideas for splitting this up
 
 Refactoring commits before main change (these could be merged in isolation if we want):
 
-- Use seq_file stuff
 - Refactor how fs_context, ops, etc are dealt with
 - Have eventfs use totally isolated data structures so moving tracefs by itself is easier. Move anything shared to `event_inode.c`.
   - Could be done after as well. Just move code and s/tracefs/eventfs?
