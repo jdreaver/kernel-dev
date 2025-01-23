@@ -37,6 +37,7 @@ Other tracing config options I need on top of my defaults
 
 ## TODO
 
+- Elephant in the room: separating out eventfs is going to be a massive PITA. We might have to make `eventfs` an actual separate thing first.
 - (nevermind, can't find right branch) Use tracing tree as base (not Linus') git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace.git
 
 Prefactor:
