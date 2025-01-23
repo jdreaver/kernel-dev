@@ -25,7 +25,13 @@ Other tracing config options I need on top of my defaults
 
 ```bash
 ./scripts/config \
-    --set-val CONFIG_TRACER_MAX_TRACE y
+    --set-val CONFIG_IRQSOFF_TRACER y \
+    --set-val CONFIG_TRACER_MAX_TRACE y \
+    --set-val CONFIG_PREEMPT_TRACER y \
+    --set-val CONFIG_SCHED_TRACER y \
+    --set-val CONFIG_HWLAT_TRACER y \
+    --set-val CONFIG_OSNOISE_TRACER y \
+    --set-val CONFIG_TRACER_SNAPSHOT y
 ```
 
 ## TODO
