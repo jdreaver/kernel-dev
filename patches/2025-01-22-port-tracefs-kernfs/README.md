@@ -41,7 +41,7 @@ Other tracing config options I need on top of my defaults
 
 Prefactor:
 
-- Deal with fsnotify work queue thing. See `fsnotify_work` in `trace_create_maxlat_file`
+- Deal with using `inode->c_dev` to store CPU
 - Need a prefactor in trace.c (and all other users of tracefs) to try using seq ops or some wrapper so when we migrate to `kernfs_ops` it isn't a massive pain
 - Most complicated `file_operations` is `tracing_buffers_fops`. poll, flush, splice_read, mmap, ioctl, etc
   - I wonder what people would think if we did `kernfs_inode()` as an escape hatch to set some of these to our own function?
