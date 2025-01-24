@@ -37,6 +37,8 @@ Other tracing config options I need on top of my defaults
 
 ## TODO
 
+- Undo the stuff I moved to `seq_file`. `seq_file` isn't an obvious/instant win.
+
 Prefactor:
 
 - Elephant in the room: separating out eventfs is going to be a massive PITA. We might have to make `eventfs` an actual separate thing first.
