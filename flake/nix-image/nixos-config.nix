@@ -52,6 +52,9 @@
   programs.bash.enableCompletion = false;
   programs.command-not-found.enable = false;
 
+  # Get ls --color=auto to work
+  programs.bash.enableLsColors = true;
+
   # Enable SSH with root login. SSH is generally a nicer experience than the
   # QEMU serial console.
   services.openssh = {
@@ -103,6 +106,17 @@
     # eBPF (bcc is enabled with programs.bcc.enable = true;)
     bpftrace
     linuxPackages.ply
+
+    # Misc utils
+    bat # cat clone with syntax highlighting https://github.com/sharkdp/bat
+    bottom # htop replacement (binary is called btm) https://github.com/ClementTsang/bottom
+    dogdns # dig replacement https://github.com/ogham/dog
+    duf # df replacement https://github.com/muesli/duf
+    du-dust # du replacement https://github.com/bootandy/dust
+    eza # ls replacement https://github.com/eza-community/eza
+    fd # find replacement https://github.com/sharkdp/fd
+    procs # ps replacement https://github.com/dalance/procs
+    ripgrep
   ];
 
   system.stateVersion = "22.05";
