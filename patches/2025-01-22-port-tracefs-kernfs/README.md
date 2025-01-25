@@ -62,6 +62,9 @@ Code:
 Testing:
 
 - Toggle `CONFIG_LATENCY_FS_NOTIFY` because there are files in both branches of the if/else
+- Iterate through all files in tracefs and read/write them
+- Write a program that does reads (maybe writes?) one byte at a time
+  - This doesn't work for some files, so figure those out
 
 Before submitting:
 
