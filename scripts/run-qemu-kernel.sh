@@ -45,6 +45,7 @@ fi
 
 ARGS=(
     -m 8G
+    -smp 4
     -kernel "$linux_dir/arch/x86/boot/bzImage"
     -hda "$qemu_image"
     -hdb "$dummy_disk"
