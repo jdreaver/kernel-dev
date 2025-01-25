@@ -1,4 +1,4 @@
-From d5f3d15a8df3d5334bdcf597833ffe6540bc1a25 Mon Sep 17 00:00:00 2001
+From 72a1e46e4914f3c896c067cea35cb255a3e72454 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 22 Jan 2025 14:05:39 -0800
 Subject: [PATCH 4/4] tracefs: Port to kernfs
@@ -935,10 +935,10 @@ index d03f74658716..62f28250a2dc 100644
  bool tracefs_initialized(void);
  
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 2542ec398b5d..300bf5b1a871 100644
+index 1496a5ac33ae..61abf7e0eff2 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -1839,69 +1839,16 @@ static ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
+@@ -1826,69 +1826,16 @@ static ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
  unsigned long __read_mostly	tracing_thresh;
  
  #ifdef CONFIG_TRACER_MAX_TRACE
@@ -1011,7 +1011,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  
  /*
   * Copy the new maximum trace into the separate maximum-trace
-@@ -4531,12 +4478,12 @@ static int s_show(struct seq_file *m, void *v)
+@@ -4512,12 +4459,12 @@ static int s_show(struct seq_file *m, void *v)
  
  /*
   * Should be used after trace_array_get(), trace_types_lock
@@ -1028,7 +1028,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	return RING_BUFFER_ALL_CPUS;
  }
  
-@@ -4567,16 +4514,16 @@ static void free_trace_iter_content(struct trace_iterator *iter)
+@@ -4548,16 +4495,16 @@ static void free_trace_iter_content(struct trace_iterator *iter)
  }
  
  static struct trace_iterator *
@@ -1048,7 +1048,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (!iter)
  		return ERR_PTR(-ENOMEM);
  
-@@ -4624,7 +4571,7 @@ __tracing_open(struct inode *inode, struct file *file, bool snapshot)
+@@ -4605,7 +4552,7 @@ __tracing_open(struct inode *inode, struct file *file, bool snapshot)
  		iter->array_buffer = &tr->array_buffer;
  	iter->snapshot = snapshot;
  	iter->pos = -1;
@@ -1057,7 +1057,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	mutex_init(&iter->mutex);
  
  	/* Notify the tracer early; before we stop tracing. */
-@@ -4679,7 +4626,7 @@ __tracing_open(struct inode *inode, struct file *file, bool snapshot)
+@@ -4660,7 +4607,7 @@ __tracing_open(struct inode *inode, struct file *file, bool snapshot)
  	return ERR_PTR(-ENOMEM);
  }
  
@@ -1066,7 +1066,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  {
  	int ret;
  
-@@ -4687,7 +4634,8 @@ int tracing_open_generic(struct inode *inode, struct file *filp)
+@@ -4668,7 +4615,8 @@ int tracing_open_generic(struct inode *inode, struct file *filp)
  	if (ret)
  		return ret;
  
@@ -1076,7 +1076,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	return 0;
  }
  
-@@ -4700,16 +4648,16 @@ bool tracing_is_disabled(void)
+@@ -4681,16 +4629,16 @@ bool tracing_is_disabled(void)
   * Open and update trace_array ref count.
   * Must have the current trace_array passed to it.
   */
@@ -1096,7 +1096,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  
  	return 0;
  }
-@@ -4718,9 +4666,9 @@ int tracing_open_generic_tr(struct inode *inode, struct file *filp)
+@@ -4699,9 +4647,9 @@ int tracing_open_generic_tr(struct inode *inode, struct file *filp)
   * The private pointer of the inode is the trace_event_file.
   * Update the tr ref count associated to it.
   */
@@ -1108,7 +1108,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	int ret;
  
  	ret = tracing_check_open_get_tr(file->tr);
-@@ -4741,31 +4689,22 @@ int tracing_open_file_tr(struct inode *inode, struct file *filp)
+@@ -4722,31 +4670,22 @@ int tracing_open_file_tr(struct inode *inode, struct file *filp)
  	if (ret)
  		return ret;
  
@@ -1146,7 +1146,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  }
  
  static int tracing_release(struct inode *inode, struct file *file)
-@@ -4806,26 +4745,16 @@ static int tracing_release(struct inode *inode, struct file *file)
+@@ -4787,26 +4726,16 @@ static int tracing_release(struct inode *inode, struct file *file)
  	return 0;
  }
  
@@ -1177,7 +1177,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	struct trace_iterator *iter;
  	int ret;
  
-@@ -4834,8 +4763,8 @@ static int tracing_open(struct inode *inode, struct file *file)
+@@ -4815,8 +4744,8 @@ static int tracing_open(struct inode *inode, struct file *file)
  		return ret;
  
  	/* If this file was open for write, then erase contents */
@@ -1188,7 +1188,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  		struct array_buffer *trace_buf = &tr->array_buffer;
  
  #ifdef CONFIG_TRACER_MAX_TRACE
-@@ -4849,8 +4778,8 @@ static int tracing_open(struct inode *inode, struct file *file)
+@@ -4830,8 +4759,8 @@ static int tracing_open(struct inode *inode, struct file *file)
  			tracing_reset_cpu(trace_buf, cpu);
  	}
  
@@ -1199,7 +1199,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  		if (IS_ERR(iter))
  			ret = PTR_ERR(iter);
  		else if (tr->trace_flags & TRACE_ITER_LATENCY_FMT)
-@@ -4939,35 +4868,6 @@ static int t_show(struct seq_file *m, void *v)
+@@ -4920,35 +4849,6 @@ static int t_show(struct seq_file *m, void *v)
  	return 0;
  }
  
@@ -1235,7 +1235,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  static int tracing_seq_release(struct inode *inode, struct file *file)
  {
  	struct trace_array *tr = inode->i_private;
-@@ -4995,7 +4895,8 @@ loff_t tracing_lseek(struct file *file, loff_t offset, int whence)
+@@ -4976,7 +4876,8 @@ loff_t tracing_lseek(struct file *file, loff_t offset, int whence)
  	return ret;
  }
  
@@ -1245,7 +1245,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open,
  	.read		= seq_read,
  	.read_iter	= seq_read_iter,
-@@ -5005,39 +4906,28 @@ static const struct file_operations tracing_fops = {
+@@ -4986,39 +4887,28 @@ static const struct file_operations tracing_fops = {
  	.release	= tracing_release,
  };
  
@@ -1296,7 +1296,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  }
  
  int tracing_set_cpumask(struct trace_array *tr,
-@@ -5081,10 +4971,10 @@ int tracing_set_cpumask(struct trace_array *tr,
+@@ -5062,10 +4952,10 @@ int tracing_set_cpumask(struct trace_array *tr,
  }
  
  static ssize_t
@@ -1310,7 +1310,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	cpumask_var_t tracing_cpumask_new;
  	int err;
  
-@@ -5094,7 +4984,7 @@ tracing_cpumask_write(struct file *filp, const char __user *ubuf,
+@@ -5075,7 +4965,7 @@ tracing_cpumask_write(struct file *filp, const char __user *ubuf,
  	if (!zalloc_cpumask_var(&tracing_cpumask_new, GFP_KERNEL))
  		return -ENOMEM;
  
@@ -1319,7 +1319,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (err)
  		goto err_free;
  
-@@ -5112,12 +5002,11 @@ tracing_cpumask_write(struct file *filp, const char __user *ubuf,
+@@ -5093,12 +4983,11 @@ tracing_cpumask_write(struct file *filp, const char __user *ubuf,
  	return err;
  }
  
@@ -1333,7 +1333,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  };
  
  static int tracing_trace_options_show(struct seq_file *m, void *v)
-@@ -5328,52 +5217,26 @@ static void __init apply_trace_boot_options(void)
+@@ -5309,52 +5198,26 @@ static void __init apply_trace_boot_options(void)
  }
  
  static ssize_t
@@ -1392,7 +1392,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.write		= tracing_trace_options_write,
  };
  
-@@ -5674,17 +5537,31 @@ static const char readme_msg[] =
+@@ -5657,17 +5520,31 @@ static const char readme_msg[] =
  ;
  
  static ssize_t
@@ -1430,7 +1430,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  };
  
  #ifdef CONFIG_TRACE_EVAL_MAP_FILE
-@@ -5755,29 +5632,12 @@ static int eval_map_show(struct seq_file *m, void *v)
+@@ -5738,29 +5615,12 @@ static int eval_map_show(struct seq_file *m, void *v)
  	return 0;
  }
  
@@ -1466,8 +1466,8 @@ index 2542ec398b5d..300bf5b1a871 100644
  };
  
  static inline union trace_eval_map_item *
-@@ -5837,14 +5697,14 @@ trace_insert_eval_map_file(struct module *mod, struct trace_eval_map **start,
- 	mutex_unlock(&trace_eval_mutex);
+@@ -5818,14 +5678,14 @@ trace_insert_eval_map_file(struct module *mod, struct trace_eval_map **start,
+ 	memset(map_array, 0, sizeof(*map_array));
  }
  
 -static void trace_create_eval_file(struct dentry *d_tracer)
@@ -1483,7 +1483,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  static inline void trace_insert_eval_map_file(struct module *mod,
  			      struct trace_eval_map **start, int len) { }
  #endif /* !CONFIG_TRACE_EVAL_MAP_FILE */
-@@ -5864,19 +5724,16 @@ static void trace_insert_eval_map(struct module *mod,
+@@ -5845,19 +5705,16 @@ static void trace_insert_eval_map(struct module *mod,
  	trace_insert_eval_map_file(mod, start, len);
  }
  
@@ -1508,7 +1508,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  }
  
  int tracer_init(struct tracer *t, struct trace_array *tr)
-@@ -6218,11 +6075,10 @@ int tracing_set_tracer(struct trace_array *tr, const char *buf)
+@@ -6186,11 +6043,10 @@ int tracing_set_tracer(struct trace_array *tr, const char *buf)
  }
  
  static ssize_t
@@ -1523,7 +1523,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	char *name;
  	size_t ret;
  	int err;
-@@ -6232,68 +6088,50 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
+@@ -6200,68 +6056,50 @@ tracing_set_trace_write(struct file *filp, const char __user *ubuf,
  	if (cnt > MAX_TRACER_SIZE)
  		cnt = MAX_TRACER_SIZE;
  
@@ -1599,13 +1599,13 @@ index 2542ec398b5d..300bf5b1a871 100644
 +	struct trace_array *tr = of->priv;
  	int ret;
  
- 	mutex_lock(&trace_types_lock);
+ 	guard(mutex)(&trace_types_lock);
 -	ret = tracing_nsecs_write(&tracing_thresh, ubuf, cnt, ppos);
 +	ret = tracing_nsecs_write(&tracing_thresh, buf);
  	if (ret < 0)
- 		goto out;
+ 		return ret;
  
-@@ -6312,22 +6150,26 @@ tracing_thresh_write(struct file *filp, const char __user *ubuf,
+@@ -6276,22 +6114,26 @@ tracing_thresh_write(struct file *filp, const char __user *ubuf,
  
  #ifdef CONFIG_TRACER_MAX_TRACE
  
@@ -1641,7 +1641,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  }
  
  #endif
-@@ -6357,9 +6199,9 @@ static void close_pipe_on_cpu(struct trace_array *tr, int cpu)
+@@ -6321,9 +6163,9 @@ static void close_pipe_on_cpu(struct trace_array *tr, int cpu)
  	}
  }
  
@@ -1653,7 +1653,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	struct trace_iterator *iter;
  	int cpu;
  	int ret;
-@@ -6369,7 +6211,7 @@ static int tracing_open_pipe(struct inode *inode, struct file *filp)
+@@ -6333,7 +6175,7 @@ static int tracing_open_pipe(struct inode *inode, struct file *filp)
  		return ret;
  
  	mutex_lock(&trace_types_lock);
@@ -1662,7 +1662,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	ret = open_pipe_on_cpu(tr, cpu);
  	if (ret)
  		goto fail_pipe_on_cpu;
-@@ -6403,7 +6245,7 @@ static int tracing_open_pipe(struct inode *inode, struct file *filp)
+@@ -6367,7 +6209,7 @@ static int tracing_open_pipe(struct inode *inode, struct file *filp)
  	iter->array_buffer = &tr->array_buffer;
  	iter->cpu_file = cpu;
  	mutex_init(&iter->mutex);
@@ -1671,7 +1671,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  
  	if (iter->trace->pipe_open)
  		iter->trace->pipe_open(iter);
-@@ -6425,10 +6267,10 @@ static int tracing_open_pipe(struct inode *inode, struct file *filp)
+@@ -6389,10 +6231,10 @@ static int tracing_open_pipe(struct inode *inode, struct file *filp)
  	return ret;
  }
  
@@ -1685,7 +1685,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  
  	mutex_lock(&trace_types_lock);
  
-@@ -6448,7 +6290,8 @@ static int tracing_release_pipe(struct inode *inode, struct file *file)
+@@ -6412,7 +6254,8 @@ static int tracing_release_pipe(struct inode *inode, struct file *file)
  }
  
  static __poll_t
@@ -1695,7 +1695,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  {
  	struct trace_array *tr = iter->tr;
  
-@@ -6463,15 +6306,15 @@ trace_poll(struct trace_iterator *iter, struct file *filp, poll_table *poll_tabl
+@@ -6427,15 +6270,15 @@ trace_poll(struct trace_iterator *iter, struct file *filp, poll_table *poll_tabl
  		return EPOLLIN | EPOLLRDNORM;
  	else
  		return ring_buffer_poll_wait(iter->array_buffer->buffer, iter->cpu_file,
@@ -1715,7 +1715,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  }
  
  /* Must be called with iter->mutex held. */
-@@ -6515,10 +6358,10 @@ static int tracing_wait_pipe(struct file *filp)
+@@ -6479,10 +6322,10 @@ static int tracing_wait_pipe(struct file *filp)
   * Consumer reader.
   */
  static ssize_t
@@ -1729,16 +1729,16 @@ index 2542ec398b5d..300bf5b1a871 100644
  	ssize_t sret;
  
  	/*
-@@ -6542,7 +6385,7 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
+@@ -6506,7 +6349,7 @@ tracing_read_pipe(struct file *filp, char __user *ubuf,
  	}
  
  waitagain:
 -	sret = tracing_wait_pipe(filp);
 +	sret = tracing_wait_pipe(of->file);
  	if (sret <= 0)
- 		goto out;
+ 		return sret;
  
-@@ -6759,16 +6602,11 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
+@@ -6718,16 +6561,11 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
  	goto out;
  }
  
@@ -1759,7 +1759,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  
  	mutex_lock(&trace_types_lock);
  
-@@ -6791,32 +6629,30 @@ tracing_entries_read(struct file *filp, char __user *ubuf,
+@@ -6750,32 +6588,30 @@ tracing_entries_read(struct file *filp, char __user *ubuf,
  
  		if (buf_size_same) {
  			if (!tr->ring_buffer_expanded)
@@ -1803,7 +1803,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (ret)
  		return ret;
  
-@@ -6826,12 +6662,10 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+@@ -6785,12 +6621,10 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
  
  	/* value is in KB */
  	val <<= 10;
@@ -1817,7 +1817,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	return cnt;
  }
  
-@@ -6874,17 +6708,18 @@ tracing_last_boot_read(struct file *filp, char __user *ubuf, size_t cnt, loff_t
+@@ -6833,17 +6667,18 @@ tracing_last_boot_read(struct file *filp, char __user *ubuf, size_t cnt, loff_t
  	return simple_read_from_buffer(ubuf, cnt, ppos, buf, seq_buf_used(&seq));
  }
  
@@ -1840,7 +1840,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (ret < 0)
  		__trace_array_put(tr);
  	return ret;
-@@ -7238,9 +7073,9 @@ struct ftrace_buffer_info {
+@@ -7191,9 +7026,9 @@ struct ftrace_buffer_info {
  };
  
  #ifdef CONFIG_TRACER_SNAPSHOT
@@ -1852,7 +1852,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	struct trace_iterator *iter;
  	struct seq_file *m;
  	int ret;
-@@ -7249,8 +7084,8 @@ static int tracing_snapshot_open(struct inode *inode, struct file *file)
+@@ -7202,8 +7037,8 @@ static int tracing_snapshot_open(struct inode *inode, struct file *file)
  	if (ret)
  		return ret;
  
@@ -1863,7 +1863,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  		if (IS_ERR(iter))
  			ret = PTR_ERR(iter);
  	} else {
-@@ -7268,9 +7103,9 @@ static int tracing_snapshot_open(struct inode *inode, struct file *file)
+@@ -7221,9 +7056,9 @@ static int tracing_snapshot_open(struct inode *inode, struct file *file)
  
  		iter->tr = tr;
  		iter->array_buffer = &tr->max_buffer;
@@ -1875,7 +1875,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	}
  out:
  	if (ret < 0)
-@@ -7424,32 +7259,29 @@ static int snapshot_raw_open(struct inode *inode, struct file *filp)
+@@ -7370,32 +7205,29 @@ static int snapshot_raw_open(struct inode *inode, struct file *filp)
  #endif /* CONFIG_TRACER_SNAPSHOT */
  
  
@@ -1915,7 +1915,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open_pipe,
  	.poll		= tracing_poll_pipe,
  	.read		= tracing_read_pipe,
-@@ -7457,62 +7289,61 @@ static const struct file_operations tracing_pipe_fops = {
+@@ -7403,62 +7235,61 @@ static const struct file_operations tracing_pipe_fops = {
  	.release	= tracing_release_pipe,
  };
  
@@ -1989,7 +1989,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open_generic_tr,
  	.read		= tracing_last_boot_read,
  	.llseek		= generic_file_llseek,
-@@ -7520,7 +7351,7 @@ static const struct file_operations last_boot_fops = {
+@@ -7466,7 +7297,7 @@ static const struct file_operations last_boot_fops = {
  };
  
  #ifdef CONFIG_TRACER_SNAPSHOT
@@ -1998,7 +1998,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_snapshot_open,
  	.read		= seq_read,
  	.write		= tracing_snapshot_write,
-@@ -7528,7 +7359,7 @@ static const struct file_operations snapshot_fops = {
+@@ -7474,7 +7305,7 @@ static const struct file_operations snapshot_fops = {
  	.release	= tracing_snapshot_release,
  };
  
@@ -2007,7 +2007,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= snapshot_raw_open,
  	.read		= tracing_buffers_read,
  	.release	= tracing_buffers_release,
-@@ -7616,7 +7447,7 @@ trace_min_max_read(struct file *filp, char __user *ubuf, size_t cnt, loff_t *ppo
+@@ -7562,7 +7393,7 @@ trace_min_max_read(struct file *filp, char __user *ubuf, size_t cnt, loff_t *ppo
  	return simple_read_from_buffer(ubuf, cnt, ppos, buf, len);
  }
  
@@ -2016,7 +2016,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open_generic,
  	.read		= trace_min_max_read,
  	.write		= trace_min_max_write,
-@@ -7890,7 +7721,7 @@ static int tracing_err_log_release(struct inode *inode, struct file *file)
+@@ -7834,7 +7665,7 @@ static int tracing_err_log_release(struct inode *inode, struct file *file)
  	return 0;
  }
  
@@ -2025,7 +2025,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open           = tracing_err_log_open,
  	.write		= tracing_err_log_write,
  	.read           = seq_read,
-@@ -8354,7 +8185,7 @@ static int tracing_buffers_mmap(struct file *filp, struct vm_area_struct *vma)
+@@ -8298,7 +8129,7 @@ static int tracing_buffers_mmap(struct file *filp, struct vm_area_struct *vma)
  	return ret;
  }
  
@@ -2034,7 +2034,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_buffers_open,
  	.read		= tracing_buffers_read,
  	.poll		= tracing_buffers_poll,
-@@ -8429,7 +8260,7 @@ tracing_stats_read(struct file *filp, char __user *ubuf,
+@@ -8373,7 +8204,7 @@ tracing_stats_read(struct file *filp, char __user *ubuf,
  	return count;
  }
  
@@ -2043,7 +2043,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open_generic_tr,
  	.read		= tracing_stats_read,
  	.llseek		= generic_file_llseek,
-@@ -8468,7 +8299,7 @@ tracing_read_dyn_info(struct file *filp, char __user *ubuf,
+@@ -8412,7 +8243,7 @@ tracing_read_dyn_info(struct file *filp, char __user *ubuf,
  	return ret;
  }
  
@@ -2052,7 +2052,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open_generic,
  	.read		= tracing_read_dyn_info,
  	.llseek		= generic_file_llseek,
-@@ -8639,7 +8470,7 @@ static __init int register_snapshot_cmd(void)
+@@ -8583,7 +8414,7 @@ static __init int register_snapshot_cmd(void)
  static inline __init int register_snapshot_cmd(void) { return 0; }
  #endif /* defined(CONFIG_TRACER_SNAPSHOT) && defined(CONFIG_DYNAMIC_FTRACE) */
  
@@ -2061,7 +2061,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  {
  	if (WARN_ON(!tr->dir))
  		return ERR_PTR(-ENODEV);
-@@ -8652,14 +8483,14 @@ static struct dentry *tracing_get_dentry(struct trace_array *tr)
+@@ -8596,14 +8427,14 @@ static struct dentry *tracing_get_dentry(struct trace_array *tr)
  	return tr->dir;
  }
  
@@ -2079,7 +2079,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (IS_ERR(d_tracer))
  		return NULL;
  
-@@ -8671,22 +8502,22 @@ static struct dentry *tracing_dentry_percpu(struct trace_array *tr, int cpu)
+@@ -8615,22 +8446,22 @@ static struct dentry *tracing_dentry_percpu(struct trace_array *tr, int cpu)
  	return tr->percpu_dir;
  }
  
@@ -2109,7 +2109,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	char cpu_dir[30]; /* 30 characters should be more than enough */
  
  	if (!d_percpu)
-@@ -8800,7 +8631,7 @@ static int tracing_release_options(struct inode *inode, struct file *file)
+@@ -8744,7 +8575,7 @@ static int tracing_release_options(struct inode *inode, struct file *file)
  	return 0;
  }
  
@@ -2118,7 +2118,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open = tracing_open_options,
  	.read = trace_options_read,
  	.write = trace_options_write,
-@@ -8893,20 +8724,20 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
+@@ -8837,20 +8668,20 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
  	return cnt;
  }
  
@@ -2146,7 +2146,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  
  	ret = tracefs_create_file(name, mode, parent, data, fops);
  	if (!ret)
-@@ -8916,14 +8747,14 @@ struct dentry *trace_create_file(const char *name,
+@@ -8860,14 +8691,14 @@ struct dentry *trace_create_file(const char *name,
  }
  
  
@@ -2164,7 +2164,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (IS_ERR(d_tracer))
  		return NULL;
  
-@@ -8942,9 +8773,9 @@ create_trace_option_file(struct trace_array *tr,
+@@ -8886,9 +8717,9 @@ create_trace_option_file(struct trace_array *tr,
  			 struct tracer_flags *flags,
  			 struct tracer_opt *opt)
  {
@@ -2176,7 +2176,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (!t_options)
  		return;
  
-@@ -9024,7 +8855,7 @@ create_trace_option_core_file(struct trace_array *tr,
+@@ -8968,7 +8799,7 @@ create_trace_option_core_file(struct trace_array *tr,
  {
  	struct dentry *t_options;
  
@@ -2185,7 +2185,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (!t_options)
  		return NULL;
  
-@@ -9039,7 +8870,7 @@ static void create_trace_options_dir(struct trace_array *tr)
+@@ -8983,7 +8814,7 @@ static void create_trace_options_dir(struct trace_array *tr)
  	bool top_level = tr == &global_trace;
  	int i;
  
@@ -2194,7 +2194,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	if (!t_options)
  		return;
  
-@@ -9100,7 +8931,7 @@ rb_simple_write(struct file *filp, const char __user *ubuf,
+@@ -9044,7 +8875,7 @@ rb_simple_write(struct file *filp, const char __user *ubuf,
  	return cnt;
  }
  
@@ -2203,7 +2203,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open_generic_tr,
  	.read		= rb_simple_read,
  	.write		= rb_simple_write,
-@@ -9144,7 +8975,7 @@ buffer_percent_write(struct file *filp, const char __user *ubuf,
+@@ -9088,7 +8919,7 @@ buffer_percent_write(struct file *filp, const char __user *ubuf,
  	return cnt;
  }
  
@@ -2212,7 +2212,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open_generic_tr,
  	.read		= buffer_percent_read,
  	.write		= buffer_percent_write,
-@@ -9241,7 +9072,7 @@ buffer_subbuf_size_write(struct file *filp, const char __user *ubuf,
+@@ -9185,7 +9016,7 @@ buffer_subbuf_size_write(struct file *filp, const char __user *ubuf,
  	return cnt;
  }
  
@@ -2221,7 +2221,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  	.open		= tracing_open_generic_tr,
  	.read		= buffer_subbuf_size_read,
  	.write		= buffer_subbuf_size_write,
-@@ -9694,8 +9525,7 @@ static __init void create_trace_instances(struct dentry *d_tracer)
+@@ -9626,8 +9457,7 @@ static __init void create_trace_instances(struct dentry *d_tracer)
  {
  	struct trace_array *tr;
  
@@ -2231,7 +2231,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  							 instance_rmdir);
  	if (MEM_FAIL(!trace_instance_dir, "Failed to create instances directory\n"))
  		return;
-@@ -9716,7 +9546,7 @@ static __init void create_trace_instances(struct dentry *d_tracer)
+@@ -9645,7 +9475,7 @@ static __init void create_trace_instances(struct dentry *d_tracer)
  }
  
  static void
@@ -2240,7 +2240,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  {
  	int cpu;
  
-@@ -9775,7 +9605,8 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
+@@ -9704,7 +9534,8 @@ init_tracer_tracefs(struct trace_array *tr, struct dentry *d_tracer)
  	create_trace_options_dir(tr);
  
  #ifdef CONFIG_TRACER_MAX_TRACE
@@ -2251,7 +2251,7 @@ index 2542ec398b5d..300bf5b1a871 100644
  
  	if (ftrace_create_function_files(tr, d_tracer))
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 04058a9889b7..8c69fc0afee8 100644
+index 9c21ba45b7af..2500ab6fd852 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
 @@ -339,9 +339,7 @@ struct trace_array {
@@ -2278,7 +2278,7 @@ index 04058a9889b7..8c69fc0afee8 100644
  	struct eventfs_inode	*event_dir;
  	struct trace_options	*topts;
  	struct list_head	systems;
-@@ -629,21 +627,21 @@ int tracing_is_enabled(void);
+@@ -641,21 +639,21 @@ int tracing_is_enabled(void);
  void tracing_reset_online_cpus(struct array_buffer *buf);
  void tracing_reset_all_online_cpus(void);
  void tracing_reset_all_online_cpus_unlocked(void);

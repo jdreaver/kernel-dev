@@ -1,4 +1,4 @@
-From d1ef0884a6e03b1d866006539a745df0f500a228 Mon Sep 17 00:00:00 2001
+From eac2c14776b874682ed99ef4c13ba90650dc090b Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 22 Jan 2025 21:05:34 -0800
 Subject: [PATCH 3/4] kernfs: Add unlocked_ioctl to struct file_operations
