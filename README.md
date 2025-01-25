@@ -41,36 +41,10 @@ $ cd linux/
 $ make mrproper
 $ make defconfig
 # Build just for good measure
-$ make -j14
+$ make -j32
 # Generate compile-commands.json
-$ ./scripts/clang-tools/gen_compile_commands.py
+$ make compile_commands.json -j32
 ```
-
-## Linux Kernel Rust
-
-```
-$ make mrproper
-$ make CC=clang allnoconfig defconfig rust.config
-$ make CC=clang -j14
-```
-
-Note: when I use `LLVM=1` instead of `CC=clang`, I get this error when linking, even when I _don't_ enable Rust:
-
-```
-  LD      arch/x86/boot/setup.elf
-ld.lld: error: section .bsdata file range overlaps with .header
->>> .bsdata range is [0x1092, 0x122B]
->>> .header range is [0x11EF, 0x126B]
-```
-
-Maybe the problem is my LLVM env for nix in general? <https://github.com/NixOS/nixpkgs/issues/217724>
-
-### Rust resources
-
-- [Mentorship Session: Setting Up an Environment for Writing Linux Kernel Modules in Rust](https://www.youtube.com/watch?v=tPs1uRqOnlk)
-- <https://github.com/jordanisaacs/kernel-module-flake>
-- <https://github.com/Rust-for-Linux/nix>
-- <https://github.com/jordanisaacs/kernel-module-flake>
 
 ## Buildroot
 
