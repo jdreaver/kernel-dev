@@ -67,4 +67,4 @@ if [[ "${DEBUG:-}" != "no" ]]; then
 fi
 
 # Use new .config (properly merges config and allows you to inspect .config)
-make oldconfig
+yes "" | make oldconfig
