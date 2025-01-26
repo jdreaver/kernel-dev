@@ -1,4 +1,4 @@
-From ead84c898e70db69005a5d0dc671eb46838a4376 Mon Sep 17 00:00:00 2001
+From 75114b2eaf0c097630b88cfc108296ffd49579c1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 22 Jan 2025 20:59:30 -0800
 Subject: [PATCH 2/4] kernfs: Add splice_read to struct file_operations
