@@ -98,6 +98,9 @@
           # buildroot
           unzip
 
+          # b4 https://b4.docs.kernel.org/en/latest/
+          b4
+
           # crosstool-ng
           automake
           help2man
