@@ -1,0 +1,1082 @@
+From 05d5388ea8e691e6eabd9037241ed91748384cff Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Tue, 28 Jan 2025 12:39:25 -0800
+Subject: [PATCH 1/1] debugfs: Use opaque debugfs_node handle to support kernfs
+ migration
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Steven Rostedt <rostedt@goodmis.org>
+Cc: Tejun Heo <tj@kernel.org>,
+    Christian Brauner <brauner@kernel.org>,
+    linux-fsdevel@vger.kernel.org,
+    linux-kernel@vger.kernel.org
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ fs/debugfs/file.c       | 143 +++++++++++++++++++----------------
+ fs/debugfs/inode.c      |  56 +++++++-------
+ fs/debugfs/internal.h   |   2 +
+ include/linux/debugfs.h | 161 +++++++++++++++++++++-------------------
+ 4 files changed, 192 insertions(+), 170 deletions(-)
+
+diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
+index 16e198a26339..7e2675cee0ed 100644
+--- a/fs/debugfs/file.c
++++ b/fs/debugfs/file.c
+@@ -134,7 +134,7 @@ static int __debugfs_file_get(struct dentry *dentry, enum dbgfs_get_mode mode)
+ 
+ /**
+  * debugfs_file_get - mark the beginning of file data access
+- * @dentry: the dentry object whose data is being accessed.
++ * @node: the node object whose data is being accessed.
+  *
+  * Up to a matching call to debugfs_file_put(), any successive call
+  * into the file removing functions debugfs_remove() and
+@@ -147,24 +147,24 @@ static int __debugfs_file_get(struct dentry *dentry, enum dbgfs_get_mode mode)
+  * it is not safe to access any of its data. If, on the other hand,
+  * it is allowed to access the file data, zero is returned.
+  */
+-int debugfs_file_get(struct dentry *dentry)
++int debugfs_file_get(struct debugfs_node node)
+ {
+-	return __debugfs_file_get(dentry, DBGFS_GET_ALREADY);
++	return __debugfs_file_get(node.dentry, DBGFS_GET_ALREADY);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_file_get);
+ 
+ /**
+  * debugfs_file_put - mark the end of file data access
+- * @dentry: the dentry object formerly passed to
++ * @node: the node object formerly passed to
+  *          debugfs_file_get().
+  *
+  * Allow any ongoing concurrent call into debugfs_remove() or
+  * debugfs_remove_recursive() blocked by a former call to
+  * debugfs_file_get() to proceed and return to its caller.
+  */
+-void debugfs_file_put(struct dentry *dentry)
++void debugfs_file_put(struct debugfs_node node)
+ {
+-	struct debugfs_fsdata *fsd = READ_ONCE(dentry->d_fsdata);
++	struct debugfs_fsdata *fsd = READ_ONCE(node.dentry->d_fsdata);
+ 
+ 	if (refcount_dec_and_test(&fsd->active_users))
+ 		complete(&fsd->active_users_drained);
+@@ -197,7 +197,7 @@ void debugfs_enter_cancellation(struct file *file,
+ 				struct debugfs_cancellation *cancellation)
+ {
+ 	struct debugfs_fsdata *fsd;
+-	struct dentry *dentry = F_DENTRY(file);
++	struct dentry* dentry = F_DENTRY(file);
+ 
+ 	INIT_LIST_HEAD(&cancellation->list);
+ 
+@@ -276,7 +276,8 @@ static int debugfs_locked_down(struct inode *inode,
+ 
+ static int open_proxy_open(struct inode *inode, struct file *filp)
+ {
+-	struct dentry *dentry = F_DENTRY(filp);
++	struct dentry* dentry = F_DENTRY(filp);
++	struct debugfs_node node = { .dentry = dentry };
+ 	const struct file_operations *real_fops = NULL;
+ 	int r;
+ 
+@@ -311,7 +312,7 @@ static int open_proxy_open(struct inode *inode, struct file *filp)
+ 		r = real_fops->open(inode, filp);
+ 
+ out:
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return r;
+ }
+ 
+@@ -325,27 +326,29 @@ const struct file_operations debugfs_open_proxy_file_operations = {
+ #define FULL_PROXY_FUNC(name, ret_type, filp, proto, args)		\
+ static ret_type full_proxy_ ## name(proto)				\
+ {									\
+-	struct dentry *dentry = F_DENTRY(filp);			\
++	struct dentry *dentry = F_DENTRY(filp);				\
++	struct debugfs_node node = { .dentry = dentry };		\
+ 	const struct file_operations *real_fops;			\
+ 	ret_type r;							\
+ 									\
+-	r = debugfs_file_get(dentry);					\
++	r = debugfs_file_get(node);					\
+ 	if (unlikely(r))						\
+ 		return r;						\
+ 	real_fops = debugfs_real_fops(filp);				\
+ 	r = real_fops->name(args);					\
+-	debugfs_file_put(dentry);					\
++	debugfs_file_put(node);						\
+ 	return r;							\
+ }
+ 
+ #define FULL_PROXY_FUNC_BOTH(name, ret_type, filp, proto, args)		\
+ static ret_type full_proxy_ ## name(proto)				\
+ {									\
+-	struct dentry *dentry = F_DENTRY(filp);				\
++	struct dentry* dentry = F_DENTRY(filp);				\
++	struct debugfs_node node = { .dentry = dentry };		\
+ 	struct debugfs_fsdata *fsd;					\
+ 	ret_type r;							\
+ 									\
+-	r = debugfs_file_get(dentry);					\
++	r = debugfs_file_get(node);					\
+ 	if (unlikely(r))						\
+ 		return r;						\
+ 	fsd = dentry->d_fsdata;						\
+@@ -353,7 +356,7 @@ static ret_type full_proxy_ ## name(proto)				\
+ 		r = fsd->real_fops->name(args);				\
+ 	else								\
+ 		r = fsd->short_fops->name(args);			\
+-	debugfs_file_put(dentry);					\
++	debugfs_file_put(node);						\
+ 	return r;							\
+ }
+ 
+@@ -379,15 +382,16 @@ static __poll_t full_proxy_poll(struct file *filp,
+ 				struct poll_table_struct *wait)
+ {
+ 	struct dentry *dentry = F_DENTRY(filp);
++	struct debugfs_node node = { .dentry = dentry };
+ 	__poll_t r = 0;
+ 	const struct file_operations *real_fops;
+ 
+-	if (debugfs_file_get(dentry))
++	if (debugfs_file_get(node))
+ 		return EPOLLHUP;
+ 
+ 	real_fops = debugfs_real_fops(filp);
+ 	r = real_fops->poll(filp, wait);
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return r;
+ }
+ 
+@@ -441,6 +445,7 @@ static int full_proxy_open(struct inode *inode, struct file *filp,
+ 			   enum dbgfs_get_mode mode)
+ {
+ 	struct dentry *dentry = F_DENTRY(filp);
++	struct debugfs_node node = { .dentry = dentry };
+ 	const struct file_operations *real_fops;
+ 	struct file_operations *proxy_fops = NULL;
+ 	struct debugfs_fsdata *fsd;
+@@ -501,7 +506,7 @@ static int full_proxy_open(struct inode *inode, struct file *filp,
+ 	kfree(proxy_fops);
+ 	fops_put(real_fops);
+ out:
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return r;
+ }
+ 
+@@ -527,13 +532,14 @@ ssize_t debugfs_attr_read(struct file *file, char __user *buf,
+ 			size_t len, loff_t *ppos)
+ {
+ 	struct dentry *dentry = F_DENTRY(file);
++	struct debugfs_node node = { .dentry = dentry };
+ 	ssize_t ret;
+ 
+-	ret = debugfs_file_get(dentry);
++	ret = debugfs_file_get(node);
+ 	if (unlikely(ret))
+ 		return ret;
+ 	ret = simple_attr_read(file, buf, len, ppos);
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(debugfs_attr_read);
+@@ -542,16 +548,17 @@ static ssize_t debugfs_attr_write_xsigned(struct file *file, const char __user *
+ 			 size_t len, loff_t *ppos, bool is_signed)
+ {
+ 	struct dentry *dentry = F_DENTRY(file);
++	struct debugfs_node node = { .dentry = dentry };
+ 	ssize_t ret;
+ 
+-	ret = debugfs_file_get(dentry);
++	ret = debugfs_file_get(node);
+ 	if (unlikely(ret))
+ 		return ret;
+ 	if (is_signed)
+ 		ret = simple_attr_write_signed(file, buf, len, ppos);
+ 	else
+ 		ret = simple_attr_write(file, buf, len, ppos);
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return ret;
+ }
+ 
+@@ -569,8 +576,8 @@ ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
+ }
+ EXPORT_SYMBOL_GPL(debugfs_attr_write_signed);
+ 
+-static struct dentry *debugfs_create_mode_unsafe(const char *name, umode_t mode,
+-					struct dentry *parent, void *value,
++static struct debugfs_node debugfs_create_mode_unsafe(const char *name, umode_t mode,
++					struct debugfs_node parent, void *value,
+ 					const struct file_operations *fops,
+ 					const struct file_operations *fops_ro,
+ 					const struct file_operations *fops_wo)
+@@ -615,7 +622,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u8_wo, NULL, debugfs_u8_set, "%llu\n");
+  * contains the value of the variable @value.  If the @mode variable is so
+  * set, it can be read from, and written to.
+  */
+-void debugfs_create_u8(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_u8(const char *name, umode_t mode, struct debugfs_node parent,
+ 		       u8 *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_u8,
+@@ -651,7 +658,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u16_wo, NULL, debugfs_u16_set, "%llu\n");
+  * contains the value of the variable @value.  If the @mode variable is so
+  * set, it can be read from, and written to.
+  */
+-void debugfs_create_u16(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_u16(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u16 *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_u16,
+@@ -687,7 +694,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u32_wo, NULL, debugfs_u32_set, "%llu\n");
+  * contains the value of the variable @value.  If the @mode variable is so
+  * set, it can be read from, and written to.
+  */
+-void debugfs_create_u32(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_u32(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u32 *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_u32,
+@@ -724,7 +731,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
+  * contains the value of the variable @value.  If the @mode variable is so
+  * set, it can be read from, and written to.
+  */
+-void debugfs_create_u64(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_u64(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u64 *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_u64,
+@@ -763,7 +770,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_ulong_wo, NULL, debugfs_ulong_set, "%llu\n");
+  * contains the value of the variable @value.  If the @mode variable is so
+  * set, it can be read from, and written to.
+  */
+-void debugfs_create_ulong(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_ulong(const char *name, umode_t mode, struct debugfs_node parent,
+ 			  unsigned long *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_ulong,
+@@ -808,7 +815,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_x64_wo, NULL, debugfs_u64_set, "0x%016llx\n");
+  * @value: a pointer to the variable that the file should read to and write
+  *         from.
+  */
+-void debugfs_create_x8(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_x8(const char *name, umode_t mode, struct debugfs_node parent,
+ 		       u8 *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_x8,
+@@ -826,7 +833,7 @@ EXPORT_SYMBOL_GPL(debugfs_create_x8);
+  * @value: a pointer to the variable that the file should read to and write
+  *         from.
+  */
+-void debugfs_create_x16(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_x16(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u16 *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_x16,
+@@ -844,7 +851,7 @@ EXPORT_SYMBOL_GPL(debugfs_create_x16);
+  * @value: a pointer to the variable that the file should read to and write
+  *         from.
+  */
+-void debugfs_create_x32(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_x32(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u32 *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_x32,
+@@ -862,7 +869,7 @@ EXPORT_SYMBOL_GPL(debugfs_create_x32);
+  * @value: a pointer to the variable that the file should read to and write
+  *         from.
+  */
+-void debugfs_create_x64(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_x64(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u64 *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_x64,
+@@ -897,7 +904,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_size_t_wo, NULL, debugfs_size_t_set, "%llu\n");
+  *         from.
+  */
+ void debugfs_create_size_t(const char *name, umode_t mode,
+-			   struct dentry *parent, size_t *value)
++			   struct debugfs_node parent, size_t *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_size_t,
+ 				   &fops_size_t_ro, &fops_size_t_wo);
+@@ -933,7 +940,7 @@ DEFINE_DEBUGFS_ATTRIBUTE_SIGNED(fops_atomic_t_wo, NULL, debugfs_atomic_t_set,
+  *         from.
+  */
+ void debugfs_create_atomic_t(const char *name, umode_t mode,
+-			     struct dentry *parent, atomic_t *value)
++			     struct debugfs_node parent, atomic_t *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_atomic_t,
+ 				   &fops_atomic_t_ro, &fops_atomic_t_wo);
+@@ -947,12 +954,13 @@ ssize_t debugfs_read_file_bool(struct file *file, char __user *user_buf,
+ 	bool val;
+ 	int r;
+ 	struct dentry *dentry = F_DENTRY(file);
++	struct debugfs_node node = { .dentry = dentry };
+ 
+-	r = debugfs_file_get(dentry);
++	r = debugfs_file_get(node);
+ 	if (unlikely(r))
+ 		return r;
+ 	val = *(bool *)file->private_data;
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 
+ 	if (val)
+ 		buf[0] = 'Y';
+@@ -970,14 +978,15 @@ ssize_t debugfs_write_file_bool(struct file *file, const char __user *user_buf,
+ 	int r;
+ 	bool *val = file->private_data;
+ 	struct dentry *dentry = F_DENTRY(file);
++	struct debugfs_node node = { .dentry = dentry };
+ 
+ 	r = kstrtobool_from_user(user_buf, count, &bv);
+ 	if (!r) {
+-		r = debugfs_file_get(dentry);
++		r = debugfs_file_get(node);
+ 		if (unlikely(r))
+ 			return r;
+ 		*val = bv;
+-		debugfs_file_put(dentry);
++		debugfs_file_put(node);
+ 	}
+ 
+ 	return count;
+@@ -1007,8 +1016,8 @@ static const struct file_operations fops_bool_wo = {
+  * debugfs_create_bool - create a debugfs file that is used to read and write a boolean value
+  * @name: a pointer to a string containing the name of the file to create.
+  * @mode: the permission that the file should have
+- * @parent: a pointer to the parent dentry for this file.  This should be a
+- *          directory dentry if set.  If this parameter is %NULL, then the
++ * @parent: a pointer to the parent node for this file.  This should be a
++ *          directory node if set.  If this parameter is %NULL, then the
+  *          file will be created in the root of the debugfs filesystem.
+  * @value: a pointer to the variable that the file should read to and write
+  *         from.
+@@ -1017,7 +1026,7 @@ static const struct file_operations fops_bool_wo = {
+  * contains the value of the variable @value.  If the @mode variable is so
+  * set, it can be read from, and written to.
+  */
+-void debugfs_create_bool(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_bool(const char *name, umode_t mode, struct debugfs_node parent,
+ 			 bool *value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_bool,
+@@ -1029,11 +1038,12 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
+ 			      size_t count, loff_t *ppos)
+ {
+ 	struct dentry *dentry = F_DENTRY(file);
++	struct debugfs_node node = { .dentry = dentry };
+ 	char *str, *copy = NULL;
+ 	int copy_len, len;
+ 	ssize_t ret;
+ 
+-	ret = debugfs_file_get(dentry);
++	ret = debugfs_file_get(node);
+ 	if (unlikely(ret))
+ 		return ret;
+ 
+@@ -1041,12 +1051,12 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
+ 	len = strlen(str) + 1;
+ 	copy = kmalloc(len, GFP_KERNEL);
+ 	if (!copy) {
+-		debugfs_file_put(dentry);
++		debugfs_file_put(node);
+ 		return -ENOMEM;
+ 	}
+ 
+ 	copy_len = strscpy(copy, str, len);
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	if (copy_len < 0) {
+ 		kfree(copy);
+ 		return copy_len;
+@@ -1065,11 +1075,12 @@ static ssize_t debugfs_write_file_str(struct file *file, const char __user *user
+ 				      size_t count, loff_t *ppos)
+ {
+ 	struct dentry *dentry = F_DENTRY(file);
++	struct debugfs_node node = { .dentry = dentry };
+ 	char *old, *new = NULL;
+ 	int pos = *ppos;
+ 	int r;
+ 
+-	r = debugfs_file_get(dentry);
++	r = debugfs_file_get(node);
+ 	if (unlikely(r))
+ 		return r;
+ 
+@@ -1103,12 +1114,12 @@ static ssize_t debugfs_write_file_str(struct file *file, const char __user *user
+ 	synchronize_rcu();
+ 	kfree(old);
+ 
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return count;
+ 
+ error:
+ 	kfree(new);
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return r;
+ }
+ 
+@@ -1135,8 +1146,8 @@ static const struct file_operations fops_str_wo = {
+  * debugfs_create_str - create a debugfs file that is used to read and write a string value
+  * @name: a pointer to a string containing the name of the file to create.
+  * @mode: the permission that the file should have
+- * @parent: a pointer to the parent dentry for this file.  This should be a
+- *          directory dentry if set.  If this parameter is %NULL, then the
++ * @parent: a pointer to the parent node for this file.  This should be a
++ *          directory node if set.  If this parameter is %NULL, then the
+  *          file will be created in the root of the debugfs filesystem.
+  * @value: a pointer to the variable that the file should read to and write
+  *         from.
+@@ -1146,7 +1157,7 @@ static const struct file_operations fops_str_wo = {
+  * set, it can be read from, and written to.
+  */
+ void debugfs_create_str(const char *name, umode_t mode,
+-			struct dentry *parent, char **value)
++			struct debugfs_node parent, char **value)
+ {
+ 	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_str,
+ 				   &fops_str_ro, &fops_str_wo);
+@@ -1157,14 +1168,15 @@ static ssize_t read_file_blob(struct file *file, char __user *user_buf,
+ {
+ 	struct debugfs_blob_wrapper *blob = file->private_data;
+ 	struct dentry *dentry = F_DENTRY(file);
++	struct debugfs_node node = { .dentry = dentry };
+ 	ssize_t r;
+ 
+-	r = debugfs_file_get(dentry);
++	r = debugfs_file_get(node);
+ 	if (unlikely(r))
+ 		return r;
+ 	r = simple_read_from_buffer(user_buf, count, ppos, blob->data,
+ 				blob->size);
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return r;
+ }
+ 
+@@ -1173,15 +1185,16 @@ static ssize_t write_file_blob(struct file *file, const char __user *user_buf,
+ {
+ 	struct debugfs_blob_wrapper *blob = file->private_data;
+ 	struct dentry *dentry = F_DENTRY(file);
++	struct debugfs_node node = { .dentry = dentry };
+ 	ssize_t r;
+ 
+-	r = debugfs_file_get(dentry);
++	r = debugfs_file_get(node);
+ 	if (unlikely(r))
+ 		return r;
+ 	r = simple_write_to_buffer(blob->data, blob->size, ppos, user_buf,
+ 				   count);
+ 
+-	debugfs_file_put(dentry);
++	debugfs_file_put(node);
+ 	return r;
+ }
+ 
+@@ -1197,8 +1210,8 @@ static const struct file_operations fops_blob = {
+  * a binary blob
+  * @name: a pointer to a string containing the name of the file to create.
+  * @mode: the permission that the file should have
+- * @parent: a pointer to the parent dentry for this file.  This should be a
+- *          directory dentry if set.  If this parameter is %NULL, then the
++ * @parent: a pointer to the parent node for this file.  This should be a
++ *          directory node if set.  If this parameter is %NULL, then the
+  *          file will be created in the root of the debugfs filesystem.
+  * @blob: a pointer to a struct debugfs_blob_wrapper which contains a pointer
+  *        to the blob data and the size of the data.
+@@ -1207,7 +1220,7 @@ static const struct file_operations fops_blob = {
+  * @blob->data as a binary blob. If the @mode variable is so set it can be
+  * read from and written to.
+  *
+- * This function will return a pointer to a dentry if it succeeds.  This
++ * This function will return a pointer to a debugfs_node if it succeeds.  This
+  * pointer must be passed to the debugfs_remove() function when the file is
+  * to be removed (no automatic cleanup happens if your module is unloaded,
+  * you are responsible here.)  If an error occurs, ERR_PTR(-ERROR) will be
+@@ -1216,9 +1229,9 @@ static const struct file_operations fops_blob = {
+  * If debugfs is not enabled in the kernel, the value ERR_PTR(-ENODEV) will
+  * be returned.
+  */
+-struct dentry *debugfs_create_blob(const char *name, umode_t mode,
+-				   struct dentry *parent,
+-				   struct debugfs_blob_wrapper *blob)
++struct debugfs_node debugfs_create_blob(const char *name, umode_t mode,
++					struct debugfs_node parent,
++					struct debugfs_blob_wrapper *blob)
+ {
+ 	return debugfs_create_file_unsafe(name, mode & 0644, parent, blob, &fops_blob);
+ }
+@@ -1304,7 +1317,7 @@ static const struct file_operations u32_array_fops = {
+  * Once array is created its size can not be changed.
+  */
+ void debugfs_create_u32_array(const char *name, umode_t mode,
+-			      struct dentry *parent,
++			      struct debugfs_node parent,
+ 			      struct debugfs_u32_array *array)
+ {
+ 	debugfs_create_file_unsafe(name, mode, parent, array, &u32_array_fops);
+@@ -1383,7 +1396,7 @@ DEFINE_SHOW_ATTRIBUTE(debugfs_regset32);
+  * is so set it can be read from. Writing is not supported.
+  */
+ void debugfs_create_regset32(const char *name, umode_t mode,
+-			     struct dentry *parent,
++			     struct debugfs_node parent,
+ 			     struct debugfs_regset32 *regset)
+ {
+ 	debugfs_create_file(name, mode, parent, regset, &debugfs_regset32_fops);
+@@ -1423,12 +1436,12 @@ static const struct file_operations debugfs_devm_entry_ops = {
+  * @read_fn: function pointer called to print the seq_file content.
+  */
+ void debugfs_create_devm_seqfile(struct device *dev, const char *name,
+-				 struct dentry *parent,
++				 struct debugfs_node parent,
+ 				 int (*read_fn)(struct seq_file *s, void *data))
+ {
+ 	struct debugfs_devm_entry *entry;
+ 
+-	if (IS_ERR(parent))
++	if (IS_ERR(parent.dentry))
+ 		return;
+ 
+ 	entry = devm_kzalloc(dev, sizeof(*entry), GFP_KERNEL);
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index e752009de929..aa8d87a422e2 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -240,8 +240,9 @@ static void debugfs_release_dentry(struct dentry *dentry)
+ static struct vfsmount *debugfs_automount(struct path *path)
+ {
+ 	struct debugfs_fsdata *fsd = path->dentry->d_fsdata;
++	struct debugfs_node node = { .dentry = path->dentry };
+ 
+-	return fsd->automount(path->dentry, d_inode(path->dentry)->i_private);
++	return fsd->automount(node, d_inode(path->dentry)->i_private);
+ }
+ 
+ static const struct dentry_operations debugfs_dops = {
+@@ -314,29 +315,30 @@ MODULE_ALIAS_FS("debugfs");
+ /**
+  * debugfs_lookup() - look up an existing debugfs file
+  * @name: a pointer to a string containing the name of the file to look up.
+- * @parent: a pointer to the parent dentry of the file.
++ * @parent: a pointer to the parent node of the file.
+  *
+- * This function will return a pointer to a dentry if it succeeds.  If the file
+- * doesn't exist or an error occurs, %NULL will be returned.  The returned
+- * dentry must be passed to dput() when it is no longer needed.
++ * This function will return a pointer to a debugfs_node if it succeeds. If the
++ * file doesn't exist or an error occurs, %NULL will be returned. The returned
++ * debugfs_node must be passed to dput() when it is no longer needed. (TODO: people use dput here)
+  *
+  * If debugfs is not enabled in the kernel, the value -%ENODEV will be
+  * returned.
+  */
+-struct dentry *debugfs_lookup(const char *name, struct dentry *parent)
++struct debugfs_node debugfs_lookup(const char *name, struct debugfs_node parent)
+ {
+-	struct dentry *dentry;
++	struct dentry* parent_dentry = parent.dentry;
++	struct debugfs_node node = { 0 };
+ 
+-	if (!debugfs_initialized() || IS_ERR_OR_NULL(name) || IS_ERR(parent))
+-		return NULL;
++	if (!debugfs_initialized() || IS_ERR_OR_NULL(name) || IS_ERR(parent_dentry))
++		return node;
+ 
+-	if (!parent)
+-		parent = debugfs_mount->mnt_root;
++	if (!parent_dentry)
++		parent_dentry = debugfs_mount->mnt_root;
+ 
+-	dentry = lookup_positive_unlocked(name, parent, strlen(name));
+-	if (IS_ERR(dentry))
+-		return NULL;
+-	return dentry;
++	node.dentry = lookup_positive_unlocked(name, parent_dentry, strlen(name));
++	if (IS_ERR(node.dentry))
++		node.dentry = NULL;
++	return node;
+ }
+ EXPORT_SYMBOL_GPL(debugfs_lookup);
+ 
+@@ -450,8 +452,8 @@ static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
+ 	return end_creating(dentry);
+ }
+ 
+-struct dentry *debugfs_create_file_full(const char *name, umode_t mode,
+-					struct dentry *parent, void *data,
++struct debugfs_node debugfs_create_file_full(const char *name, umode_t mode,
++					struct debugfs_node parent, void *data,
+ 					const struct file_operations *fops)
+ {
+ 	if (WARN_ON((unsigned long)fops &
+@@ -465,8 +467,8 @@ struct dentry *debugfs_create_file_full(const char *name, umode_t mode,
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_file_full);
+ 
+-struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+-					 struct dentry *parent, void *data,
++struct debugfs_node debugfs_create_file_short(const char *name, umode_t mode,
++					 struct debugfs_node parent, void *data,
+ 					 const struct debugfs_short_fops *fops)
+ {
+ 	if (WARN_ON((unsigned long)fops &
+@@ -507,8 +509,8 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_short);
+  * DEFINE_DEBUGFS_ATTRIBUTE() is protected against file removals and
+  * thus, may be used here.
+  */
+-struct dentry *debugfs_create_file_unsafe(const char *name, umode_t mode,
+-				   struct dentry *parent, void *data,
++struct debugfs_node debugfs_create_file_unsafe(const char *name, umode_t mode,
++				   struct debugfs_node parent, void *data,
+ 				   const struct file_operations *fops)
+ {
+ 
+@@ -539,11 +541,11 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_unsafe);
+  * recommended to be used instead.)
+  */
+ void debugfs_create_file_size(const char *name, umode_t mode,
+-			      struct dentry *parent, void *data,
++			      struct debugfs_node parent, void *data,
+ 			      const struct file_operations *fops,
+ 			      loff_t file_size)
+ {
+-	struct dentry *de = debugfs_create_file(name, mode, parent, data, fops);
++	struct debugfs_node de = debugfs_create_file(name, mode, parent, data, fops);
+ 
+ 	if (!IS_ERR(de))
+ 		d_inode(de)->i_size = file_size;
+@@ -574,9 +576,9 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_size);
+  * passed to them could be an error and they don't crash in that case.
+  * Drivers should generally work fine even if debugfs fails to init anyway.
+  */
+-struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
++struct debugfs_node debugfs_create_dir(const char *name, struct debugfs_node parent)
+ {
+-	struct dentry *dentry = start_creating(name, parent);
++	struct dentry *dentry = start_creating(name, parent.dentry);
+ 	struct inode *inode;
+ 
+ 	if (IS_ERR(dentry))
+@@ -618,8 +620,8 @@ EXPORT_SYMBOL_GPL(debugfs_create_dir);
+  *
+  * @f should return what ->d_automount() would.
+  */
+-struct dentry *debugfs_create_automount(const char *name,
+-					struct dentry *parent,
++struct debugfs_node debugfs_create_automount(const char *name,
++					struct debugfs_node parent,
+ 					debugfs_automount_t f,
+ 					void *data)
+ {
+diff --git a/fs/debugfs/internal.h b/fs/debugfs/internal.h
+index bbae4a228ef4..86d7e24aae74 100644
+--- a/fs/debugfs/internal.h
++++ b/fs/debugfs/internal.h
+@@ -7,6 +7,8 @@
+ 
+ #ifndef _DEBUGFS_INTERNAL_H_
+ #define _DEBUGFS_INTERNAL_H_
++
++#include <linux/debugfs.h>
+ #include <linux/list.h>
+ 
+ struct file_operations;
+diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
+index 59444b495d49..29cd96e4e04c 100644
+--- a/include/linux/debugfs.h
++++ b/include/linux/debugfs.h
+@@ -21,6 +21,11 @@
+ struct device;
+ struct file_operations;
+ 
++/* Opaque handle to debugfs nodes to support migration to kernfs. */
++struct debugfs_node {
++	struct dentry *dentry;
++};
++
+ struct debugfs_blob_wrapper {
+ 	void *data;
+ 	unsigned long size;
+@@ -43,7 +48,7 @@ struct debugfs_u32_array {
+ 	u32 n_elements;
+ };
+ 
+-extern struct dentry *arch_debugfs_dir;
++extern struct debugfs_node arch_debugfs_dir;
+ 
+ #define DEFINE_DEBUGFS_ATTRIBUTE_XSIGNED(__fops, __get, __set, __fmt, __is_signed)	\
+ static int __fops ## _open(struct inode *inode, struct file *file)	\
+@@ -65,11 +70,11 @@ static const struct file_operations __fops = {				\
+ #define DEFINE_DEBUGFS_ATTRIBUTE_SIGNED(__fops, __get, __set, __fmt)	\
+ 	DEFINE_DEBUGFS_ATTRIBUTE_XSIGNED(__fops, __get, __set, __fmt, true)
+ 
+-typedef struct vfsmount *(*debugfs_automount_t)(struct dentry *, void *);
++typedef struct vfsmount *(*debugfs_automount_t)(struct debugfs_node , void *);
+ 
+ #if defined(CONFIG_DEBUG_FS)
+ 
+-struct dentry *debugfs_lookup(const char *name, struct dentry *parent);
++struct debugfs_node debugfs_lookup(const char *name, struct debugfs_node parent);
+ 
+ struct debugfs_short_fops {
+ 	ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
+@@ -77,11 +82,11 @@ struct debugfs_short_fops {
+ 	loff_t (*llseek) (struct file *, loff_t, int);
+ };
+ 
+-struct dentry *debugfs_create_file_full(const char *name, umode_t mode,
+-					struct dentry *parent, void *data,
++struct debugfs_node debugfs_create_file_full(const char *name, umode_t mode,
++					struct debugfs_node parent, void *data,
+ 					const struct file_operations *fops);
+-struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+-					 struct dentry *parent, void *data,
++struct debugfs_node debugfs_create_file_short(const char *name, umode_t mode,
++					 struct debugfs_node parent, void *data,
+ 					 const struct debugfs_short_fops *fops);
+ 
+ /**
+@@ -128,34 +133,34 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+ 		 struct debugfs_short_fops *: debugfs_create_file_short)	\
+ 		(name, mode, parent, data, fops)
+ 
+-struct dentry *debugfs_create_file_unsafe(const char *name, umode_t mode,
+-				   struct dentry *parent, void *data,
++struct debugfs_node debugfs_create_file_unsafe(const char *name, umode_t mode,
++				   struct debugfs_node parent, void *data,
+ 				   const struct file_operations *fops);
+ 
+ void debugfs_create_file_size(const char *name, umode_t mode,
+-			      struct dentry *parent, void *data,
++			      struct debugfs_node parent, void *data,
+ 			      const struct file_operations *fops,
+ 			      loff_t file_size);
+ 
+-struct dentry *debugfs_create_dir(const char *name, struct dentry *parent);
++struct debugfs_node debugfs_create_dir(const char *name, struct debugfs_node parent);
+ 
+-struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
++struct debugfs_node debugfs_create_symlink(const char *name, struct debugfs_node parent,
+ 				      const char *dest);
+ 
+-struct dentry *debugfs_create_automount(const char *name,
+-					struct dentry *parent,
++struct debugfs_node debugfs_create_automount(const char *name,
++					struct debugfs_node parent,
+ 					debugfs_automount_t f,
+ 					void *data);
+ 
+-void debugfs_remove(struct dentry *dentry);
++void debugfs_remove(struct debugfs_node dentry);
+ #define debugfs_remove_recursive debugfs_remove
+ 
+-void debugfs_lookup_and_remove(const char *name, struct dentry *parent);
++void debugfs_lookup_and_remove(const char *name, struct debugfs_node parent);
+ 
+ const struct file_operations *debugfs_real_fops(const struct file *filp);
+ 
+-int debugfs_file_get(struct dentry *dentry);
+-void debugfs_file_put(struct dentry *dentry);
++int debugfs_file_get(struct debugfs_node dentry);
++void debugfs_file_put(struct debugfs_node dentry);
+ 
+ ssize_t debugfs_attr_read(struct file *file, char __user *buf,
+ 			size_t len, loff_t *ppos);
+@@ -164,53 +169,53 @@ ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
+ ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
+ 			size_t len, loff_t *ppos);
+ 
+-struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
+-                struct dentry *new_dir, const char *new_name);
++struct debugfs_node debugfs_rename(struct debugfs_node old_dir, struct debugfs_node old_dentry,
++                struct debugfs_node new_dir, const char *new_name);
+ 
+-void debugfs_create_u8(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_u8(const char *name, umode_t mode, struct debugfs_node parent,
+ 		       u8 *value);
+-void debugfs_create_u16(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_u16(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u16 *value);
+-void debugfs_create_u32(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_u32(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u32 *value);
+-void debugfs_create_u64(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_u64(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u64 *value);
+-void debugfs_create_ulong(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_ulong(const char *name, umode_t mode, struct debugfs_node parent,
+ 			  unsigned long *value);
+-void debugfs_create_x8(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_x8(const char *name, umode_t mode, struct debugfs_node parent,
+ 		       u8 *value);
+-void debugfs_create_x16(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_x16(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u16 *value);
+-void debugfs_create_x32(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_x32(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u32 *value);
+-void debugfs_create_x64(const char *name, umode_t mode, struct dentry *parent,
++void debugfs_create_x64(const char *name, umode_t mode, struct debugfs_node parent,
+ 			u64 *value);
+ void debugfs_create_size_t(const char *name, umode_t mode,
+-			   struct dentry *parent, size_t *value);
++			   struct debugfs_node parent, size_t *value);
+ void debugfs_create_atomic_t(const char *name, umode_t mode,
+-			     struct dentry *parent, atomic_t *value);
+-void debugfs_create_bool(const char *name, umode_t mode, struct dentry *parent,
++			     struct debugfs_node parent, atomic_t *value);
++void debugfs_create_bool(const char *name, umode_t mode, struct debugfs_node parent,
+ 			 bool *value);
+ void debugfs_create_str(const char *name, umode_t mode,
+-			struct dentry *parent, char **value);
++			struct debugfs_node parent, char **value);
+ 
+-struct dentry *debugfs_create_blob(const char *name, umode_t mode,
+-				  struct dentry *parent,
++struct debugfs_node debugfs_create_blob(const char *name, umode_t mode,
++				  struct debugfs_node parent,
+ 				  struct debugfs_blob_wrapper *blob);
+ 
+ void debugfs_create_regset32(const char *name, umode_t mode,
+-			     struct dentry *parent,
++			     struct debugfs_node parent,
+ 			     struct debugfs_regset32 *regset);
+ 
+ void debugfs_print_regs32(struct seq_file *s, const struct debugfs_reg32 *regs,
+ 			  int nregs, void __iomem *base, char *prefix);
+ 
+ void debugfs_create_u32_array(const char *name, umode_t mode,
+-			      struct dentry *parent,
++			      struct debugfs_node parent,
+ 			      struct debugfs_u32_array *array);
+ 
+ void debugfs_create_devm_seqfile(struct device *dev, const char *name,
+-				 struct dentry *parent,
++				 struct debugfs_node parent,
+ 				 int (*read_fn)(struct seq_file *s, void *data));
+ 
+ bool debugfs_initialized(void);
+@@ -232,7 +237,7 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
+  */
+ struct debugfs_cancellation {
+ 	struct list_head list;
+-	void (*cancel)(struct dentry *, void *);
++	void (*cancel)(struct debugfs_node , void *);
+ 	void *cancel_data;
+ };
+ 
+@@ -253,21 +258,21 @@ debugfs_leave_cancellation(struct file *file,
+  * want to duplicate the design decision mistakes of procfs and devfs again.
+  */
+ 
+-static inline struct dentry *debugfs_lookup(const char *name,
+-					    struct dentry *parent)
++static inline struct debugfs_node debugfs_lookup(const char *name,
++					    struct debugfs_node parent)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+-static inline struct dentry *debugfs_create_file(const char *name, umode_t mode,
+-					struct dentry *parent, void *data,
++static inline struct debugfs_node debugfs_create_file(const char *name, umode_t mode,
++					struct debugfs_node parent, void *data,
+ 					const void *fops)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+-static inline struct dentry *debugfs_create_file_unsafe(const char *name,
+-					umode_t mode, struct dentry *parent,
++static inline struct debugfs_node debugfs_create_file_unsafe(const char *name,
++					umode_t mode, struct debugfs_node parent,
+ 					void *data,
+ 					const struct file_operations *fops)
+ {
+@@ -275,50 +280,50 @@ static inline struct dentry *debugfs_create_file_unsafe(const char *name,
+ }
+ 
+ static inline void debugfs_create_file_size(const char *name, umode_t mode,
+-					    struct dentry *parent, void *data,
++					    struct debugfs_node parent, void *data,
+ 					    const struct file_operations *fops,
+ 					    loff_t file_size)
+ { }
+ 
+-static inline struct dentry *debugfs_create_dir(const char *name,
+-						struct dentry *parent)
++static inline struct debugfs_node debugfs_create_dir(const char *name,
++						struct debugfs_node parent)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+-static inline struct dentry *debugfs_create_symlink(const char *name,
+-						    struct dentry *parent,
++static inline struct debugfs_node debugfs_create_symlink(const char *name,
++						    struct debugfs_node parent,
+ 						    const char *dest)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+-static inline struct dentry *debugfs_create_automount(const char *name,
+-					struct dentry *parent,
++static inline struct debugfs_node debugfs_create_automount(const char *name,
++					struct debugfs_node parent,
+ 					debugfs_automount_t f,
+ 					void *data)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+-static inline void debugfs_remove(struct dentry *dentry)
++static inline void debugfs_remove(struct debugfs_node dentry)
+ { }
+ 
+-static inline void debugfs_remove_recursive(struct dentry *dentry)
++static inline void debugfs_remove_recursive(struct debugfs_node dentry)
+ { }
+ 
+ static inline void debugfs_lookup_and_remove(const char *name,
+-					     struct dentry *parent)
++					     struct debugfs_node parent)
+ { }
+ 
+ const struct file_operations *debugfs_real_fops(const struct file *filp);
+ 
+-static inline int debugfs_file_get(struct dentry *dentry)
++static inline int debugfs_file_get(struct debugfs_node dentry)
+ {
+ 	return 0;
+ }
+ 
+-static inline void debugfs_file_put(struct dentry *dentry)
++static inline void debugfs_file_put(struct debugfs_node dentry)
+ { }
+ 
+ static inline ssize_t debugfs_attr_read(struct file *file, char __user *buf,
+@@ -341,66 +346,66 @@ static inline ssize_t debugfs_attr_write_signed(struct file *file,
+ 	return -ENODEV;
+ }
+ 
+-static inline struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
+-                struct dentry *new_dir, char *new_name)
++static inline struct debugfs_node debugfs_rename(struct debugfs_node old_dir, struct debugfs_node old_dentry,
++                struct debugfs_node new_dir, char *new_name)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+ static inline void debugfs_create_u8(const char *name, umode_t mode,
+-				     struct dentry *parent, u8 *value) { }
++				     struct debugfs_node parent, u8 *value) { }
+ 
+ static inline void debugfs_create_u16(const char *name, umode_t mode,
+-				      struct dentry *parent, u16 *value) { }
++				      struct debugfs_node parent, u16 *value) { }
+ 
+ static inline void debugfs_create_u32(const char *name, umode_t mode,
+-				      struct dentry *parent, u32 *value) { }
++				      struct debugfs_node parent, u32 *value) { }
+ 
+ static inline void debugfs_create_u64(const char *name, umode_t mode,
+-				      struct dentry *parent, u64 *value) { }
++				      struct debugfs_node parent, u64 *value) { }
+ 
+ static inline void debugfs_create_ulong(const char *name, umode_t mode,
+-					struct dentry *parent,
++					struct debugfs_node parent,
+ 					unsigned long *value) { }
+ 
+ static inline void debugfs_create_x8(const char *name, umode_t mode,
+-				     struct dentry *parent, u8 *value) { }
++				     struct debugfs_node parent, u8 *value) { }
+ 
+ static inline void debugfs_create_x16(const char *name, umode_t mode,
+-				      struct dentry *parent, u16 *value) { }
++				      struct debugfs_node parent, u16 *value) { }
+ 
+ static inline void debugfs_create_x32(const char *name, umode_t mode,
+-				      struct dentry *parent, u32 *value) { }
++				      struct debugfs_node parent, u32 *value) { }
+ 
+ static inline void debugfs_create_x64(const char *name, umode_t mode,
+-				      struct dentry *parent, u64 *value) { }
++				      struct debugfs_node parent, u64 *value) { }
+ 
+ static inline void debugfs_create_size_t(const char *name, umode_t mode,
+-					 struct dentry *parent, size_t *value)
++					 struct debugfs_node parent, size_t *value)
+ { }
+ 
+ static inline void debugfs_create_atomic_t(const char *name, umode_t mode,
+-					   struct dentry *parent,
++					   struct debugfs_node parent,
+ 					   atomic_t *value)
+ { }
+ 
+ static inline void debugfs_create_bool(const char *name, umode_t mode,
+-				       struct dentry *parent, bool *value) { }
++				       struct debugfs_node parent, bool *value) { }
+ 
+ static inline void debugfs_create_str(const char *name, umode_t mode,
+-				      struct dentry *parent,
++				      struct debugfs_node parent,
+ 				      char **value)
+ { }
+ 
+-static inline struct dentry *debugfs_create_blob(const char *name, umode_t mode,
+-				  struct dentry *parent,
++static inline struct debugfs_node debugfs_create_blob(const char *name, umode_t mode,
++				  struct debugfs_node parent,
+ 				  struct debugfs_blob_wrapper *blob)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+ static inline void debugfs_create_regset32(const char *name, umode_t mode,
+-					   struct dentry *parent,
++					   struct debugfs_node parent,
+ 					   struct debugfs_regset32 *regset)
+ {
+ }
+@@ -416,14 +421,14 @@ static inline bool debugfs_initialized(void)
+ }
+ 
+ static inline void debugfs_create_u32_array(const char *name, umode_t mode,
+-					    struct dentry *parent,
++					    struct debugfs_node parent,
+ 					    struct debugfs_u32_array *array)
+ {
+ }
+ 
+ static inline void debugfs_create_devm_seqfile(struct device *dev,
+ 					       const char *name,
+-					       struct dentry *parent,
++					       struct debugfs_node parent,
+ 					       int (*read_fn)(struct seq_file *s,
+ 							      void *data))
+ {
+@@ -464,7 +469,7 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
+  *         from.
+  */
+ static inline void debugfs_create_xul(const char *name, umode_t mode,
+-				      struct dentry *parent,
++				      struct debugfs_node parent,
+ 				      unsigned long *value)
+ {
+ 	if (sizeof(*value) == sizeof(u32))

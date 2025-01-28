@@ -1,0 +1,24 @@
+From 05d5388ea8e691e6eabd9037241ed91748384cff Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Tue, 28 Jan 2025 12:41:52 -0800
+Subject: [PATCH 0/1] *** SUBJECT HERE ***
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Steven Rostedt <rostedt@goodmis.org>
+Cc: Tejun Heo <tj@kernel.org>,
+    Christian Brauner <brauner@kernel.org>,
+    linux-fsdevel@vger.kernel.org,
+    linux-kernel@vger.kernel.org
+
+*** BLURB HERE ***
+
+David Reaver (1):
+  debugfs: Use opaque debugfs_node handle to support kernfs migration
+
+ fs/debugfs/file.c       | 143 +++++++++++++++++++----------------
+ fs/debugfs/inode.c      |  56 +++++++-------
+ fs/debugfs/internal.h   |   2 +
+ include/linux/debugfs.h | 161 +++++++++++++++++++++-------------------
+ 4 files changed, 192 insertions(+), 170 deletions(-)
+
+
+base-commit: c2da8b3f914f83fb9089d26a692eb8f22146ddb9

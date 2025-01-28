@@ -18,6 +18,7 @@ Patches:
 
 - [2025-01-19-sample-kernfs](./2025-01-19-sample-kernfs)
 - [2025-01-22-port-tracefs-kernfs](./2025-01-22-port-tracefs-kernfs)
+- [2025-01-28-migrate-debugfs-kernfs](./2025-01-28-migrate-debugfs-kernfs)
 
 ## Misc
 
