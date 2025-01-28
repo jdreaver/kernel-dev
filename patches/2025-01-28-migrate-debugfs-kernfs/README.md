@@ -19,6 +19,4 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Find best "opaque" type
-  - `struct debugfs_node { dentry dentry }` (returning pointer to this): could work. Just cast `dentry` to/from this (and `*dentry` to/from `*debugfs_node`)
-  - `struct debugfs_node { dentry *dentry }`: Nice, but the main problem is dealing with `IS_ERR` return values. We have to return a pointer.
+- Get feedback on approach
