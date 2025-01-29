@@ -21,6 +21,10 @@ git format-patch master...HEAD \
 # TODO
 
 - Make another commit before (or after? or both?) the commit where we apply coccinelle with manual fixups while we get coccinelle working.
+- Something is messing with `struct dentry *d_parent;` in `dentry` in `include/linux/dcache.h`
+- `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
+  - Problem is `struct dentry *root, *entry;` on one line
+
 - Get feedback on approach
 - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
 - Consider reducing casts by using helper functions to convert to/from dentry
@@ -29,17 +33,6 @@ git format-patch master...HEAD \
   - Maybe not actually. There are lots of helper macros being used by debugfs users that will make this easier.
 
 ## Coccinelle automation
-
-TODO:
-
-- Something is messing with `struct dentry *d_parent;` in `dentry` in `include/linux/dcache.h`
-- `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
-  - Problem is `struct dentry *root, *entry;` on one line
-- `virtio_console.c` (do M=drivers/char) not working with:
-
-   ```
-   EXN: Sys_error("tty/hvc/hvc_console.h: No such file or directory") in ./virtio_console.c
-   ```
 
 Good directories to test:
 - drivers/gpio
@@ -51,17 +44,11 @@ Good directories to test:
   - arch/x86/kvm/debugfs.c
   - block/blk-{core,timeout}.c _uses_ `fault_create_debugfs_attr`, which is defined in fault-inject.{c,h}
 
-Run scripts with e.g.
+Run patch script with (note that `--in-place` doesn't appear to work):
 
 ```
-$ spatch --sp-file ~/git/kernel-dev/patches/2025-01-28-debugfs-opaque-handle/debug-looking-dentry.cocci --dir drivers/gpio --in-place
-```
-
-or even better (leave off `M=` to do the whole kernel)
-
-```
-$ make coccicheck M=./drivers/gpio/ COCCI=~/git/kernel-dev/patches/2025-01-28-debugfs-opaque-handle/debug-looking-dentry.cocci MODE=patch > output.patch
-$ git apply output.patch
+$ spatch ../patches/2025-01-28-debugfs-opaque-handle/structured.cocci --all-includes . > patch.patch
+$ patch -p1 < patch.patch
 ```
 
 Ideas:
