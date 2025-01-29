@@ -29,42 +29,21 @@ git format-patch master...HEAD \
 
 ## Coccinelle automation
 
+Good directories to test:
+- drivers/gpio
+- lib/kunit (includes both source e.g. `lib/kunit/debugfs.c` and a header in `include/kunit/test.h`)
+
 Run scripts with e.g.
 
 ```
-$ spatch --sp-file debug-looking-dentry.cocci --dir drivers/gpio --in-place
+$ spatch --sp-file ~/git/kernel-dev/patches/2025-01-28-debugfs-opaque-handle/debug-looking-dentry.cocci --dir drivers/gpio --in-place
 ```
 
 or even better (leave off `M=` to do the whole kernel)
 
 ```
-$ make coccicheck M=./drivers/gpio/ COCCI=$(pwd)/debug-looking-dentry.cocci MODE=patch > output.patch
+$ make coccicheck M=./drivers/gpio/ COCCI=~/git/kernel-dev/patches/2025-01-28-debugfs-opaque-handle/debug-looking-dentry.cocci MODE=patch > output.patch
 $ git apply output.patch
-```
-
-Just looking at variable names:
-
-```
-// Options: --include-headers --recursive-includes
-
-virtual patch
-
-@@
-identifier struct_name;
-identifier var =~ ".*(dbg|debug).*";  // Match any variable with "dbg" or "debug" in its name
-@@
-
-(
-- struct dentry *var;
-+ struct debugfs_node *var;
-|
-struct struct_name {
-    ...
--   struct dentry *var;
-+   struct debugfs_node *var;
-    ...
-};
-)
 ```
 
 Something more structured. This will get way, way too complicated imo.
