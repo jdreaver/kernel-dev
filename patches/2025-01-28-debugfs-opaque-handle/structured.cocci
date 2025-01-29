@@ -80,3 +80,26 @@ identifier var, E;
 + debugfs_node_path_raw(E->var,
    ...)
 )
+
+// Transform wrapper function args
+//@depends on file in "lib/fault-inject.c"@
+@@
+identifier arg;
+identifier fn =~ "debugfs";
+@@
+
+fn(...,
+- struct dentry *arg,
++ struct debugfs_node *arg,
+  ...)
+{ ... }
+
+// Transform wrapper function return types
+//@depends on file in "lib/fault-inject.c"@
+@@
+identifier fn =~ "debugfs";
+@@
+
+- struct dentry *
++ struct debugfs_node *
+fn(...) { ... }

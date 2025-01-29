@@ -37,6 +37,7 @@ Good directories to test:
   - arch/x86/kernel/kdebugfs.c
   - arch/x86/xen has `struct dentry * __init xen_init_debugfs(void);`
   - arch/x86/kvm/debugfs.c
+  - block/blk-{core,timeout}.c _uses_ `fault_create_debugfs_attr`, which is defined in fault-inject.{c,h}
 
 Run scripts with e.g.
 
