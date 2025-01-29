@@ -81,21 +81,22 @@ identifier var, E;
    ...)
 )
 
-// Transform wrapper function args
 //@depends on file in "lib/fault-inject.c"@
+
+// Transform wrapper function args.
 @@
 identifier arg;
-identifier fn =~ "debugfs";
+identifier fn =~ "debugfs|create_setup_data_node|\
+                  create_setup_data_nodes";
 @@
 
 fn(...,
-- struct dentry *arg,
-+ struct debugfs_node *arg,
-  ...)
+- struct dentry *arg
++ struct debugfs_node *arg
+  ,...)
 { ... }
 
 // Transform wrapper function return types
-//@depends on file in "lib/fault-inject.c"@
 @@
 identifier fn =~ "debugfs";
 @@
