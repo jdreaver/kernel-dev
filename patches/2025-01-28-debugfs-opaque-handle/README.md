@@ -19,9 +19,9 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Rebase against master because of <https://lore.kernel.org/all/20241229080948.GY1977892@ZenIV/>
 - Get feedback on approach
 - If we eventually want to use `kernfs`, we need to consider `file_operations` as well. That would be a super hard thing to migrate across all of the kernel.
+  - Maybe not actually. There are lots of helper macros being used by debugfs users that will make this easier.
 
 ## Finding all usages
 
