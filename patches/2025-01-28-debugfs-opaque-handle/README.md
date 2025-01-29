@@ -29,6 +29,16 @@ git format-patch master...HEAD \
 
 ## Coccinelle automation
 
+TODO:
+
+- Something is messing with `struct dentry *d_parent;` in `dentry` in `include/linux/dcache.h`
+- `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
+- `virtio_console.c` (do M=drivers/char) not working with:
+
+   ```
+   EXN: Sys_error("tty/hvc/hvc_console.h: No such file or directory") in ./virtio_console.c
+   ```
+
 Good directories to test:
 - drivers/gpio
 - lib/kunit (includes both source e.g. `lib/kunit/debugfs.c` and a header in `include/kunit/test.h`)
