@@ -20,6 +20,7 @@ git format-patch master...HEAD \
 
 # TODO
 
+- Make another commit before (or after? or both?) the commit where we apply coccinelle with manual fixups while we get coccinelle working.
 - Get feedback on approach
 - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
 - Consider reducing casts by using helper functions to convert to/from dentry
@@ -33,6 +34,7 @@ TODO:
 
 - Something is messing with `struct dentry *d_parent;` in `dentry` in `include/linux/dcache.h`
 - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
+  - Problem is `struct dentry *root, *entry;` on one line
 - `virtio_console.c` (do M=drivers/char) not working with:
 
    ```
