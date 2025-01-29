@@ -29,7 +29,7 @@ identifier fn =~ "^debugfs_";
 )
 
 // Transform declarations
-@transform depends on match_assign || match_usage@
+@transform_decls depends on match_assign || match_usage@
 identifier var;
 identifier struct_name;
 @@
@@ -49,4 +49,34 @@ struct struct_name {
 +   struct debugfs_node *var;
     ...
 };
+)
+
+// Transform various helper functions
+@transform_helpers depends on match_assign || match_usage@
+identifier var, E;
+@@
+
+(
+// Replace dput
+- dput(var)
++ debugfs_node_put(var)
+|
+- dput(E->var)
++ debugfs_node_put(E->var)
+|
+// Replace dget
+- dget(var)
++ debugfs_node_get(var)
+|
+- dget(E->var)
++ debugfs_node_get(E->var)
+|
+// Replace dentry_path_raw
+- dentry_path_raw(var,
++ debugfs_node_path_raw(var,
+   ...)
+|
+- dentry_path_raw(E->var,
++ debugfs_node_path_raw(E->var,
+   ...)
 )

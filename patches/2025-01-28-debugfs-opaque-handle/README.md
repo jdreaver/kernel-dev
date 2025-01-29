@@ -32,8 +32,11 @@ git format-patch master...HEAD \
 Good directories to test:
 - drivers/gpio
 - lib/kunit (includes both source e.g. `lib/kunit/debugfs.c` and a header in `include/kunit/test.h`)
-- fault-inject.{c,h}, helper functions that wrap debugfs
-- virt/kvm/kvm_main.c: `dput` and `dentry_path_raw` (use my new helpers)
+- Contains wrapper functions that wrap debugfs:
+  - fault-inject.{c,h}
+  - arch/x86/kernel/kdebugfs.c
+  - arch/x86/xen has `struct dentry * __init xen_init_debugfs(void);`
+  - arch/x86/kvm/debugfs.c
 
 Run scripts with e.g.
 
