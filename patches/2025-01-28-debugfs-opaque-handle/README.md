@@ -32,6 +32,8 @@ git format-patch master...HEAD \
 Good directories to test:
 - drivers/gpio
 - lib/kunit (includes both source e.g. `lib/kunit/debugfs.c` and a header in `include/kunit/test.h`)
+- fault-inject.{c,h}, helper functions that wrap debugfs
+- virt/kvm/kvm_main.c: `dput` and `dentry_path_raw` (use my new helpers)
 
 Run scripts with e.g.
 
@@ -46,59 +48,7 @@ $ make coccicheck M=./drivers/gpio/ COCCI=~/git/kernel-dev/patches/2025-01-28-de
 $ git apply output.patch
 ```
 
-Something more structured. This will get way, way too complicated imo.
-
-```
-@match_vars@
-expression E;
-identifier var, parent;
-@@
-
-  var = debugfs_create_dir(E, parent)
-
-@depends on match_vars@
-identifier match_vars.var, match_vars.parent;
-@@
-
-(
-- struct dentry *var;
-+ struct debugfs_node *var;
-|
-- struct dentry *parent;
-+ struct debugfs_node *parent;
-|
-- static struct dentry *var;
-+ struct debugfs_node *var;
-|
-- static struct dentry *parent;
-+ struct debugfs_node *parent;
-)
-
-@match_fields@
-expression E1, E2, E3;
-identifier fld, parent;
-@@
-
-  E1->fld = debugfs_create_dir(E2, parent)
-
-@depends on match_fields@
-identifier match_fields.fld, match_fields.parent;
-identifier struct_name;
-@@
-
-struct struct_name {
-    ...
--   struct dentry *fld;
-+   struct debugfs_node *fld;
-    ...
-};
-```
-
-
 Ideas:
-- See if running with make coccicheck is easier?
-- Include headers!
-- Try to do deeper semantic matching using the actual public API functions for debugfs
 - It is okay if this catches _too_ much. We can fix things up.
 
 ## Finding all usages

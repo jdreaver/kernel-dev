@@ -6,29 +6,31 @@ virtual patch
 @match_assign@
 expression E;
 identifier var;
+identifier fn =~ "^debugfs_";
 @@
 
 (
-  var = debugfs_create_dir(...)
+  var = fn(...)
 |
-  E->var = debugfs_create_dir(...)
+  E->var = fn(...)
 )
 
 // Match both direct args and field args
 @match_usage@
-expression E1, E2;
+expression E;
 identifier var;
+identifier fn =~ "^debugfs_";
 @@
 
 (
-  debugfs_create_dir(E1, var)
+  fn(..., var, ...)
 |
-  debugfs_create_dir(E1, E2->var)
+  fn(..., E->var, ...)
 )
 
 // Transform declarations
 @transform depends on match_assign || match_usage@
-identifier var;  // Will match vars from either rule
+identifier var;
 identifier struct_name;
 @@
 
