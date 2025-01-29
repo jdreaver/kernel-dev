@@ -1,4 +1,4 @@
-From f5617144fc5a76140016348c87a24adcd3fe2656 Mon Sep 17 00:00:00 2001
+From bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 28 Jan 2025 13:53:41 -0800
 Subject: [PATCH 1/1] debugfs: Use opaque debugfs_node handle to support kernfs
@@ -12,31 +12,62 @@ Cc: Tejun Heo <tj@kernel.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- arch/powerpc/kernel/kdebugfs.c |   2 +-
- arch/s390/kernel/kdebugfs.c    |   2 +-
- arch/sh/kernel/kdebugfs.c      |   2 +-
- arch/x86/kernel/cpu/debugfs.c  |   2 +-
- arch/x86/kernel/kdebugfs.c     |  12 +--
- block/blk-core.c               |   6 +-
- block/blk.h                    |   2 +-
- drivers/acpi/debugfs.c         |   2 +-
- drivers/acpi/internal.h        |   2 +-
- drivers/base/component.c       |   2 +-
- drivers/char/virtio_console.c  |   4 +-
- drivers/dma/dmaengine.c        |   2 +-
- drivers/dma/dmaengine.h        |   2 +-
- drivers/gpu/drm/drm_drv.c      |   2 +-
- drivers/misc/mei/mei_dev.h     |   2 +-
- fs/debugfs/file.c              | 192 ++++++++++++++++++---------------
- fs/debugfs/inode.c             | 126 ++++++++++++----------
- include/linux/blkdev.h         |   6 +-
- include/linux/debugfs.h        | 175 +++++++++++++++---------------
- include/linux/dmaengine.h      |   2 +-
- include/net/cfg80211.h         |   2 +-
- mm/vmstat.c                    |   2 +-
- net/wireless/core.c            |   2 +-
- net/wireless/debugfs.c         |   2 +-
- 24 files changed, 298 insertions(+), 257 deletions(-)
+ arch/powerpc/kernel/kdebugfs.c            |   2 +-
+ arch/s390/kernel/kdebugfs.c               |   2 +-
+ arch/sh/kernel/kdebugfs.c                 |   2 +-
+ arch/x86/kernel/cpu/debugfs.c             |   2 +-
+ arch/x86/kernel/kdebugfs.c                |  12 +-
+ arch/x86/kvm/debugfs.c                    |   2 +-
+ arch/x86/mm/debug_pagetables.c            |   2 +-
+ arch/x86/platform/atom/punit_atom_debug.c |   2 +-
+ arch/x86/platform/intel/iosf_mbi.c        |   2 +-
+ arch/x86/xen/debugfs.c                    |   5 +-
+ arch/x86/xen/p2m.c                        |   4 +-
+ arch/x86/xen/xen-ops.h                    |   2 +-
+ block/blk-core.c                          |   6 +-
+ block/blk-timeout.c                       |   2 +-
+ block/blk.h                               |   2 +-
+ drivers/acpi/debugfs.c                    |   2 +-
+ drivers/acpi/internal.h                   |   2 +-
+ drivers/base/component.c                  |   2 +-
+ drivers/bus/mhi/host/debugfs.c            |   2 +-
+ drivers/bus/moxtet.c                      |   2 +-
+ drivers/char/virtio_console.c             |   4 +-
+ drivers/dma/dmaengine.c                   |   2 +-
+ drivers/dma/dmaengine.h                   |   2 +-
+ drivers/gpu/drm/drm_drv.c                 |   2 +-
+ drivers/misc/mei/mei_dev.h                |   2 +-
+ drivers/phy/phy-core.c                    |   2 +-
+ drivers/pinctrl/core.c                    |   4 +-
+ drivers/pinctrl/core.h                    |   2 +-
+ drivers/pinctrl/pinconf.c                 |   2 +-
+ drivers/pinctrl/pinconf.h                 |   4 +-
+ drivers/pinctrl/pinmux.c                  |   2 +-
+ drivers/pinctrl/pinmux.h                  |   5 +-
+ fs/debugfs/file.c                         | 192 +++++++++++----------
+ fs/debugfs/inode.c                        | 142 ++++++++++------
+ include/linux/backing-dev-defs.h          |   3 +-
+ include/linux/blkdev.h                    |   6 +-
+ include/linux/debugfs.h                   | 194 ++++++++++++----------
+ include/linux/dmaengine.h                 |   2 +-
+ include/linux/fault-inject.h              |  10 +-
+ include/linux/kvm_host.h                  |   4 +-
+ include/linux/mhi.h                       |   2 +-
+ include/linux/moxtet.h                    |   2 +-
+ include/linux/phy/phy.h                   |   2 +-
+ include/net/cfg80211.h                    |   2 +-
+ include/sound/core.h                      |   4 +-
+ lib/fault-inject.c                        |  12 +-
+ mm/backing-dev.c                          |   2 +-
+ mm/vmstat.c                               |   2 +-
+ net/wireless/core.c                       |   2 +-
+ net/wireless/debugfs.c                    |   2 +-
+ sound/core/init.c                         |   4 +-
+ sound/core/jack.c                         |   2 +-
+ sound/core/sound.c                        |   2 +-
+ sound/drivers/pcmtest.c                   |   2 +-
+ virt/kvm/kvm_main.c                       |  10 +-
+ 55 files changed, 386 insertions(+), 311 deletions(-)
 
 diff --git a/arch/powerpc/kernel/kdebugfs.c b/arch/powerpc/kernel/kdebugfs.c
 index 36d3124d5a8b..58c4c39ddf59 100644
@@ -141,6 +172,108 @@ index e2e89bebcbc3..66b3670aca36 100644
  	int error;
  
  	dbp = debugfs_create_dir("boot_params", arch_debugfs_dir);
+diff --git a/arch/x86/kvm/debugfs.c b/arch/x86/kvm/debugfs.c
+index 999227fc7c66..38473c744e83 100644
+--- a/arch/x86/kvm/debugfs.c
++++ b/arch/x86/kvm/debugfs.c
+@@ -56,7 +56,7 @@ static int vcpu_get_tsc_scaling_frac_bits(void *data, u64 *val)
+ 
+ DEFINE_SIMPLE_ATTRIBUTE(vcpu_tsc_scaling_frac_fops, vcpu_get_tsc_scaling_frac_bits, NULL, "%llu\n");
+ 
+-void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry)
++void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct debugfs_node *debugfs_dentry)
+ {
+ 	debugfs_create_file("guest_mode", 0444, debugfs_dentry, vcpu,
+ 			    &vcpu_guest_mode_fops);
+diff --git a/arch/x86/mm/debug_pagetables.c b/arch/x86/mm/debug_pagetables.c
+index ae5c213a1cb0..0f797bda55f3 100644
+--- a/arch/x86/mm/debug_pagetables.c
++++ b/arch/x86/mm/debug_pagetables.c
+@@ -44,7 +44,7 @@ static int ptdump_efi_show(struct seq_file *m, void *v)
+ DEFINE_SHOW_ATTRIBUTE(ptdump_efi);
+ #endif
+ 
+-static struct dentry *dir;
++static struct debugfs_node *dir;
+ 
+ static int __init pt_dump_debug_init(void)
+ {
+diff --git a/arch/x86/platform/atom/punit_atom_debug.c b/arch/x86/platform/atom/punit_atom_debug.c
+index 44c30ce6360a..6b44b5ee316f 100644
+--- a/arch/x86/platform/atom/punit_atom_debug.c
++++ b/arch/x86/platform/atom/punit_atom_debug.c
+@@ -105,7 +105,7 @@ static int punit_dev_state_show(struct seq_file *seq_file, void *unused)
+ }
+ DEFINE_SHOW_ATTRIBUTE(punit_dev_state);
+ 
+-static struct dentry *punit_dbg_file;
++static struct debugfs_node *punit_dbg_file;
+ 
+ static void punit_dbgfs_register(struct punit_device *punit_device)
+ {
+diff --git a/arch/x86/platform/intel/iosf_mbi.c b/arch/x86/platform/intel/iosf_mbi.c
+index c81cea208c2c..1d0468f19fa1 100644
+--- a/arch/x86/platform/intel/iosf_mbi.c
++++ b/arch/x86/platform/intel/iosf_mbi.c
+@@ -481,7 +481,7 @@ static int mcr_set(void *data, u64 val)
+ }
+ DEFINE_SIMPLE_ATTRIBUTE(iosf_mcr_fops, mcr_get, mcr_set , "%llx\n");
+ 
+-static struct dentry *iosf_dbg;
++static struct debugfs_node *iosf_dbg;
+ 
+ static void iosf_sideband_debug_init(void)
+ {
+diff --git a/arch/x86/xen/debugfs.c b/arch/x86/xen/debugfs.c
+index b8c9f2a7d9b6..70a190e8acce 100644
+--- a/arch/x86/xen/debugfs.c
++++ b/arch/x86/xen/debugfs.c
+@@ -5,12 +5,11 @@
+ 
+ #include "xen-ops.h"
+ 
+-static struct dentry *d_xen_debug;
++static struct debugfs_node *d_xen_debug;
+ 
+-struct dentry * __init xen_init_debugfs(void)
++struct debugfs_node * __init xen_init_debugfs(void)
+ {
+ 	if (!d_xen_debug)
+ 		d_xen_debug = debugfs_create_dir("xen", NULL);
+ 	return d_xen_debug;
+ }
+-
+diff --git a/arch/x86/xen/p2m.c b/arch/x86/xen/p2m.c
+index 56914e21e303..74204f2c94e8 100644
+--- a/arch/x86/xen/p2m.c
++++ b/arch/x86/xen/p2m.c
+@@ -915,11 +915,11 @@ static int p2m_dump_show(struct seq_file *m, void *v)
+ 
+ DEFINE_SHOW_ATTRIBUTE(p2m_dump);
+ 
+-static struct dentry *d_mmu_debug;
++static struct debugfs_node *d_mmu_debug;
+ 
+ static int __init xen_p2m_debugfs(void)
+ {
+-	struct dentry *d_xen = xen_init_debugfs();
++	struct debugfs_node *d_xen = xen_init_debugfs();
+ 
+ 	d_mmu_debug = debugfs_create_dir("mmu", d_xen);
+ 
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index 63c13a2ccf55..393ea778be26 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -185,7 +185,7 @@ static inline void xen_hvm_post_suspend(int suspend_cancelled) {}
+ 
+ void xen_add_extra_mem(unsigned long start_pfn, unsigned long n_pfns);
+ 
+-struct dentry * __init xen_init_debugfs(void);
++struct debugfs_node * __init xen_init_debugfs(void);
+ 
+ enum pt_level {
+ 	PT_PGD,
 diff --git a/block/blk-core.c b/block/blk-core.c
 index 32fb28a6372c..6062d51d9f6b 100644
 --- a/block/blk-core.c
@@ -172,6 +305,19 @@ index 32fb28a6372c..6062d51d9f6b 100644
  		if ((bio->bi_opf & REQ_POLLED) &&
  		    !(disk->queue->limits.features & BLK_FEAT_POLL)) {
  			bio->bi_status = BLK_STS_NOTSUPP;
+diff --git a/block/blk-timeout.c b/block/blk-timeout.c
+index 1b8de0417fc1..44871fbabe27 100644
+--- a/block/blk-timeout.c
++++ b/block/blk-timeout.c
+@@ -28,7 +28,7 @@ EXPORT_SYMBOL_GPL(__blk_should_fake_timeout);
+ 
+ static int __init fail_io_timeout_debugfs(void)
+ {
+-	struct dentry *dir = fault_create_debugfs_attr("fail_io_timeout",
++	struct debugfs_node *dir = fault_create_debugfs_attr("fail_io_timeout",
+ 						NULL, &fail_io_timeout);
+ 
+ 	return PTR_ERR_OR_ZERO(dir);
 diff --git a/block/blk.h b/block/blk.h
 index 90fa5f28ccab..7a18703f745e 100644
 --- a/block/blk.h
@@ -224,6 +370,32 @@ index 741497324d78..70b8fba945b6 100644
  
  static int component_devices_show(struct seq_file *s, void *data)
  {
+diff --git a/drivers/bus/mhi/host/debugfs.c b/drivers/bus/mhi/host/debugfs.c
+index cfec7811dfbb..2b8b2bd18642 100644
+--- a/drivers/bus/mhi/host/debugfs.c
++++ b/drivers/bus/mhi/host/debugfs.c
+@@ -372,7 +372,7 @@ static const struct file_operations debugfs_timeout_ms_fops = {
+ 	.read = seq_read,
+ };
+ 
+-static struct dentry *mhi_debugfs_root;
++static struct debugfs_node *mhi_debugfs_root;
+ 
+ void mhi_create_debugfs(struct mhi_controller *mhi_cntrl)
+ {
+diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
+index 6276551d7968..e2d7fcf1d9e4 100644
+--- a/drivers/bus/moxtet.c
++++ b/drivers/bus/moxtet.c
+@@ -552,7 +552,7 @@ static const struct file_operations output_fops = {
+ 
+ static int moxtet_register_debugfs(struct moxtet *moxtet)
+ {
+-	struct dentry *root, *entry;
++	struct debugfs_node *root, *entry;
+ 
+ 	root = debugfs_create_dir("moxtet", NULL);
+ 
 diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
 index 24442485e73e..00c5456ea17c 100644
 --- a/drivers/char/virtio_console.c
@@ -298,6 +470,128 @@ index 37d7fb15cad7..6a6b6c3e92df 100644
  #endif /* CONFIG_DEBUG_FS */
  
  	struct mei_fw_status saved_fw_status;
+diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
+index 413f76e2d174..45025d123ec9 100644
+--- a/drivers/phy/phy-core.c
++++ b/drivers/phy/phy-core.c
+@@ -26,7 +26,7 @@ static const struct class phy_class = {
+ 	.dev_release = phy_release,
+ };
+ 
+-static struct dentry *phy_debugfs_root;
++static struct debugfs_node *phy_debugfs_root;
+ static DEFINE_MUTEX(phy_provider_mutex);
+ static LIST_HEAD(phy_provider_list);
+ static LIST_HEAD(phys);
+diff --git a/drivers/pinctrl/core.c b/drivers/pinctrl/core.c
+index 4bdbf6bb26e2..2283946acf6c 100644
+--- a/drivers/pinctrl/core.c
++++ b/drivers/pinctrl/core.c
+@@ -1935,11 +1935,11 @@ static int pinctrl_show(struct seq_file *s, void *what)
+ }
+ DEFINE_SHOW_ATTRIBUTE(pinctrl);
+ 
+-static struct dentry *debugfs_root;
++static struct debugfs_node *debugfs_root;
+ 
+ static void pinctrl_init_device_debugfs(struct pinctrl_dev *pctldev)
+ {
+-	struct dentry *device_root;
++	struct debugfs_node *device_root;
+ 	const char *debugfs_name;
+ 
+ 	if (pctldev->desc->name &&
+diff --git a/drivers/pinctrl/core.h b/drivers/pinctrl/core.h
+index d6c24978e708..36fcb2baef0b 100644
+--- a/drivers/pinctrl/core.h
++++ b/drivers/pinctrl/core.h
+@@ -70,7 +70,7 @@ struct pinctrl_dev {
+ 	struct pinctrl_state *hog_sleep;
+ 	struct mutex mutex;
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry *device_root;
++	struct debugfs_node *device_root;
+ #endif
+ };
+ 
+diff --git a/drivers/pinctrl/pinconf.c b/drivers/pinctrl/pinconf.c
+index dca963633b5d..c1d0894040a0 100644
+--- a/drivers/pinctrl/pinconf.c
++++ b/drivers/pinctrl/pinconf.c
+@@ -369,7 +369,7 @@ static int pinconf_groups_show(struct seq_file *s, void *what)
+ DEFINE_SHOW_ATTRIBUTE(pinconf_pins);
+ DEFINE_SHOW_ATTRIBUTE(pinconf_groups);
+ 
+-void pinconf_init_device_debugfs(struct dentry *devroot,
++void pinconf_init_device_debugfs(struct debugfs_node *devroot,
+ 			 struct pinctrl_dev *pctldev)
+ {
+ 	debugfs_create_file("pinconf-pins", 0444,
+diff --git a/drivers/pinctrl/pinconf.h b/drivers/pinctrl/pinconf.h
+index a14c950bc700..a1f279cf2934 100644
+--- a/drivers/pinctrl/pinconf.h
++++ b/drivers/pinctrl/pinconf.h
+@@ -81,7 +81,7 @@ static inline int pinconf_set_config(struct pinctrl_dev *pctldev, unsigned int p
+ void pinconf_show_map(struct seq_file *s, const struct pinctrl_map *map);
+ void pinconf_show_setting(struct seq_file *s,
+ 			  const struct pinctrl_setting *setting);
+-void pinconf_init_device_debugfs(struct dentry *devroot,
++void pinconf_init_device_debugfs(struct debugfs_node *devroot,
+ 				 struct pinctrl_dev *pctldev);
+ 
+ #else
+@@ -96,7 +96,7 @@ static inline void pinconf_show_setting(struct seq_file *s,
+ {
+ }
+ 
+-static inline void pinconf_init_device_debugfs(struct dentry *devroot,
++static inline void pinconf_init_device_debugfs(struct debugfs_node *devroot,
+ 					       struct pinctrl_dev *pctldev)
+ {
+ }
+diff --git a/drivers/pinctrl/pinmux.c b/drivers/pinctrl/pinmux.c
+index 0743190da59e..efc6921b4903 100644
+--- a/drivers/pinctrl/pinmux.c
++++ b/drivers/pinctrl/pinmux.c
+@@ -771,7 +771,7 @@ static ssize_t pinmux_select_write(struct file *file, const char __user *user_bu
+ }
+ DEFINE_SHOW_STORE_ATTRIBUTE(pinmux_select);
+ 
+-void pinmux_init_device_debugfs(struct dentry *devroot,
++void pinmux_init_device_debugfs(struct debugfs_node *devroot,
+ 			 struct pinctrl_dev *pctldev)
+ {
+ 	debugfs_create_file("pinmux-functions", 0444,
+diff --git a/drivers/pinctrl/pinmux.h b/drivers/pinctrl/pinmux.h
+index 2965ec20b77f..0a1a03341d9b 100644
+--- a/drivers/pinctrl/pinmux.h
++++ b/drivers/pinctrl/pinmux.h
+@@ -10,6 +10,7 @@
+  * Author: Linus Walleij <linus.walleij@linaro.org>
+  */
+ 
++#include <linux/debugfs.h>
+ #include <linux/types.h>
+ 
+ struct dentry;
+@@ -107,7 +108,7 @@ static inline void pinmux_disable_setting(const struct pinctrl_setting *setting)
+ void pinmux_show_map(struct seq_file *s, const struct pinctrl_map *map);
+ void pinmux_show_setting(struct seq_file *s,
+ 			 const struct pinctrl_setting *setting);
+-void pinmux_init_device_debugfs(struct dentry *devroot,
++void pinmux_init_device_debugfs(struct debugfs_node *devroot,
+ 				struct pinctrl_dev *pctldev);
+ 
+ #else
+@@ -122,7 +123,7 @@ static inline void pinmux_show_setting(struct seq_file *s,
+ {
+ }
+ 
+-static inline void pinmux_init_device_debugfs(struct dentry *devroot,
++static inline void pinmux_init_device_debugfs(struct debugfs_node *devroot,
+ 					      struct pinctrl_dev *pctldev)
+ {
+ }
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
 index e33cc77699cd..6f7b74337df9 100644
 --- a/fs/debugfs/file.c
@@ -960,7 +1254,7 @@ index e33cc77699cd..6f7b74337df9 100644
  {
  	struct debugfs_devm_entry *entry;
 diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index 75715d8877ee..02a3d5a4b648 100644
+index 75715d8877ee..df933010c571 100644
 --- a/fs/debugfs/inode.c
 +++ b/fs/debugfs/inode.c
 @@ -253,8 +253,9 @@ static void debugfs_release_dentry(struct dentry *dentry)
@@ -974,7 +1268,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  
  static const struct dentry_operations debugfs_dops = {
-@@ -332,24 +333,27 @@ MODULE_ALIAS_FS("debugfs");
+@@ -332,27 +333,46 @@ MODULE_ALIAS_FS("debugfs");
   * This function will return a pointer to a dentry if it succeeds.  If the file
   * doesn't exist or an error occurs, %NULL will be returned.  The returned
   * dentry must be passed to dput() when it is no longer needed.
@@ -1007,7 +1301,26 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_lookup);
  
-@@ -466,25 +470,34 @@ static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
++char *debugfs_node_path_raw(struct debugfs_node *node, char *buf, size_t buflen)
++{
++	return dentry_path_raw((struct dentry *)node, buf, buflen);
++}
++
++
++struct debugfs_node *debugfs_node_get(struct debugfs_node *node)
++{
++	return (struct debugfs_node *)dget((struct dentry *)node);
++}
++
++void debugfs_node_put(struct debugfs_node *node)
++{
++	dput((struct dentry *)node);
++}
++
+ static struct dentry *start_creating(const char *name, struct dentry *parent)
+ {
+ 	struct dentry *dentry;
+@@ -466,25 +486,34 @@ static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
  	return end_creating(dentry);
  }
  
@@ -1052,7 +1365,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_file_short);
  
-@@ -515,14 +528,17 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_short);
+@@ -515,14 +544,17 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_short);
   * DEFINE_DEBUGFS_ATTRIBUTE() is protected against file removals and
   * thus, may be used here.
   */
@@ -1075,7 +1388,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_file_unsafe);
  
-@@ -546,14 +562,14 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_unsafe);
+@@ -546,14 +578,14 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_unsafe);
   * recommended to be used instead.)
   */
  void debugfs_create_file_size(const char *name, umode_t mode,
@@ -1093,7 +1406,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_file_size);
  
-@@ -581,13 +597,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_size);
+@@ -581,13 +613,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_size);
   * passed to them could be an error and they don't crash in that case.
   * Drivers should generally work fine even if debugfs fails to init anyway.
   */
@@ -1110,7 +1423,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  
  	if (!(debugfs_allow & DEBUGFS_ALLOW_API)) {
  		failed_creating(dentry);
-@@ -598,7 +614,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
+@@ -598,7 +630,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
  	if (unlikely(!inode)) {
  		pr_err("out of free dentries, can not create directory '%s'\n",
  		       name);
@@ -1119,7 +1432,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  	}
  
  	inode->i_mode = S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO;
-@@ -610,7 +626,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
+@@ -610,7 +642,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
  	d_instantiate(dentry, inode);
  	inc_nlink(d_inode(dentry->d_parent));
  	fsnotify_mkdir(d_inode(dentry->d_parent), dentry);
@@ -1128,7 +1441,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_dir);
  
-@@ -625,16 +641,16 @@ EXPORT_SYMBOL_GPL(debugfs_create_dir);
+@@ -625,16 +657,16 @@ EXPORT_SYMBOL_GPL(debugfs_create_dir);
   *
   * @f should return what ->d_automount() would.
   */
@@ -1151,7 +1464,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  
  	if (!(debugfs_allow & DEBUGFS_ALLOW_API)) {
  		failed_creating(dentry);
-@@ -645,7 +661,7 @@ struct dentry *debugfs_create_automount(const char *name,
+@@ -645,7 +677,7 @@ struct dentry *debugfs_create_automount(const char *name,
  	if (unlikely(!inode)) {
  		pr_err("out of free dentries, can not create automount '%s'\n",
  		       name);
@@ -1160,7 +1473,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  	}
  
  	make_empty_dir_inode(inode);
-@@ -657,7 +673,7 @@ struct dentry *debugfs_create_automount(const char *name,
+@@ -657,7 +689,7 @@ struct dentry *debugfs_create_automount(const char *name,
  	d_instantiate(dentry, inode);
  	inc_nlink(d_inode(dentry->d_parent));
  	fsnotify_mkdir(d_inode(dentry->d_parent), dentry);
@@ -1169,7 +1482,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  EXPORT_SYMBOL(debugfs_create_automount);
  
-@@ -684,8 +700,9 @@ EXPORT_SYMBOL(debugfs_create_automount);
+@@ -684,8 +716,9 @@ EXPORT_SYMBOL(debugfs_create_automount);
   * If debugfs is not enabled in the kernel, the value -%ENODEV will be
   * returned.
   */
@@ -1181,7 +1494,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  {
  	struct dentry *dentry;
  	struct inode *inode;
-@@ -693,10 +710,10 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
+@@ -693,10 +726,10 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
  	if (!link)
  		return ERR_PTR(-ENOMEM);
  
@@ -1194,7 +1507,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  	}
  
  	inode = debugfs_get_inode(dentry->d_sb);
-@@ -704,13 +721,13 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
+@@ -704,13 +737,13 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
  		pr_err("out of free dentries, can not create symlink '%s'\n",
  		       name);
  		kfree(link);
@@ -1210,7 +1523,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_symlink);
  
-@@ -768,7 +785,7 @@ static void __debugfs_file_removed(struct dentry *dentry)
+@@ -768,7 +801,7 @@ static void __debugfs_file_removed(struct dentry *dentry)
  		while ((c = list_first_entry_or_null(&fsd->cancellations,
  						     typeof(*c), list))) {
  			list_del_init(&c->list);
@@ -1219,7 +1532,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  		}
  		mutex_unlock(&fsd->cancellations_mtx);
  
-@@ -796,13 +813,13 @@ static void remove_one(struct dentry *victim)
+@@ -796,13 +829,13 @@ static void remove_one(struct dentry *victim)
   * removed, no automatic cleanup of files will happen when a module is
   * removed, you are responsible here.
   */
@@ -1236,7 +1549,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
  }
  EXPORT_SYMBOL_GPL(debugfs_remove);
-@@ -816,16 +833,16 @@ EXPORT_SYMBOL_GPL(debugfs_remove);
+@@ -816,16 +849,16 @@ EXPORT_SYMBOL_GPL(debugfs_remove);
   * debugfs_remove(debugfs_lookup(..)) but with the proper reference counting
   * handled for the directory being looked up.
   */
@@ -1259,7 +1572,7 @@ index 75715d8877ee..02a3d5a4b648 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_lookup_and_remove);
  
-@@ -842,11 +859,12 @@ EXPORT_SYMBOL_GPL(debugfs_lookup_and_remove);
+@@ -842,11 +875,12 @@ EXPORT_SYMBOL_GPL(debugfs_lookup_and_remove);
   * If debugfs is not enabled in the kernel, the value -%ENODEV will be
   * returned.
   */
@@ -1273,6 +1586,27 @@ index 75715d8877ee..02a3d5a4b648 100644
  	struct dentry *parent, *target;
  	struct inode *dir;
  	va_list ap;
+diff --git a/include/linux/backing-dev-defs.h b/include/linux/backing-dev-defs.h
+index 2ad261082bba..85b1ad4f7072 100644
+--- a/include/linux/backing-dev-defs.h
++++ b/include/linux/backing-dev-defs.h
+@@ -16,7 +16,6 @@
+ 
+ struct page;
+ struct device;
+-struct dentry;
+ 
+ /*
+  * Bits in bdi_writeback.state
+@@ -199,7 +198,7 @@ struct backing_dev_info {
+ 	struct timer_list laptop_mode_wb_timer;
+ 
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry *debug_dir;
++	struct debugfs_node *debug_dir;
+ #endif
+ };
+ 
 diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
 index 76f0a4e7c2e5..3e02ba1426b6 100644
 --- a/include/linux/blkdev.h
@@ -1291,7 +1625,7 @@ index 76f0a4e7c2e5..3e02ba1426b6 100644
  	 * Serializes all debugfs metadata operations using the above dentries.
  	 */
 diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index fa2568b4380d..261d9f123b62 100644
+index fa2568b4380d..37ca057c325e 100644
 --- a/include/linux/debugfs.h
 +++ b/include/linux/debugfs.h
 @@ -21,6 +21,11 @@
@@ -1326,7 +1660,7 @@ index fa2568b4380d..261d9f123b62 100644
  
  struct debugfs_short_fops {
  	ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
-@@ -75,14 +82,14 @@ struct debugfs_short_fops {
+@@ -75,14 +82,19 @@ struct debugfs_short_fops {
  
  #if defined(CONFIG_DEBUG_FS)
  
@@ -1335,6 +1669,11 @@ index fa2568b4380d..261d9f123b62 100644
  
 -struct dentry *debugfs_create_file_full(const char *name, umode_t mode,
 -					struct dentry *parent, void *data,
++char *debugfs_node_path_raw(struct debugfs_node *node, char *buf, size_t buflen);
++
++struct debugfs_node *debugfs_node_get(struct debugfs_node *node);
++void debugfs_node_put(struct debugfs_node *node);
++
 +struct debugfs_node *debugfs_create_file_full(const char *name, umode_t mode,
 +					struct debugfs_node *parent, void *data,
  					const void *aux,
@@ -1346,7 +1685,7 @@ index fa2568b4380d..261d9f123b62 100644
  					 const void *aux,
  					 const struct debugfs_short_fops *fops);
  
-@@ -90,8 +97,8 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -90,8 +102,8 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
   * debugfs_create_file - create a file in the debugfs filesystem
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have.
@@ -1357,7 +1696,7 @@ index fa2568b4380d..261d9f123b62 100644
   *          file will be created in the root of the debugfs filesystem.
   * @data: a pointer to something that the caller will want to get to later
   *        on.  The inode.i_private pointer will point to this value on
-@@ -104,7 +111,7 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -104,7 +116,7 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
   * to create a directory, the debugfs_create_dir() function is
   * recommended to be used instead.)
   *
@@ -1366,7 +1705,7 @@ index fa2568b4380d..261d9f123b62 100644
   * pointer must be passed to the debugfs_remove() function when the file is
   * to be removed (no automatic cleanup happens if your module is unloaded,
   * you are responsible here.)  If an error occurs, ERR_PTR(-ERROR) will be
-@@ -118,7 +125,7 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -118,7 +130,7 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
   * so no module reference or release are needed.
   *
   * NOTE: it's expected that most callers should _ignore_ the errors returned
@@ -1375,7 +1714,7 @@ index fa2568b4380d..261d9f123b62 100644
   * passed to them could be an error and they don't crash in that case.
   * Drivers should generally work fine even if debugfs fails to init anyway.
   */
-@@ -138,35 +145,35 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -138,35 +150,35 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
  		 struct debugfs_short_fops *: debugfs_create_file_short)	\
  		(name, mode, parent, data, aux, fops)
  
@@ -1422,7 +1761,7 @@ index fa2568b4380d..261d9f123b62 100644
  
  ssize_t debugfs_attr_read(struct file *file, char __user *buf,
  			size_t len, loff_t *ppos);
-@@ -175,52 +182,52 @@ ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
+@@ -175,52 +187,52 @@ ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
  ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
  			size_t len, loff_t *ppos);
  
@@ -1494,7 +1833,7 @@ index fa2568b4380d..261d9f123b62 100644
  				 int (*read_fn)(struct seq_file *s, void *data));
  
  bool debugfs_initialized(void);
-@@ -242,7 +249,7 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
+@@ -242,7 +254,7 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
   */
  struct debugfs_cancellation {
  	struct list_head list;
@@ -1503,7 +1842,7 @@ index fa2568b4380d..261d9f123b62 100644
  	void *cancel_data;
  };
  
-@@ -263,29 +270,29 @@ debugfs_leave_cancellation(struct file *file,
+@@ -263,29 +275,43 @@ debugfs_leave_cancellation(struct file *file,
   * want to duplicate the design decision mistakes of procfs and devfs again.
   */
  
@@ -1511,12 +1850,26 @@ index fa2568b4380d..261d9f123b62 100644
 -					    struct dentry *parent)
 +static inline struct debugfs_node *debugfs_lookup(const char *name,
 +					    struct debugfs_node *parent)
++{
++	return ERR_PTR(-ENODEV);
++}
++
++static inline char *debugfs_node_path_raw(struct debugfs_node *node, char *buf,
++					  size_t buflen)
++{
++	return ERR_PTR(-ENODEV);
++}
++
++static inline struct debugfs_node *debugfs_node_get(struct debugfs_node *node)
  {
  	return ERR_PTR(-ENODEV);
  }
  
 -static inline struct dentry *debugfs_create_file_aux(const char *name,
 -					umode_t mode, struct dentry *parent,
++static inline void debugfs_node_put(struct debugfs_node *node)
++{ }
++
 +static inline struct debugfs_node *debugfs_create_file_aux(const char *name,
 +					umode_t mode, struct debugfs_node *parent,
  					void *data, void *aux,
@@ -1541,7 +1894,7 @@ index fa2568b4380d..261d9f123b62 100644
  					void *data,
  					const struct file_operations *fops)
  {
-@@ -293,51 +300,51 @@ static inline struct dentry *debugfs_create_file_unsafe(const char *name,
+@@ -293,51 +319,51 @@ static inline struct dentry *debugfs_create_file_unsafe(const char *name,
  }
  
  static inline void debugfs_create_file_size(const char *name, umode_t mode,
@@ -1605,7 +1958,7 @@ index fa2568b4380d..261d9f123b62 100644
  { }
  
  static inline ssize_t debugfs_attr_read(struct file *file, char __user *buf,
-@@ -360,66 +367,66 @@ static inline ssize_t debugfs_attr_write_signed(struct file *file,
+@@ -360,66 +386,66 @@ static inline ssize_t debugfs_attr_write_signed(struct file *file,
  	return -ENODEV;
  }
  
@@ -1689,7 +2042,7 @@ index fa2568b4380d..261d9f123b62 100644
  					   struct debugfs_regset32 *regset)
  {
  }
-@@ -435,14 +442,14 @@ static inline bool debugfs_initialized(void)
+@@ -435,14 +461,14 @@ static inline bool debugfs_initialized(void)
  }
  
  static inline void debugfs_create_u32_array(const char *name, umode_t mode,
@@ -1706,7 +2059,7 @@ index fa2568b4380d..261d9f123b62 100644
  					       int (*read_fn)(struct seq_file *s,
  							      void *data))
  {
-@@ -481,14 +488,14 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
+@@ -481,14 +507,14 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
   * unsigned long value, formatted in hexadecimal
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -1737,6 +2090,98 @@ index 346251bf1026..c1080847e0a6 100644
  };
  
  static inline int dmaengine_slave_config(struct dma_chan *chan,
+diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
+index 8c829d28dcf3..0cef157b8b14 100644
+--- a/include/linux/fault-inject.h
++++ b/include/linux/fault-inject.h
+@@ -33,7 +33,7 @@ struct fault_attr {
+ 
+ 	unsigned long count;
+ 	struct ratelimit_state ratelimit_state;
+-	struct dentry *dname;
++	struct debugfs_node *dname;
+ };
+ 
+ enum fault_flags {
+@@ -79,13 +79,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
+ 
+ #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
+ 
+-struct dentry *fault_create_debugfs_attr(const char *name,
+-			struct dentry *parent, struct fault_attr *attr);
++struct debugfs_node *fault_create_debugfs_attr(const char *name,
++			struct debugfs_node *parent, struct fault_attr *attr);
+ 
+ #else /* CONFIG_FAULT_INJECTION_DEBUG_FS */
+ 
+-static inline struct dentry *fault_create_debugfs_attr(const char *name,
+-			struct dentry *parent, struct fault_attr *attr)
++static inline struct debugfs_node *fault_create_debugfs_attr(const char *name,
++			struct debugfs_node *parent, struct fault_attr *attr)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 3cb9a32a6330..bfa4ffd15bd7 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -842,7 +842,7 @@ struct kvm {
+ #endif
+ 	struct list_head devices;
+ 	u64 manual_dirty_log_protect;
+-	struct dentry *debugfs_dentry;
++	struct debugfs_node *debugfs_dentry;
+ 	struct kvm_stat_data **debugfs_stat_data;
+ 	struct srcu_struct srcu;
+ 	struct srcu_struct irq_srcu;
+@@ -1586,7 +1586,7 @@ int kvm_arch_pm_notifier(struct kvm *kvm, unsigned long state);
+ #endif
+ 
+ #ifdef __KVM_HAVE_ARCH_VCPU_DEBUGFS
+-void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry);
++void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct debugfs_node *debugfs_dentry);
+ #else
+ static inline void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu) {}
+ #endif
+diff --git a/include/linux/mhi.h b/include/linux/mhi.h
+index 059dc94d20bb..2d39ef47d153 100644
+--- a/include/linux/mhi.h
++++ b/include/linux/mhi.h
+@@ -371,7 +371,7 @@ struct mhi_controller {
+ 	const char *name;
+ 	struct device *cntrl_dev;
+ 	struct mhi_device *mhi_dev;
+-	struct dentry *debugfs_dentry;
++	struct debugfs_node *debugfs_dentry;
+ 	void __iomem *regs;
+ 	void __iomem *bhi;
+ 	void __iomem *bhie;
+diff --git a/include/linux/moxtet.h b/include/linux/moxtet.h
+index dfa4800306ee..2e3ae183a098 100644
+--- a/include/linux/moxtet.h
++++ b/include/linux/moxtet.h
+@@ -52,7 +52,7 @@ struct moxtet {
+ 		} position[MOXTET_NIRQS];
+ 	} irq;
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry			*debugfs_root;
++	struct debugfs_node		*debugfs_root;
+ #endif
+ };
+ 
+diff --git a/include/linux/phy/phy.h b/include/linux/phy/phy.h
+index 03cd5bae92d3..8fa11766a567 100644
+--- a/include/linux/phy/phy.h
++++ b/include/linux/phy/phy.h
+@@ -164,7 +164,7 @@ struct phy {
+ 	int			power_count;
+ 	struct phy_attrs	attrs;
+ 	struct regulator	*pwr;
+-	struct dentry		*debugfs;
++	struct debugfs_node	*debugfs;
+ };
+ 
+ /**
 diff --git a/include/net/cfg80211.h b/include/net/cfg80211.h
 index 363d7dd2255a..214341216cb9 100644
 --- a/include/net/cfg80211.h
@@ -1750,6 +2195,87 @@ index 363d7dd2255a..214341216cb9 100644
  
  	const struct ieee80211_ht_cap *ht_capa_mod_mask;
  	const struct ieee80211_vht_cap *vht_capa_mod_mask;
+diff --git a/include/sound/core.h b/include/sound/core.h
+index 1f3f5dccd736..6e2b3a682bfb 100644
+--- a/include/sound/core.h
++++ b/include/sound/core.h
+@@ -131,7 +131,7 @@ struct snd_card {
+ 	size_t total_pcm_alloc_bytes;	/* total amount of allocated buffers */
+ 	struct mutex memory_mutex;	/* protection for the above */
+ #ifdef CONFIG_SND_DEBUG
+-	struct dentry *debugfs_root;    /* debugfs root for card */
++	struct debugfs_node *debugfs_root;    /* debugfs root for card */
+ #endif
+ 
+ #ifdef CONFIG_PM
+@@ -234,7 +234,7 @@ extern int snd_major;
+ extern int snd_ecards_limit;
+ extern const struct class sound_class;
+ #ifdef CONFIG_SND_DEBUG
+-extern struct dentry *sound_debugfs_root;
++extern struct debugfs_node *sound_debugfs_root;
+ #endif
+ 
+ void snd_request_card(int card);
+diff --git a/lib/fault-inject.c b/lib/fault-inject.c
+index 999053fa133e..9fcb91f62b42 100644
+--- a/lib/fault-inject.c
++++ b/lib/fault-inject.c
+@@ -202,7 +202,7 @@ static int debugfs_ul_get(void *data, u64 *val)
+ DEFINE_SIMPLE_ATTRIBUTE(fops_ul, debugfs_ul_get, debugfs_ul_set, "%llu\n");
+ 
+ static void debugfs_create_ul(const char *name, umode_t mode,
+-			      struct dentry *parent, unsigned long *value)
++			      struct debugfs_node *parent, unsigned long *value)
+ {
+ 	debugfs_create_file(name, mode, parent, value, &fops_ul);
+ }
+@@ -221,7 +221,7 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_stacktrace_depth, debugfs_ul_get,
+ 			debugfs_stacktrace_depth_set, "%llu\n");
+ 
+ static void debugfs_create_stacktrace_depth(const char *name, umode_t mode,
+-					    struct dentry *parent,
++					    struct debugfs_node *parent,
+ 					    unsigned long *value)
+ {
+ 	debugfs_create_file(name, mode, parent, value, &fops_stacktrace_depth);
+@@ -229,11 +229,11 @@ static void debugfs_create_stacktrace_depth(const char *name, umode_t mode,
+ 
+ #endif /* CONFIG_FAULT_INJECTION_STACKTRACE_FILTER */
+ 
+-struct dentry *fault_create_debugfs_attr(const char *name,
+-			struct dentry *parent, struct fault_attr *attr)
++struct debugfs_node *fault_create_debugfs_attr(const char *name,
++			struct debugfs_node *parent, struct fault_attr *attr)
+ {
+ 	umode_t mode = S_IFREG | S_IRUSR | S_IWUSR;
+-	struct dentry *dir;
++	struct debugfs_node *dir;
+ 
+ 	dir = debugfs_create_dir(name, parent);
+ 	if (IS_ERR(dir))
+@@ -261,7 +261,7 @@ struct dentry *fault_create_debugfs_attr(const char *name,
+ 	debugfs_create_xul("reject-end", mode, dir, &attr->reject_end);
+ #endif /* CONFIG_FAULT_INJECTION_STACKTRACE_FILTER */
+ 
+-	attr->dname = dget(dir);
++	attr->dname = debugfs_node_get(dir);
+ 	return dir;
+ }
+ EXPORT_SYMBOL_GPL(fault_create_debugfs_attr);
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index e61bbb1bd622..b1c6b34c5842 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -52,7 +52,7 @@ struct wb_stats {
+ 	unsigned long wb_thresh;
+ };
+ 
+-static struct dentry *bdi_debug_root;
++static struct debugfs_node *bdi_debug_root;
+ 
+ static void bdi_debug_init(void)
+ {
 diff --git a/mm/vmstat.c b/mm/vmstat.c
 index 16bfe1c694dd..92f595421fbf 100644
 --- a/mm/vmstat.c
@@ -1789,3 +2315,113 @@ index 40e49074e2ee..f7344f2fcd93 100644
  
  	DEBUGFS_ADD(rts_threshold);
  	DEBUGFS_ADD(fragmentation_threshold);
+diff --git a/sound/core/init.c b/sound/core/init.c
+index 114fb87de990..b0bab58079f3 100644
+--- a/sound/core/init.c
++++ b/sound/core/init.c
+@@ -714,7 +714,7 @@ static void snd_card_set_id_no_lock(struct snd_card *card, const char *src,
+ 	int len, loops;
+ 	bool is_default = false;
+ 	char *id;
+-	
++
+ 	copy_valid_id_string(card, src, nid);
+ 	id = card->id;
+ 
+@@ -1025,7 +1025,7 @@ int __init snd_card_info_init(void)
+  *
+  *  Return: Zero otherwise a negative error code.
+  */
+-  
++
+ int snd_component_add(struct snd_card *card, const char *component)
+ {
+ 	char *ptr;
+diff --git a/sound/core/jack.c b/sound/core/jack.c
+index e4bcecdf89b7..330898d855b5 100644
+--- a/sound/core/jack.c
++++ b/sound/core/jack.c
+@@ -22,7 +22,7 @@ struct snd_jack_kctl {
+ 	struct snd_jack *jack;  /* pointer to struct snd_jack */
+ 	bool sw_inject_enable;  /* allow to inject plug event via debugfs */
+ #ifdef CONFIG_SND_JACK_INJECTION_DEBUG
+-	struct dentry *jack_debugfs_root; /* jack_kctl debugfs root */
++	struct debugfs_node *jack_debugfs_root; /* jack_kctl debugfs root */
+ #endif
+ };
+ 
+diff --git a/sound/core/sound.c b/sound/core/sound.c
+index 6531a67f13b3..53f51f90c56e 100644
+--- a/sound/core/sound.c
++++ b/sound/core/sound.c
+@@ -41,7 +41,7 @@ int snd_ecards_limit;
+ EXPORT_SYMBOL(snd_ecards_limit);
+ 
+ #ifdef CONFIG_SND_DEBUG
+-struct dentry *sound_debugfs_root;
++struct debugfs_node *sound_debugfs_root;
+ EXPORT_SYMBOL_GPL(sound_debugfs_root);
+ #endif
+ 
+diff --git a/sound/drivers/pcmtest.c b/sound/drivers/pcmtest.c
+index 72378f354fd0..804bba1007b5 100644
+--- a/sound/drivers/pcmtest.c
++++ b/sound/drivers/pcmtest.c
+@@ -69,7 +69,7 @@ static short fill_mode = FILL_MODE_PAT;
+ 
+ static u8 playback_capture_test;
+ static u8 ioctl_reset_test;
+-static struct dentry *driver_debug_dir;
++static struct debugfs_node *driver_debug_dir;
+ 
+ module_param(index, int, 0444);
+ MODULE_PARM_DESC(index, "Index value for pcmtest soundcard");
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index faf10671eed2..9444da3829ad 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -115,7 +115,7 @@ static struct kmem_cache *kvm_vcpu_cache;
+ static __read_mostly struct preempt_ops kvm_preempt_ops;
+ static DEFINE_PER_CPU(struct kvm_vcpu *, kvm_running_vcpu);
+ 
+-static struct dentry *kvm_debugfs_dir;
++static struct debugfs_node *kvm_debugfs_dir;
+ 
+ static const struct file_operations stat_fops_per_vm;
+ 
+@@ -1001,7 +1001,7 @@ static void kvm_destroy_vm_debugfs(struct kvm *kvm)
+ static int kvm_create_vm_debugfs(struct kvm *kvm, const char *fdname)
+ {
+ 	static DEFINE_MUTEX(kvm_debugfs_lock);
+-	struct dentry *dent;
++	struct debugfs_node *dent;
+ 	char dir_name[ITOA_MAX_LEN * 2];
+ 	struct kvm_stat_data *stat_data;
+ 	const struct _kvm_stats_desc *pdesc;
+@@ -1017,7 +1017,7 @@ static int kvm_create_vm_debugfs(struct kvm *kvm, const char *fdname)
+ 	dent = debugfs_lookup(dir_name, kvm_debugfs_dir);
+ 	if (dent) {
+ 		pr_warn_ratelimited("KVM: debugfs: duplicate directory %s\n", dir_name);
+-		dput(dent);
++		debugfs_node_put(dent);
+ 		mutex_unlock(&kvm_debugfs_lock);
+ 		return 0;
+ 	}
+@@ -4044,7 +4044,7 @@ DEFINE_SIMPLE_ATTRIBUTE(vcpu_get_pid_fops, vcpu_get_pid, NULL, "%llu\n");
+ 
+ static void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu)
+ {
+-	struct dentry *debugfs_dentry;
++	struct debugfs_node *debugfs_dentry;
+ 	char dir_name[ITOA_MAX_LEN * 2];
+ 
+ 	if (!debugfs_initialized())
+@@ -6216,7 +6216,7 @@ static void kvm_uevent_notify_change(unsigned int type, struct kvm *kvm)
+ 		char *tmp, *p = kmalloc(PATH_MAX, GFP_KERNEL);
+ 
+ 		if (p) {
+-			tmp = dentry_path_raw(kvm->debugfs_dentry, p, PATH_MAX);
++			tmp = debugfs_node_path_raw(kvm->debugfs_dentry, p, PATH_MAX);
+ 			if (!IS_ERR(tmp))
+ 				add_uevent_var(env, "STATS_PATH=%s", tmp);
+ 			kfree(p);

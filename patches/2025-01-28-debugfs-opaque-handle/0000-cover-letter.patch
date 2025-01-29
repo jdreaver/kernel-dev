@@ -1,6 +1,6 @@
-From f5617144fc5a76140016348c87a24adcd3fe2656 Mon Sep 17 00:00:00 2001
+From bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 28 Jan 2025 19:16:25 -0800
+Date: Tue, 28 Jan 2025 19:56:48 -0800
 Subject: [PATCH 0/1] *** SUBJECT HERE ***
 To: Steven Rostedt <rostedt@goodmis.org>,
     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
@@ -14,31 +14,62 @@ Cc: Tejun Heo <tj@kernel.org>,
 David Reaver (1):
   debugfs: Use opaque debugfs_node handle to support kernfs migration
 
- arch/powerpc/kernel/kdebugfs.c |   2 +-
- arch/s390/kernel/kdebugfs.c    |   2 +-
- arch/sh/kernel/kdebugfs.c      |   2 +-
- arch/x86/kernel/cpu/debugfs.c  |   2 +-
- arch/x86/kernel/kdebugfs.c     |  12 +--
- block/blk-core.c               |   6 +-
- block/blk.h                    |   2 +-
- drivers/acpi/debugfs.c         |   2 +-
- drivers/acpi/internal.h        |   2 +-
- drivers/base/component.c       |   2 +-
- drivers/char/virtio_console.c  |   4 +-
- drivers/dma/dmaengine.c        |   2 +-
- drivers/dma/dmaengine.h        |   2 +-
- drivers/gpu/drm/drm_drv.c      |   2 +-
- drivers/misc/mei/mei_dev.h     |   2 +-
- fs/debugfs/file.c              | 192 ++++++++++++++++++---------------
- fs/debugfs/inode.c             | 126 ++++++++++++----------
- include/linux/blkdev.h         |   6 +-
- include/linux/debugfs.h        | 175 +++++++++++++++---------------
- include/linux/dmaengine.h      |   2 +-
- include/net/cfg80211.h         |   2 +-
- mm/vmstat.c                    |   2 +-
- net/wireless/core.c            |   2 +-
- net/wireless/debugfs.c         |   2 +-
- 24 files changed, 298 insertions(+), 257 deletions(-)
+ arch/powerpc/kernel/kdebugfs.c            |   2 +-
+ arch/s390/kernel/kdebugfs.c               |   2 +-
+ arch/sh/kernel/kdebugfs.c                 |   2 +-
+ arch/x86/kernel/cpu/debugfs.c             |   2 +-
+ arch/x86/kernel/kdebugfs.c                |  12 +-
+ arch/x86/kvm/debugfs.c                    |   2 +-
+ arch/x86/mm/debug_pagetables.c            |   2 +-
+ arch/x86/platform/atom/punit_atom_debug.c |   2 +-
+ arch/x86/platform/intel/iosf_mbi.c        |   2 +-
+ arch/x86/xen/debugfs.c                    |   5 +-
+ arch/x86/xen/p2m.c                        |   4 +-
+ arch/x86/xen/xen-ops.h                    |   2 +-
+ block/blk-core.c                          |   6 +-
+ block/blk-timeout.c                       |   2 +-
+ block/blk.h                               |   2 +-
+ drivers/acpi/debugfs.c                    |   2 +-
+ drivers/acpi/internal.h                   |   2 +-
+ drivers/base/component.c                  |   2 +-
+ drivers/bus/mhi/host/debugfs.c            |   2 +-
+ drivers/bus/moxtet.c                      |   2 +-
+ drivers/char/virtio_console.c             |   4 +-
+ drivers/dma/dmaengine.c                   |   2 +-
+ drivers/dma/dmaengine.h                   |   2 +-
+ drivers/gpu/drm/drm_drv.c                 |   2 +-
+ drivers/misc/mei/mei_dev.h                |   2 +-
+ drivers/phy/phy-core.c                    |   2 +-
+ drivers/pinctrl/core.c                    |   4 +-
+ drivers/pinctrl/core.h                    |   2 +-
+ drivers/pinctrl/pinconf.c                 |   2 +-
+ drivers/pinctrl/pinconf.h                 |   4 +-
+ drivers/pinctrl/pinmux.c                  |   2 +-
+ drivers/pinctrl/pinmux.h                  |   5 +-
+ fs/debugfs/file.c                         | 192 +++++++++++----------
+ fs/debugfs/inode.c                        | 142 ++++++++++------
+ include/linux/backing-dev-defs.h          |   3 +-
+ include/linux/blkdev.h                    |   6 +-
+ include/linux/debugfs.h                   | 194 ++++++++++++----------
+ include/linux/dmaengine.h                 |   2 +-
+ include/linux/fault-inject.h              |  10 +-
+ include/linux/kvm_host.h                  |   4 +-
+ include/linux/mhi.h                       |   2 +-
+ include/linux/moxtet.h                    |   2 +-
+ include/linux/phy/phy.h                   |   2 +-
+ include/net/cfg80211.h                    |   2 +-
+ include/sound/core.h                      |   4 +-
+ lib/fault-inject.c                        |  12 +-
+ mm/backing-dev.c                          |   2 +-
+ mm/vmstat.c                               |   2 +-
+ net/wireless/core.c                       |   2 +-
+ net/wireless/debugfs.c                    |   2 +-
+ sound/core/init.c                         |   4 +-
+ sound/core/jack.c                         |   2 +-
+ sound/core/sound.c                        |   2 +-
+ sound/drivers/pcmtest.c                   |   2 +-
+ virt/kvm/kvm_main.c                       |  10 +-
+ 55 files changed, 386 insertions(+), 311 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5
