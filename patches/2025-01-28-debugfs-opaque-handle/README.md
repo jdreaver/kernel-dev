@@ -27,6 +27,101 @@ git format-patch master...HEAD \
 - If we eventually want to use `kernfs`, we need to consider `file_operations` as well. That would be a super hard thing to migrate across all of the kernel.
   - Maybe not actually. There are lots of helper macros being used by debugfs users that will make this easier.
 
+## Coccinelle automation
+
+Run scripts with e.g.
+
+```
+$ spatch --sp-file debug-looking-dentry.cocci --dir drivers/gpio --in-place
+```
+
+or even better (leave off `M=` to do the whole kernel)
+
+```
+$ make coccicheck M=./drivers/gpio/ COCCI=$(pwd)/debug-looking-dentry.cocci MODE=patch > output.patch
+$ git apply output.patch
+```
+
+Just looking at variable names:
+
+```
+// Options: --include-headers --recursive-includes
+
+virtual patch
+
+@@
+identifier struct_name;
+identifier var =~ ".*(dbg|debug).*";  // Match any variable with "dbg" or "debug" in its name
+@@
+
+(
+- struct dentry *var;
++ struct debugfs_node *var;
+|
+struct struct_name {
+    ...
+-   struct dentry *var;
++   struct debugfs_node *var;
+    ...
+};
+)
+```
+
+Something more structured. This will get way, way too complicated imo.
+
+```
+@match_vars@
+expression E;
+identifier var, parent;
+@@
+
+  var = debugfs_create_dir(E, parent)
+
+@depends on match_vars@
+identifier match_vars.var, match_vars.parent;
+@@
+
+(
+- struct dentry *var;
++ struct debugfs_node *var;
+|
+- struct dentry *parent;
++ struct debugfs_node *parent;
+|
+- static struct dentry *var;
++ struct debugfs_node *var;
+|
+- static struct dentry *parent;
++ struct debugfs_node *parent;
+)
+
+@match_fields@
+expression E1, E2, E3;
+identifier fld, parent;
+@@
+
+  E1->fld = debugfs_create_dir(E2, parent)
+
+@depends on match_fields@
+identifier match_fields.fld, match_fields.parent;
+identifier struct_name;
+@@
+
+struct struct_name {
+    ...
+-   struct dentry *fld;
++   struct debugfs_node *fld;
+    ...
+};
+```
+
+
+Ideas:
+- See if running with make coccicheck is easier?
+- Include headers!
+- Try to do deeper semantic matching using the actual public API functions for debugfs
+- It is okay if this catches _too_ much. We can fix things up.
+
 ## Finding all usages
 
 Steve suggested we do the opaque pointer migration in one go. I need to make sure I get _everything_ in this case:
