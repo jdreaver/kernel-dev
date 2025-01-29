@@ -7,7 +7,7 @@ Storing patches in this directory with:
 ```bash
 git format-patch master...HEAD \
       --base=origin/master \
-      -o ../patches/2025-01-28-migrate-debugfs-kernfs/ \
+      -o ../patches/2025-01-28-debugfs-opaque-handle/ \
       --cover-letter \
       --to 'Steven Rostedt <rostedt@goodmis.org>' \
       --to 'Greg Kroah-Hartman <gregkh@linuxfoundation.org>' \
@@ -19,7 +19,6 @@ git format-patch master...HEAD \
 
 # TODO
 
-- (Consider renaming all of this to "debugfs opaque handle" so I'm just doing that first)
 - Rebase against master because of <https://lore.kernel.org/all/20241229080948.GY1977892@ZenIV/>
 - Get feedback on approach
 - If we eventually want to use `kernfs`, we need to consider `file_operations` as well. That would be a super hard thing to migrate across all of the kernel.
