@@ -1,6 +1,6 @@
-From de5200ca4974762788ca9afd97c92e53d7eff19d Mon Sep 17 00:00:00 2001
+From dce333c755c89f91cd36c356f57183ce6f43e566 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Thu, 30 Jan 2025 06:29:39 -0800
+Date: Thu, 30 Jan 2025 08:00:37 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -13,7 +13,10 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 TODO (things to cover):
 
-- Latter parts of coccinelle script can be manual fixups if necessary (only like 1-2 callers for each of those functions)
+- Ask if coccinelle script is okay. I purposely didn't try to cover every case in Coccinelle. I focused on the use case of a maintainer running the script if there is a merge conflict. Any advice is appreciated. I tried to do funny things to make it more terse but it just made it buggy.
+  - Latter parts of coccinelle script can be manual fixups if necessary (only like 1-2 callers for each of those functions)
+- This patch will make any future internal migration much easier
+  - Lots more to do before we could plug in kernfs. Biggest hurdle is refactoring file ops structs
 
 David Reaver (3):
   debugfs: Use opaque debugfs_node handle to support kernfs migration
@@ -43,6 +46,7 @@ David Reaver (3):
  arch/powerpc/platforms/powernv/opal-imc.c     |   4 +-
  arch/powerpc/platforms/powernv/opal-lpc.c     |   4 +-
  arch/powerpc/platforms/powernv/opal-xscom.c   |   4 +-
+ arch/powerpc/platforms/powernv/pci.h          |   2 +-
  arch/powerpc/platforms/powernv/vas-debug.c    |   6 +-
  arch/powerpc/platforms/powernv/vas.h          |   2 +-
  arch/powerpc/platforms/pseries/dtl.c          |   2 +-
@@ -121,6 +125,7 @@ David Reaver (3):
  drivers/clk/clk-fractional-divider.c          |   2 +-
  drivers/clk/clk.c                             |   8 +-
  drivers/clk/tegra/clk-dfll.c                  |   4 +-
+ drivers/crypto/allwinner/sun4i-ss/sun4i-ss.h  |   4 +-
  .../crypto/allwinner/sun8i-ce/sun8i-ce-core.c |   4 +-
  drivers/crypto/allwinner/sun8i-ce/sun8i-ce.h  |   4 +-
  .../crypto/allwinner/sun8i-ss/sun8i-ss-core.c |   4 +-
@@ -232,6 +237,7 @@ David Reaver (3):
  drivers/gpu/drm/i915/gt/intel_sseu_debugfs.h  |   3 +-
  .../gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.c |   3 +-
  .../gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.h |   3 +-
+ drivers/gpu/drm/i915/gt/uc/intel_guc.h        |   2 +-
  .../gpu/drm/i915/gt/uc/intel_guc_debugfs.c    |   3 +-
  .../gpu/drm/i915/gt/uc/intel_guc_debugfs.h    |   3 +-
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |   2 +-
@@ -394,6 +400,7 @@ David Reaver (3):
  drivers/media/pci/mgb4/mgb4_vin.c             |   2 +-
  drivers/media/pci/mgb4/mgb4_vout.c            |   2 +-
  drivers/media/pci/saa7164/saa7164-core.c      |   2 +-
+ drivers/media/pci/zoran/zoran.h               |   2 +-
  drivers/media/platform/amphion/vpu.h          |   8 +-
  drivers/media/platform/aspeed/aspeed-video.c  |   2 +-
  .../media/platform/chips-media/coda/coda.h    |   6 +-
@@ -462,7 +469,9 @@ David Reaver (3):
  drivers/net/ethernet/hisilicon/hns3/hnae3.h   |   2 +-
  .../ethernet/hisilicon/hns3/hns3_debugfs.c    |   6 +-
  .../ethernet/hisilicon/hns3/hns3_debugfs.h    |   2 +-
+ .../hisilicon/hns3/hns3pf/hclge_main.h        |   2 +-
  .../net/ethernet/huawei/hinic/hinic_debugfs.c |   6 +-
+ drivers/net/ethernet/huawei/hinic/hinic_dev.h |   8 +-
  drivers/net/ethernet/intel/fm10k/fm10k.h      |   4 +-
  .../net/ethernet/intel/fm10k/fm10k_debugfs.c  |   2 +-
  drivers/net/ethernet/intel/i40e/i40e.h        |   2 +-
@@ -472,7 +481,7 @@ David Reaver (3):
  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +-
  .../net/ethernet/intel/ixgbe/ixgbe_debugfs.c  |   2 +-
  drivers/net/ethernet/marvell/mvpp2/mvpp2.h    |   2 +-
- .../ethernet/marvell/mvpp2/mvpp2_debugfs.c    |  20 +-
+ .../ethernet/marvell/mvpp2/mvpp2_debugfs.c    |  41 ++--
  drivers/net/ethernet/marvell/skge.c           |   2 +-
  drivers/net/ethernet/marvell/skge.h           |   2 +-
  drivers/net/ethernet/marvell/sky2.c           |   4 +-
@@ -552,17 +561,23 @@ David Reaver (3):
  .../net/wireless/broadcom/b43legacy/debugfs.c |   2 +-
  .../net/wireless/broadcom/b43legacy/debugfs.h |   2 +-
  .../broadcom/brcm80211/brcmfmac/cfg80211.h    |   2 +-
+ .../broadcom/brcm80211/brcmfmac/core.h        |   2 +-
  .../broadcom/brcm80211/brcmfmac/debug.c       |   2 +-
  .../broadcom/brcm80211/brcmfmac/debug.h       |   4 +-
  .../broadcom/brcm80211/brcmfmac/pcie.c        |   2 +-
  .../broadcom/brcm80211/brcmfmac/sdio.c        |   2 +-
  .../broadcom/brcm80211/brcmsmac/debug.c       |   2 +-
+ .../broadcom/brcm80211/brcmsmac/pub.h         |   2 +-
  drivers/net/wireless/intel/iwlegacy/3945-rs.c |   2 +-
  drivers/net/wireless/intel/iwlegacy/4965-rs.c |   2 +-
  drivers/net/wireless/intel/iwlegacy/common.h  |   2 +-
+ drivers/net/wireless/intel/iwlwifi/dvm/agn.h  |   4 +-
+ .../net/wireless/intel/iwlwifi/dvm/debugfs.c  |   2 +-
  drivers/net/wireless/intel/iwlwifi/dvm/dev.h  |   2 +-
  drivers/net/wireless/intel/iwlwifi/dvm/rs.c   |   2 +-
- drivers/net/wireless/intel/iwlwifi/iwl-drv.c  |   8 +-
+ .../net/wireless/intel/iwlwifi/fw/debugfs.c   |   2 +-
+ .../net/wireless/intel/iwlwifi/fw/debugfs.h   |   4 +-
+ drivers/net/wireless/intel/iwlwifi/iwl-drv.c  |  10 +-
  .../net/wireless/intel/iwlwifi/iwl-trans.h    |   2 +-
  drivers/net/wireless/intel/iwlwifi/mei/main.c |   2 +-
  .../wireless/intel/iwlwifi/mvm/debugfs-vif.c  |   6 +-
@@ -649,7 +664,8 @@ David Reaver (3):
  drivers/platform/chrome/wilco_ec/debugfs.c    |   2 +-
  drivers/platform/olpc/olpc-ec.c               |   8 +-
  drivers/platform/x86/acer-wmi.c               |   2 +-
- drivers/platform/x86/amd/pmf/pmf.h            |   2 +-
+ drivers/platform/x86/amd/pmc/pmc.h            |   2 +-
+ drivers/platform/x86/amd/pmf/pmf.h            |   4 +-
  drivers/platform/x86/apple-gmux.c             |   2 +-
  drivers/platform/x86/asus-wmi.c               |   2 +-
  drivers/platform/x86/dell/dell-laptop.c       |   2 +-
@@ -664,7 +680,7 @@ David Reaver (3):
  drivers/platform/x86/intel/vsec_tpmi.c        |   6 +-
  drivers/platform/x86/intel_ips.c              |   2 +-
  drivers/platform/x86/msi-wmi-platform.c       |   7 +-
- drivers/platform/x86/pmc_atom.c               |   2 +-
+ drivers/platform/x86/pmc_atom.c               |   4 +-
  drivers/platform/x86/samsung-laptop.c         |   4 +-
  drivers/pmdomain/core.c                       |   4 +-
  drivers/pmdomain/qcom/cpr.c                   |   2 +-
@@ -702,10 +718,10 @@ David Reaver (3):
  drivers/scsi/hisi_sas/hisi_sas_v3_hw.c        |  14 +-
  drivers/scsi/lpfc/lpfc.h                      |  74 +++----
  drivers/scsi/lpfc/lpfc_debugfs.c              |   2 +-
- drivers/scsi/megaraid/megaraid_sas.h          |   4 +-
+ drivers/scsi/megaraid/megaraid_sas.h          |   2 +-
  drivers/scsi/megaraid/megaraid_sas_base.c     |   2 +-
  drivers/scsi/megaraid/megaraid_sas_debugfs.c  |   2 +-
- drivers/scsi/mpt3sas/mpt3sas_base.h           |   4 +-
+ drivers/scsi/mpt3sas/mpt3sas_base.h           |   2 +-
  drivers/scsi/mpt3sas/mpt3sas_debugfs.c        |   2 +-
  drivers/scsi/qedf/qedf_dbg.h                  |   2 +-
  drivers/scsi/qedf/qedf_debugfs.c              |   2 +-
@@ -796,7 +812,7 @@ David Reaver (3):
  fs/bcachefs/debug.c                           |   4 +-
  fs/ceph/mds_client.c                          |   4 +-
  fs/ceph/super.h                               |  10 +-
- fs/debugfs/file.c                             | 117 +++++------
+ fs/debugfs/file.c                             | 121 +++++------
  fs/debugfs/inode.c                            | 147 ++++++++-----
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
@@ -835,7 +851,7 @@ David Reaver (3):
  include/linux/ceph/mon_client.h               |   2 +-
  include/linux/ceph/osd_client.h               |   2 +-
  include/linux/clk-provider.h                  |   3 +-
- include/linux/debugfs.h                       | 197 ++++++++++--------
+ include/linux/debugfs.h                       | 201 ++++++++++--------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
@@ -991,7 +1007,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 971 files changed, 2120 insertions(+), 1939 deletions(-)
+ 984 files changed, 2156 insertions(+), 1972 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

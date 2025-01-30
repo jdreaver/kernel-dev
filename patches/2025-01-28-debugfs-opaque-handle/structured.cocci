@@ -8,7 +8,7 @@ virtual patch
 @match_assign depends on !(file in "fs/debugfs/")@
 expression E;
 identifier var;
-identifier fn =~ "debugfs";
+identifier fn =~ "debugfs|dbgfs";
 @@
 
 (
@@ -50,7 +50,7 @@ struct struct_name {
 @match_usage depends on !(file in "fs/debugfs/")@
 expression E;
 identifier var;
-identifier fn =~ "debugfs";
+identifier fn =~ "debugfs|dbgfs";
 @@
 
 (
@@ -92,7 +92,7 @@ struct struct_name {
 // Declaration and assignment in one
 @depends on !(file in "fs/debugfs/")@
 identifier var;
-identifier fn =~ "debugfs";
+identifier fn =~ "debugfs|dbgfs";
 @@
 
 - struct dentry *var
@@ -103,7 +103,7 @@ identifier fn =~ "debugfs";
 // Sometimes these are in headers that the other rules don't traverse because
 // spatch misses some imports.
 @depends on !(file in "fs/debugfs/")@
-identifier var =~ "debugfs|^debug_dir$|^debug_root$";
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$";
 identifier struct_name;
 @@
 
@@ -170,7 +170,7 @@ struct struct_name {
 // Transform wrapper function args.
 @depends on !(file in "fs/debugfs/")@
 identifier arg;
-identifier fn =~ "debugfs|create_setup_data_node|\
+identifier fn =~ "debugfs|dbgfs|create_setup_data_node|\
                   create_setup_data_nodes";
 @@
 
@@ -182,7 +182,7 @@ fn(...,
 
 // Transform wrapper function return types
 @depends on !(file in "fs/debugfs/")@
-identifier fn =~ "debugfs";
+identifier fn =~ "debugfs|dbgfs";
 @@
 
 - struct dentry *

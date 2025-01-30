@@ -23,6 +23,12 @@ git format-patch master...HEAD \
 
 # TODO
 
+- `arch/s390/asm/include/debug.h` has a dentry array that wasn't fixed in a full run of spatch, but upon running spatch again it was included. Hmm.
+  - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
+  - `bnxt_re.h` has an event simpler one that wasn't caught
+  - Only change I can think of is changing the regex to include `dbgfs`, but that doesn't apply to some of the misses
+  - Try it by itself with no changes applied.
+  - I wonder if we have to split up our cocci script to run in stages
 - Catch `struct dentry *root, *entry;` on one line
   - Idea: if any one of the vars is implicated, change the type for all of them
   - Even 3 in a line for mtk-svs.c in mediatek!
