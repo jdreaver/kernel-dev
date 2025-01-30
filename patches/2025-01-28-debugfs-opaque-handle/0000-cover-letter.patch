@@ -1,6 +1,6 @@
-From fc0d59a19b7e85586f37544c1b6d37421a034b9b Mon Sep 17 00:00:00 2001
+From 50e17d3c4f042d883a765e8b604cf080d7c4110a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 29 Jan 2025 20:56:11 -0800
+Date: Wed, 29 Jan 2025 21:04:15 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -635,8 +635,8 @@ David Reaver (3):
  drivers/pci/hotplug/cpqphp_sysfs.c            |   2 +-
  drivers/perf/arm-cmn.c                        |   4 +-
  drivers/phy/phy-core.c                        |   2 +-
- drivers/phy/realtek/phy-rtk-usb2.c            |   6 +-
- drivers/phy/realtek/phy-rtk-usb3.c            |   6 +-
+ drivers/phy/realtek/phy-rtk-usb2.c            |   8 +-
+ drivers/phy/realtek/phy-rtk-usb3.c            |   8 +-
  drivers/pinctrl/core.c                        |   4 +-
  drivers/pinctrl/core.h                        |   2 +-
  drivers/pinctrl/pinconf.c                     |   4 +-
@@ -904,7 +904,7 @@ David Reaver (3):
  kernel/module/tracking.c                      |   2 +-
  kernel/power/energy_model.c                   |   6 +-
  kernel/printk/index.c                         |   4 +-
- kernel/sched/debug.c                          |  14 +-
+ kernel/sched/debug.c                          |  16 +-
  kernel/trace/blktrace.c                       |   2 +-
  kernel/trace/trace.h                          |   2 +-
  lib/842/842_debugfs.h                         |   2 +-
@@ -984,7 +984,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 964 files changed, 2109 insertions(+), 1929 deletions(-)
+ 964 files changed, 2112 insertions(+), 1932 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

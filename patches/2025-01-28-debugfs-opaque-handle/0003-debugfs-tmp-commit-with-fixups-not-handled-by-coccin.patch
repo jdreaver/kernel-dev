@@ -1,4 +1,4 @@
-From fc0d59a19b7e85586f37544c1b6d37421a034b9b Mon Sep 17 00:00:00 2001
+From 50e17d3c4f042d883a765e8b604cf080d7c4110a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -13,13 +13,16 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- drivers/bus/moxtet.c         |  2 +-
- fs/debugfs/file.c            |  3 +--
- fs/debugfs/inode.c           | 26 +++++++++++++-------------
- include/linux/fault-inject.h |  3 +--
- lib/fault-inject.c           |  2 +-
- virt/kvm/kvm_main.c          |  5 +++--
- 6 files changed, 20 insertions(+), 21 deletions(-)
+ drivers/bus/moxtet.c               |  2 +-
+ drivers/phy/realtek/phy-rtk-usb2.c |  2 +-
+ drivers/phy/realtek/phy-rtk-usb3.c |  2 +-
+ fs/debugfs/file.c                  |  3 +--
+ fs/debugfs/inode.c                 | 26 +++++++++++++-------------
+ include/linux/fault-inject.h       |  3 +--
+ kernel/sched/debug.c               |  2 +-
+ lib/fault-inject.c                 |  2 +-
+ virt/kvm/kvm_main.c                |  5 +++--
+ 9 files changed, 23 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
 index 6276551d7968..e2d7fcf1d9e4 100644
@@ -33,6 +36,32 @@ index 6276551d7968..e2d7fcf1d9e4 100644
 +	struct debugfs_node *root, *entry;
  
  	root = debugfs_create_dir("moxtet", NULL);
+ 
+diff --git a/drivers/phy/realtek/phy-rtk-usb2.c b/drivers/phy/realtek/phy-rtk-usb2.c
+index b84a8db7168d..eff7bf8f8ee1 100644
+--- a/drivers/phy/realtek/phy-rtk-usb2.c
++++ b/drivers/phy/realtek/phy-rtk-usb2.c
+@@ -708,7 +708,7 @@ static const struct phy_ops ops = {
+ };
+ 
+ #ifdef CONFIG_DEBUG_FS
+-static struct dentry *create_phy_debug_root(void)
++static struct debugfs_node *create_phy_debug_root(void)
+ {
+ 	struct debugfs_node *phy_debug_root;
+ 
+diff --git a/drivers/phy/realtek/phy-rtk-usb3.c b/drivers/phy/realtek/phy-rtk-usb3.c
+index d5943da94484..d309389b6f42 100644
+--- a/drivers/phy/realtek/phy-rtk-usb3.c
++++ b/drivers/phy/realtek/phy-rtk-usb3.c
+@@ -342,7 +342,7 @@ static const struct phy_ops ops = {
+ };
+ 
+ #ifdef CONFIG_DEBUG_FS
+-static struct dentry *create_phy_debug_root(void)
++static struct debugfs_node *create_phy_debug_root(void)
+ {
+ 	struct debugfs_node *phy_debug_root;
  
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
 index 570087bbb9fc..6f7b74337df9 100644
@@ -180,6 +209,19 @@ index e5bfc36b35e2..f7e5d2463713 100644
  };
  
  enum fault_flags {
+diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
+index 668b0cc9925e..6a1f6b50edc3 100644
+--- a/kernel/sched/debug.c
++++ b/kernel/sched/debug.c
+@@ -568,7 +568,7 @@ static const struct file_operations sd_flags_fops = {
+ 	.release	= single_release,
+ };
+ 
+-static void register_sd(struct sched_domain *sd, struct dentry *parent)
++static void register_sd(struct sched_domain *sd, struct debugfs_node *parent)
+ {
+ #define SDM(type, mode, member)	\
+ 	debugfs_create_##type(#member, mode, parent, &sd->member)
 diff --git a/lib/fault-inject.c b/lib/fault-inject.c
 index d9a8fe11e6a4..5bf0f47725e8 100644
 --- a/lib/fault-inject.c

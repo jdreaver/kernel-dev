@@ -5,7 +5,7 @@ virtual patch
 // Match both direct assignments and field assignments to functions with
 // "debugfs" in the name. Purposely casting a wide net to include wrapper
 // functions that some modules imlpement, not just the debugfs.h functions.
-@match_assign@
+@match_assign depends on !(file in "fs/debugfs/")@
 expression E;
 identifier var;
 identifier fn =~ "debugfs";
@@ -47,7 +47,7 @@ struct struct_name {
 )
 
 // Match both direct args and field args
-@match_usage@
+@match_usage depends on !(file in "fs/debugfs/")@
 expression E;
 identifier var;
 identifier fn =~ "debugfs";
@@ -90,7 +90,7 @@ struct struct_name {
 )
 
 // Declaration and assignment in one
-@@
+@depends on !(file in "fs/debugfs/")@
 identifier var;
 identifier fn =~ "debugfs";
 @@
@@ -102,7 +102,7 @@ identifier fn =~ "debugfs";
 // Variable declarations that are almost certainly supposed to be debugfs_node.
 // Sometimes these are in headers that the other rules don't traverse because
 // spatch misses some imports.
-@@
+@depends on !(file in "fs/debugfs/")@
 identifier var =~ "debugfs|^debug_dir$|^debug_root$";
 identifier struct_name;
 @@
@@ -168,7 +168,7 @@ struct struct_name {
 // )
 
 // Transform wrapper function args.
-@@
+@depends on !(file in "fs/debugfs/")@
 identifier arg;
 identifier fn =~ "debugfs|create_setup_data_node|\
                   create_setup_data_nodes";
@@ -181,7 +181,7 @@ fn(...,
 { ... }
 
 // Transform wrapper function return types
-@@
+@depends on !(file in "fs/debugfs/")@
 identifier fn =~ "debugfs";
 @@
 
