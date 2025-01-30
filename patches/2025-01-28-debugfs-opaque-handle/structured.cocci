@@ -22,7 +22,6 @@ identifier fn =~ "debugfs|dbgfs";
 // Transform declarations
 @transform_assign depends on match_assign@
 identifier match_assign.var;
-identifier struct_name;
 @@
 
 // Declarations
@@ -36,15 +35,20 @@ identifier struct_name;
 |
 - static struct dentry *var;
 + static struct debugfs_node *var;
-|
-// Struct field declarations
+)
+
+// Transform declarations in structs
+@transform_assign_struct depends on match_assign@
+identifier match_assign.var;
+identifier struct_name;
+@@
+
 struct struct_name {
     ...
 -   struct dentry *var;
 +   struct debugfs_node *var;
     ...
 };
-)
 
 // Match both direct args and field args
 @match_usage depends on !(file in "fs/debugfs/")@
@@ -68,7 +72,6 @@ identifier match_usage.var;
 identifier struct_name;
 @@
 
-// Declarations
 (
 - struct dentry *var;
 + struct debugfs_node *var;
@@ -79,15 +82,19 @@ identifier struct_name;
 |
 - static struct dentry *var;
 + static struct debugfs_node *var;
-|
-// Struct field declarations
+)
+
+@transform_usage_struct depends on match_usage@
+identifier match_usage.var;
+identifier struct_name;
+@@
+
 struct struct_name {
     ...
 -   struct dentry *var;
 +   struct debugfs_node *var;
     ...
 };
-)
 
 // Declaration and assignment in one
 @depends on !(file in "fs/debugfs/")@
@@ -107,31 +114,39 @@ identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$";
 identifier struct_name;
 @@
 
-// Declarations
 (
 - struct dentry *var;
 + struct debugfs_node *var;
 |
 - static struct dentry *var;
 + static struct debugfs_node *var;
-|
-// Struct field declarations
+)
+
+// Struct fields that are almost certainly supposed to be debugfs_node.
+@depends on !(file in "fs/debugfs/")@
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$";
+identifier struct_name;
+@@
+
+struct struct_name {
+    ...
+-   struct dentry *var
++   struct debugfs_node *var
+    [...];
+    ...
+};
+
+@depends on !(file in "fs/debugfs/")@
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$";
+identifier struct_name;
+@@
+
 struct struct_name {
     ...
 -   struct dentry *var;
 +   struct debugfs_node *var;
     ...
 };
-|
-struct struct_name {
-    ...
-    // Match arrays too
--   struct dentry *var
-+   struct debugfs_node *var
-    [...];
-    ...
-};
-)
 
 // Transform various helper functions
 //
