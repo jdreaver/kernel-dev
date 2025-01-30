@@ -1,4 +1,4 @@
-From e890317db1d99d078161379b9eb55bc00549aa7b Mon Sep 17 00:00:00 2001
+From 079e8e76972a746349c37f877201ba0b09cb8dc8 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 20:21:58 -0800
 Subject: [RFC PATCH 2/3] debugfs: tmp commit to show coccinelle output
@@ -14950,7 +14950,7 @@ index 7fa1e7be50e4..5cba6475f1d0 100644
  
  #ifdef CONFIG_CEPH_FSCACHE
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-index 6f7b74337df9..570087bbb9fc 100644
+index 4f07d5b7aa39..050303948048 100644
 --- a/fs/debugfs/file.c
 +++ b/fs/debugfs/file.c
 @@ -76,7 +76,8 @@ enum dbgfs_get_mode {

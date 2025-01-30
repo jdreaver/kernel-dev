@@ -1,4 +1,4 @@
-From bfa89c4fab07656968a526ad74631cc2cce2fd05 Mon Sep 17 00:00:00 2001
+From 6c48d0f86774c9c881721327df55b68a3610c0d5 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -79,7 +79,7 @@ index d5943da94484..d309389b6f42 100644
  	struct debugfs_node *phy_debug_root;
  
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-index 570087bbb9fc..6f7b74337df9 100644
+index 050303948048..4f07d5b7aa39 100644
 --- a/fs/debugfs/file.c
 +++ b/fs/debugfs/file.c
 @@ -76,8 +76,7 @@ enum dbgfs_get_mode {

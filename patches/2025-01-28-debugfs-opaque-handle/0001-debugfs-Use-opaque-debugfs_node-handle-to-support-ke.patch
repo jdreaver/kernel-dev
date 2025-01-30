@@ -1,4 +1,4 @@
-From fa54440f0ab85a3d51084e7a591d9e8a7e139faa Mon Sep 17 00:00:00 2001
+From 51e3d53aa77d23f2a4cd0eb1854fbc0d00f42379 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 28 Jan 2025 13:53:41 -0800
 Subject: [RFC PATCH 1/3] debugfs: Use opaque debugfs_node handle to support
@@ -13,194 +13,16 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- fs/debugfs/file.c       | 192 ++++++++++++++++++++------------------
- fs/debugfs/inode.c      | 147 ++++++++++++++++++-----------
- include/linux/debugfs.h | 201 +++++++++++++++++++++++-----------------
- 3 files changed, 314 insertions(+), 226 deletions(-)
+ fs/debugfs/file.c       | 117 ++++++++++++------------
+ fs/debugfs/inode.c      | 147 +++++++++++++++++++-----------
+ include/linux/debugfs.h | 197 +++++++++++++++++++++++-----------------
+ 3 files changed, 267 insertions(+), 194 deletions(-)
 
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-index e33cc77699cd..6f7b74337df9 100644
+index e33cc77699cd..4f07d5b7aa39 100644
 --- a/fs/debugfs/file.c
 +++ b/fs/debugfs/file.c
-@@ -170,9 +170,9 @@ static int __debugfs_file_get(struct dentry *dentry, enum dbgfs_get_mode mode)
-  * it is not safe to access any of its data. If, on the other hand,
-  * it is allowed to access the file data, zero is returned.
-  */
--int debugfs_file_get(struct dentry *dentry)
-+int debugfs_file_get(struct debugfs_node *node)
- {
--	return __debugfs_file_get(dentry, DBGFS_GET_ALREADY);
-+	return __debugfs_file_get((struct dentry *)node, DBGFS_GET_ALREADY);
- }
- EXPORT_SYMBOL_GPL(debugfs_file_get);
- 
-@@ -185,8 +185,9 @@ EXPORT_SYMBOL_GPL(debugfs_file_get);
-  * debugfs_remove_recursive() blocked by a former call to
-  * debugfs_file_get() to proceed and return to its caller.
-  */
--void debugfs_file_put(struct dentry *dentry)
-+void debugfs_file_put(struct debugfs_node *node)
- {
-+	struct dentry *dentry = (struct dentry *)node;
- 	struct debugfs_fsdata *fsd = READ_ONCE(dentry->d_fsdata);
- 
- 	if (refcount_dec_and_test(&fsd->active_users))
-@@ -298,6 +299,7 @@ static int debugfs_locked_down(struct inode *inode,
- static int open_proxy_open(struct inode *inode, struct file *filp)
- {
- 	struct dentry *dentry = F_DENTRY(filp);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	const struct file_operations *real_fops = NULL;
- 	int r;
- 
-@@ -332,7 +334,7 @@ static int open_proxy_open(struct inode *inode, struct file *filp)
- 		r = real_fops->open(inode, filp);
- 
- out:
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return r;
- }
- 
-@@ -347,18 +349,19 @@ const struct file_operations debugfs_open_proxy_file_operations = {
- static ret_type full_proxy_ ## name(proto)				\
- {									\
- 	struct dentry *dentry = F_DENTRY(filp);				\
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;       \
- 	struct debugfs_fsdata *fsd = dentry->d_fsdata;			\
- 	const struct file_operations *real_fops;			\
- 	ret_type r;							\
- 									\
- 	if (!(fsd->methods & bit))					\
- 		return ret;						\
--	r = debugfs_file_get(dentry);					\
-+	r = debugfs_file_get(node);					\
- 	if (unlikely(r))						\
- 		return r;						\
- 	real_fops = debugfs_real_fops(filp);				\
- 	r = real_fops->name(args);					\
--	debugfs_file_put(dentry);					\
-+	debugfs_file_put(node);					\
- 	return r;							\
- }
- 
-@@ -366,19 +369,20 @@ static ret_type full_proxy_ ## name(proto)				\
- static ret_type full_proxy_ ## name(proto)				\
- {									\
- 	struct dentry *dentry = F_DENTRY(filp);				\
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;       \
- 	struct debugfs_fsdata *fsd = dentry->d_fsdata;			\
- 	ret_type r;							\
- 									\
- 	if (!(fsd->methods & bit))					\
- 		return ret;						\
--	r = debugfs_file_get(dentry);					\
-+	r = debugfs_file_get(node);					\
- 	if (unlikely(r))						\
- 		return r;						\
- 	if (fsd->real_fops)						\
- 		r = fsd->real_fops->name(args);				\
- 	else								\
- 		r = fsd->short_fops->name(args);			\
--	debugfs_file_put(dentry);					\
-+	debugfs_file_put(node);						\
- 	return r;							\
- }
- 
-@@ -404,18 +408,19 @@ static __poll_t full_proxy_poll(struct file *filp,
- 				struct poll_table_struct *wait)
- {
- 	struct dentry *dentry = F_DENTRY(filp);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	struct debugfs_fsdata *fsd = dentry->d_fsdata;
- 	__poll_t r = 0;
- 	const struct file_operations *real_fops;
- 
- 	if (!(fsd->methods & HAS_POLL))
- 		return DEFAULT_POLLMASK;
--	if (debugfs_file_get(dentry))
-+	if (debugfs_file_get(node))
- 		return EPOLLHUP;
- 
- 	real_fops = debugfs_real_fops(filp);
- 	r = real_fops->poll(filp, wait);
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return r;
- }
- 
-@@ -440,6 +445,7 @@ static int full_proxy_release(struct inode *inode, struct file *filp)
- static int full_proxy_open_regular(struct inode *inode, struct file *filp)
- {
- 	struct dentry *dentry = F_DENTRY(filp);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	const struct file_operations *real_fops;
- 	struct debugfs_fsdata *fsd;
- 	int r;
-@@ -482,7 +488,7 @@ static int full_proxy_open_regular(struct inode *inode, struct file *filp)
- 		}
- 	}
- out:
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return r;
- }
- 
-@@ -499,6 +505,7 @@ const struct file_operations debugfs_full_proxy_file_operations = {
- static int full_proxy_open_short(struct inode *inode, struct file *filp)
- {
- 	struct dentry *dentry = F_DENTRY(filp);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	int r;
- 
- 	r = __debugfs_file_get(dentry, DBGFS_GET_SHORT);
-@@ -507,7 +514,7 @@ static int full_proxy_open_short(struct inode *inode, struct file *filp)
- 	r = debugfs_locked_down(inode, filp, NULL);
- 	if (!r)
- 		r = simple_open(inode, filp);
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return r;
- }
- 
-@@ -522,13 +529,14 @@ ssize_t debugfs_attr_read(struct file *file, char __user *buf,
- 			size_t len, loff_t *ppos)
- {
- 	struct dentry *dentry = F_DENTRY(file);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	ssize_t ret;
- 
--	ret = debugfs_file_get(dentry);
-+	ret = debugfs_file_get(node);
- 	if (unlikely(ret))
- 		return ret;
- 	ret = simple_attr_read(file, buf, len, ppos);
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(debugfs_attr_read);
-@@ -537,16 +545,17 @@ static ssize_t debugfs_attr_write_xsigned(struct file *file, const char __user *
- 			 size_t len, loff_t *ppos, bool is_signed)
- {
- 	struct dentry *dentry = F_DENTRY(file);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	ssize_t ret;
- 
--	ret = debugfs_file_get(dentry);
-+	ret = debugfs_file_get(node);
- 	if (unlikely(ret))
- 		return ret;
- 	if (is_signed)
- 		ret = simple_attr_write_signed(file, buf, len, ppos);
- 	else
- 		ret = simple_attr_write(file, buf, len, ppos);
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return ret;
- }
- 
-@@ -564,11 +573,12 @@ ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
+@@ -564,11 +564,12 @@ ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
  }
  EXPORT_SYMBOL_GPL(debugfs_attr_write_signed);
  
@@ -218,7 +40,7 @@ index e33cc77699cd..6f7b74337df9 100644
  {
  	/* if there are no write bits set, make read only */
  	if (!(mode & S_IWUGO))
-@@ -600,8 +610,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u8_wo, NULL, debugfs_u8_set, "%llu\n");
+@@ -600,8 +601,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u8_wo, NULL, debugfs_u8_set, "%llu\n");
   * debugfs_create_u8 - create a debugfs file that is used to read and write an unsigned 8-bit value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -229,7 +51,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @value: a pointer to the variable that the file should read to and write
   *         from.
-@@ -610,7 +620,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u8_wo, NULL, debugfs_u8_set, "%llu\n");
+@@ -610,7 +611,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u8_wo, NULL, debugfs_u8_set, "%llu\n");
   * contains the value of the variable @value.  If the @mode variable is so
   * set, it can be read from, and written to.
   */
@@ -238,7 +60,7 @@ index e33cc77699cd..6f7b74337df9 100644
  		       u8 *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_u8,
-@@ -636,8 +646,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u16_wo, NULL, debugfs_u16_set, "%llu\n");
+@@ -636,8 +637,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u16_wo, NULL, debugfs_u16_set, "%llu\n");
   * debugfs_create_u16 - create a debugfs file that is used to read and write an unsigned 16-bit value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -249,7 +71,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @value: a pointer to the variable that the file should read to and write
   *         from.
-@@ -646,7 +656,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u16_wo, NULL, debugfs_u16_set, "%llu\n");
+@@ -646,7 +647,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u16_wo, NULL, debugfs_u16_set, "%llu\n");
   * contains the value of the variable @value.  If the @mode variable is so
   * set, it can be read from, and written to.
   */
@@ -258,7 +80,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			u16 *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_u16,
-@@ -672,8 +682,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u32_wo, NULL, debugfs_u32_set, "%llu\n");
+@@ -672,8 +673,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u32_wo, NULL, debugfs_u32_set, "%llu\n");
   * debugfs_create_u32 - create a debugfs file that is used to read and write an unsigned 32-bit value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -269,7 +91,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @value: a pointer to the variable that the file should read to and write
   *         from.
-@@ -682,7 +692,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u32_wo, NULL, debugfs_u32_set, "%llu\n");
+@@ -682,7 +683,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u32_wo, NULL, debugfs_u32_set, "%llu\n");
   * contains the value of the variable @value.  If the @mode variable is so
   * set, it can be read from, and written to.
   */
@@ -278,7 +100,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			u32 *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_u32,
-@@ -709,8 +719,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
+@@ -709,8 +710,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
   * debugfs_create_u64 - create a debugfs file that is used to read and write an unsigned 64-bit value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -289,7 +111,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @value: a pointer to the variable that the file should read to and write
   *         from.
-@@ -719,7 +729,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
+@@ -719,7 +720,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
   * contains the value of the variable @value.  If the @mode variable is so
   * set, it can be read from, and written to.
   */
@@ -298,7 +120,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			u64 *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_u64,
-@@ -748,8 +758,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_ulong_wo, NULL, debugfs_ulong_set, "%llu\n");
+@@ -748,8 +749,8 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_ulong_wo, NULL, debugfs_ulong_set, "%llu\n");
   * an unsigned long value.
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -309,7 +131,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @value: a pointer to the variable that the file should read to and write
   *         from.
-@@ -758,7 +768,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_ulong_wo, NULL, debugfs_ulong_set, "%llu\n");
+@@ -758,7 +759,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_ulong_wo, NULL, debugfs_ulong_set, "%llu\n");
   * contains the value of the variable @value.  If the @mode variable is so
   * set, it can be read from, and written to.
   */
@@ -318,7 +140,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			  unsigned long *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_ulong,
-@@ -797,13 +807,13 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_x64_wo, NULL, debugfs_u64_set, "0x%016llx\n");
+@@ -797,13 +798,13 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_x64_wo, NULL, debugfs_u64_set, "0x%016llx\n");
   * debugfs_create_x8 - create a debugfs file that is used to read and write an unsigned 8-bit value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -335,7 +157,7 @@ index e33cc77699cd..6f7b74337df9 100644
  		       u8 *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_x8,
-@@ -815,13 +825,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_x8);
+@@ -815,13 +816,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_x8);
   * debugfs_create_x16 - create a debugfs file that is used to read and write an unsigned 16-bit value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -352,7 +174,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			u16 *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_x16,
-@@ -833,13 +843,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_x16);
+@@ -833,13 +834,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_x16);
   * debugfs_create_x32 - create a debugfs file that is used to read and write an unsigned 32-bit value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -369,7 +191,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			u32 *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_x32,
-@@ -851,13 +861,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_x32);
+@@ -851,13 +852,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_x32);
   * debugfs_create_x64 - create a debugfs file that is used to read and write an unsigned 64-bit value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -386,7 +208,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			u64 *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_x64,
-@@ -885,14 +895,14 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_size_t_wo, NULL, debugfs_size_t_set, "%llu\n");
+@@ -885,14 +886,14 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_size_t_wo, NULL, debugfs_size_t_set, "%llu\n");
   * debugfs_create_size_t - create a debugfs file that is used to read and write an size_t value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -404,7 +226,7 @@ index e33cc77699cd..6f7b74337df9 100644
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_size_t,
  				   &fops_size_t_ro, &fops_size_t_wo);
-@@ -921,14 +931,14 @@ DEFINE_DEBUGFS_ATTRIBUTE_SIGNED(fops_atomic_t_wo, NULL, debugfs_atomic_t_set,
+@@ -921,14 +922,14 @@ DEFINE_DEBUGFS_ATTRIBUTE_SIGNED(fops_atomic_t_wo, NULL, debugfs_atomic_t_set,
   * write an atomic_t value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -422,41 +244,7 @@ index e33cc77699cd..6f7b74337df9 100644
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_atomic_t,
  				   &fops_atomic_t_ro, &fops_atomic_t_wo);
-@@ -942,12 +952,13 @@ ssize_t debugfs_read_file_bool(struct file *file, char __user *user_buf,
- 	bool val;
- 	int r;
- 	struct dentry *dentry = F_DENTRY(file);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 
--	r = debugfs_file_get(dentry);
-+	r = debugfs_file_get(node);
- 	if (unlikely(r))
- 		return r;
- 	val = *(bool *)file->private_data;
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 
- 	if (val)
- 		buf[0] = 'Y';
-@@ -965,14 +976,15 @@ ssize_t debugfs_write_file_bool(struct file *file, const char __user *user_buf,
- 	int r;
- 	bool *val = file->private_data;
- 	struct dentry *dentry = F_DENTRY(file);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 
- 	r = kstrtobool_from_user(user_buf, count, &bv);
- 	if (!r) {
--		r = debugfs_file_get(dentry);
-+		r = debugfs_file_get(node);
- 		if (unlikely(r))
- 			return r;
- 		*val = bv;
--		debugfs_file_put(dentry);
-+		debugfs_file_put(node);
- 	}
- 
- 	return count;
-@@ -1002,8 +1014,8 @@ static const struct file_operations fops_bool_wo = {
+@@ -1002,8 +1003,8 @@ static const struct file_operations fops_bool_wo = {
   * debugfs_create_bool - create a debugfs file that is used to read and write a boolean value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -467,7 +255,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @value: a pointer to the variable that the file should read to and write
   *         from.
-@@ -1012,7 +1024,7 @@ static const struct file_operations fops_bool_wo = {
+@@ -1012,7 +1013,7 @@ static const struct file_operations fops_bool_wo = {
   * contains the value of the variable @value.  If the @mode variable is so
   * set, it can be read from, and written to.
   */
@@ -476,65 +264,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			 bool *value)
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_bool,
-@@ -1024,11 +1036,12 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
- 			      size_t count, loff_t *ppos)
- {
- 	struct dentry *dentry = F_DENTRY(file);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	char *str, *copy = NULL;
- 	int copy_len, len;
- 	ssize_t ret;
- 
--	ret = debugfs_file_get(dentry);
-+	ret = debugfs_file_get(node);
- 	if (unlikely(ret))
- 		return ret;
- 
-@@ -1036,12 +1049,12 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
- 	len = strlen(str) + 1;
- 	copy = kmalloc(len, GFP_KERNEL);
- 	if (!copy) {
--		debugfs_file_put(dentry);
-+		debugfs_file_put(node);
- 		return -ENOMEM;
- 	}
- 
- 	copy_len = strscpy(copy, str, len);
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	if (copy_len < 0) {
- 		kfree(copy);
- 		return copy_len;
-@@ -1060,11 +1073,12 @@ static ssize_t debugfs_write_file_str(struct file *file, const char __user *user
- 				      size_t count, loff_t *ppos)
- {
- 	struct dentry *dentry = F_DENTRY(file);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	char *old, *new = NULL;
- 	int pos = *ppos;
- 	int r;
- 
--	r = debugfs_file_get(dentry);
-+	r = debugfs_file_get(node);
- 	if (unlikely(r))
- 		return r;
- 
-@@ -1098,12 +1112,12 @@ static ssize_t debugfs_write_file_str(struct file *file, const char __user *user
- 	synchronize_rcu();
- 	kfree(old);
- 
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return count;
- 
- error:
- 	kfree(new);
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return r;
- }
- 
-@@ -1130,8 +1144,8 @@ static const struct file_operations fops_str_wo = {
+@@ -1130,8 +1131,8 @@ static const struct file_operations fops_str_wo = {
   * debugfs_create_str - create a debugfs file that is used to read and write a string value
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -545,7 +275,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @value: a pointer to the variable that the file should read to and write
   *         from.
-@@ -1141,7 +1155,7 @@ static const struct file_operations fops_str_wo = {
+@@ -1141,7 +1142,7 @@ static const struct file_operations fops_str_wo = {
   * set, it can be read from, and written to.
   */
  void debugfs_create_str(const char *name, umode_t mode,
@@ -554,44 +284,7 @@ index e33cc77699cd..6f7b74337df9 100644
  {
  	debugfs_create_mode_unsafe(name, mode, parent, value, &fops_str,
  				   &fops_str_ro, &fops_str_wo);
-@@ -1152,14 +1166,15 @@ static ssize_t read_file_blob(struct file *file, char __user *user_buf,
- {
- 	struct debugfs_blob_wrapper *blob = file->private_data;
- 	struct dentry *dentry = F_DENTRY(file);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	ssize_t r;
- 
--	r = debugfs_file_get(dentry);
-+	r = debugfs_file_get(node);
- 	if (unlikely(r))
- 		return r;
- 	r = simple_read_from_buffer(user_buf, count, ppos, blob->data,
- 				blob->size);
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return r;
- }
- 
-@@ -1168,15 +1183,16 @@ static ssize_t write_file_blob(struct file *file, const char __user *user_buf,
- {
- 	struct debugfs_blob_wrapper *blob = file->private_data;
- 	struct dentry *dentry = F_DENTRY(file);
-+	struct debugfs_node *node = (struct debugfs_node*)dentry;
- 	ssize_t r;
- 
--	r = debugfs_file_get(dentry);
-+	r = debugfs_file_get(node);
- 	if (unlikely(r))
- 		return r;
- 	r = simple_write_to_buffer(blob->data, blob->size, ppos, user_buf,
- 				   count);
- 
--	debugfs_file_put(dentry);
-+	debugfs_file_put(node);
- 	return r;
- }
- 
-@@ -1192,8 +1208,8 @@ static const struct file_operations fops_blob = {
+@@ -1192,8 +1193,8 @@ static const struct file_operations fops_blob = {
   * a binary blob
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -602,7 +295,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @blob: a pointer to a struct debugfs_blob_wrapper which contains a pointer
   *        to the blob data and the size of the data.
-@@ -1202,7 +1218,7 @@ static const struct file_operations fops_blob = {
+@@ -1202,7 +1203,7 @@ static const struct file_operations fops_blob = {
   * @blob->data as a binary blob. If the @mode variable is so set it can be
   * read from and written to.
   *
@@ -611,7 +304,7 @@ index e33cc77699cd..6f7b74337df9 100644
   * pointer must be passed to the debugfs_remove() function when the file is
   * to be removed (no automatic cleanup happens if your module is unloaded,
   * you are responsible here.)  If an error occurs, ERR_PTR(-ERROR) will be
-@@ -1211,8 +1227,8 @@ static const struct file_operations fops_blob = {
+@@ -1211,8 +1212,8 @@ static const struct file_operations fops_blob = {
   * If debugfs is not enabled in the kernel, the value ERR_PTR(-ENODEV) will
   * be returned.
   */
@@ -622,7 +315,7 @@ index e33cc77699cd..6f7b74337df9 100644
  				   struct debugfs_blob_wrapper *blob)
  {
  	return debugfs_create_file_unsafe(name, mode & 0644, parent, blob, &fops_blob);
-@@ -1288,8 +1304,8 @@ static const struct file_operations u32_array_fops = {
+@@ -1288,8 +1289,8 @@ static const struct file_operations u32_array_fops = {
   * array.
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have.
@@ -633,7 +326,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @array: wrapper struct containing data pointer and size of the array.
   *
-@@ -1299,7 +1315,7 @@ static const struct file_operations u32_array_fops = {
+@@ -1299,7 +1300,7 @@ static const struct file_operations u32_array_fops = {
   * Once array is created its size can not be changed.
   */
  void debugfs_create_u32_array(const char *name, umode_t mode,
@@ -642,7 +335,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			      struct debugfs_u32_array *array)
  {
  	debugfs_create_file_unsafe(name, mode, parent, array, &u32_array_fops);
-@@ -1366,8 +1382,8 @@ DEFINE_SHOW_ATTRIBUTE(debugfs_regset32);
+@@ -1366,8 +1367,8 @@ DEFINE_SHOW_ATTRIBUTE(debugfs_regset32);
   * debugfs_create_regset32 - create a debugfs file that returns register values
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have
@@ -653,7 +346,7 @@ index e33cc77699cd..6f7b74337df9 100644
   *          file will be created in the root of the debugfs filesystem.
   * @regset: a pointer to a struct debugfs_regset32, which contains a pointer
   *          to an array of register definitions, the array size and the base
-@@ -1378,7 +1394,7 @@ DEFINE_SHOW_ATTRIBUTE(debugfs_regset32);
+@@ -1378,7 +1379,7 @@ DEFINE_SHOW_ATTRIBUTE(debugfs_regset32);
   * is so set it can be read from. Writing is not supported.
   */
  void debugfs_create_regset32(const char *name, umode_t mode,
@@ -662,7 +355,7 @@ index e33cc77699cd..6f7b74337df9 100644
  			     struct debugfs_regset32 *regset)
  {
  	debugfs_create_file(name, mode, parent, regset, &debugfs_regset32_fops);
-@@ -1412,13 +1428,13 @@ static const struct file_operations debugfs_devm_entry_ops = {
+@@ -1412,13 +1413,13 @@ static const struct file_operations debugfs_devm_entry_ops = {
   *
   * @dev: device related to this debugfs file.
   * @name: name of the debugfs file.
@@ -1018,7 +711,7 @@ index 75715d8877ee..2d004b2afceb 100644
  	struct inode *dir;
  	va_list ap;
 diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index fa2568b4380d..4e0e7bbee1af 100644
+index fa2568b4380d..8a4ef8b46b91 100644
 --- a/include/linux/debugfs.h
 +++ b/include/linux/debugfs.h
 @@ -21,6 +21,11 @@
@@ -1114,7 +807,7 @@ index fa2568b4380d..4e0e7bbee1af 100644
   * passed to them could be an error and they don't crash in that case.
   * Drivers should generally work fine even if debugfs fails to init anyway.
   */
-@@ -138,35 +157,35 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -138,29 +157,29 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
  		 struct debugfs_short_fops *: debugfs_create_file_short)	\
  		(name, mode, parent, data, aux, fops)
  
@@ -1153,14 +846,6 @@ index fa2568b4380d..4e0e7bbee1af 100644
  
  const struct file_operations *debugfs_real_fops(const struct file *filp);
  const void *debugfs_get_aux(const struct file *file);
- 
--int debugfs_file_get(struct dentry *dentry);
--void debugfs_file_put(struct dentry *dentry);
-+int debugfs_file_get(struct debugfs_node *debugfs_node);
-+void debugfs_file_put(struct debugfs_node *debugfs_node);
- 
- ssize_t debugfs_attr_read(struct file *file, char __user *buf,
- 			size_t len, loff_t *ppos);
 @@ -175,52 +194,52 @@ ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
  ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
  			size_t len, loff_t *ppos);
