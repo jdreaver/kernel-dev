@@ -26,6 +26,7 @@ git format-patch master...HEAD \
 - Generic spatch ideas
   - Try different rulekinds, like identifier or type
   - Try idexpression to only match `struct dentry *` identifiers for transformation
+  - Consider two passes: one to rewrite wrapper functions, and then another to just change declarations
 
 - Need to optimize script. It is taking way too long to run. Ideas:
   - Match all function names "in scope" literally, without a regex. Then use function matches in subsequent transformations (e.g. transform definitions, transform args, transform return values)
@@ -44,6 +45,24 @@ git format-patch master...HEAD \
   - Maybe we need `declaration`. From the cocci docs:
 
     > A declaration metavariable matches the declaration of one or more variables, all sharing the same type specification (e.g., int a,b,c=3;)
+
+  - Something that kinda works:
+
+  ```
+  @@
+  identifier var;
+  @@
+
+  -int var;
+  ++double var;
+  ```
+
+  ```
+  -       int a, b;
+  -       int c;
+  +       double a;double b;
+  +       double c;
+  ```
 
   - Even 3 in a line for mtk-svs.c in mediatek!
   - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
@@ -70,7 +89,7 @@ git format-patch master...HEAD \
 
 ## Coccinelle automation
 
-Good directories to test:
+Good directories/files to test:
 - drivers/gpio
 - lib/kunit (includes both source e.g. `lib/kunit/debugfs.c` and a header in `include/kunit/test.h`)
 - Contains wrapper functions that wrap debugfs:
@@ -79,6 +98,9 @@ Good directories to test:
   - arch/x86/xen has `struct dentry * __init xen_init_debugfs(void);`
   - arch/x86/kvm/debugfs.c
   - block/blk-{core,timeout}.c _uses_ `fault_create_debugfs_attr`, which is defined in fault-inject.{c,h}
+- mm/shrinker_debug.c has an initializer after a `dentry *` declaration
+- mtk-svs.c has a triple declaration of dentry (e.g. `struct dentry *a, *b, *c;`)
+- drivers/scsi/lpfc/ has many dentry struct fields in a row
 
 Run patch script with (note that `--in-place` doesn't appear to work):
 
