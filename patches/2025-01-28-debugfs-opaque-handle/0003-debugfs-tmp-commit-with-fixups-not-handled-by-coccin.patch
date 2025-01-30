@@ -1,0 +1,159 @@
+From 41ebe756229ca5ffe75c035ce7880b71c305f7e9 Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Wed, 29 Jan 2025 16:06:06 -0800
+Subject: [PATCH 3/3] debugfs: tmp commit with fixups not handled by coccinelle
+ script
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Rafael J. Wysocki <rafael@kernel.org>,
+    Danilo Krummrich <dakr@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+    Christian Brauner <brauner@kernel.org>,
+    linux-fsdevel@vger.kernel.org,
+    linux-kernel@vger.kernel.org
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ arch/x86/xen/p2m.c         | 2 +-
+ block/blk-core.c           | 7 ++++---
+ block/blk-timeout.c        | 6 ++++--
+ drivers/bus/moxtet.c       | 2 +-
+ fs/inode.c                 | 2 +-
+ include/linux/dcache.h     | 2 +-
+ include/linux/fs_context.h | 2 +-
+ include/linux/kvm_host.h   | 2 +-
+ mm/shrinker.c              | 2 +-
+ 9 files changed, 15 insertions(+), 12 deletions(-)
+
+diff --git a/arch/x86/xen/p2m.c b/arch/x86/xen/p2m.c
+index 5b9181f687ce..74204f2c94e8 100644
+--- a/arch/x86/xen/p2m.c
++++ b/arch/x86/xen/p2m.c
+@@ -919,7 +919,7 @@ static struct debugfs_node *d_mmu_debug;
+ 
+ static int __init xen_p2m_debugfs(void)
+ {
+-	struct dentry *d_xen = xen_init_debugfs();
++	struct debugfs_node *d_xen = xen_init_debugfs();
+ 
+ 	d_mmu_debug = debugfs_create_dir("mmu", d_xen);
+ 
+diff --git a/block/blk-core.c b/block/blk-core.c
+index a4b2b216cc16..c217ab79c655 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -504,8 +504,9 @@ bool should_fail_request(struct block_device *part, unsigned int bytes)
+ 
+ static int __init fail_make_request_debugfs(void)
+ {
+-	struct dentry *dir = fault_create_debugfs_attr("fail_make_request",
+-						NULL, &fail_make_request);
++	struct debugfs_node *dir;
++	dir = fault_create_debugfs_attr("fail_make_request", NULL,
++					&fail_make_request);
+ 
+ 	return PTR_ERR_OR_ZERO(dir);
+ }
+@@ -629,7 +630,7 @@ static void __submit_bio(struct bio *bio)
+ 		blk_mq_submit_bio(bio);
+ 	} else if (likely(bio_queue_enter(bio) == 0)) {
+ 		struct gendisk *disk = bio->bi_bdev->bd_disk;
+-	
++
+ 		if ((bio->bi_opf & REQ_POLLED) &&
+ 		    !(disk->queue->limits.features & BLK_FEAT_POLL)) {
+ 			bio->bi_status = BLK_STS_NOTSUPP;
+diff --git a/block/blk-timeout.c b/block/blk-timeout.c
+index 1b8de0417fc1..cb435df1082d 100644
+--- a/block/blk-timeout.c
++++ b/block/blk-timeout.c
+@@ -28,8 +28,10 @@ EXPORT_SYMBOL_GPL(__blk_should_fake_timeout);
+ 
+ static int __init fail_io_timeout_debugfs(void)
+ {
+-	struct dentry *dir = fault_create_debugfs_attr("fail_io_timeout",
+-						NULL, &fail_io_timeout);
++	struct debugfs_node *dir;
++
++	dir = fault_create_debugfs_attr("fail_io_timeout", NULL,
++					&fail_io_timeout);
+ 
+ 	return PTR_ERR_OR_ZERO(dir);
+ }
+diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
+index 6276551d7968..e2d7fcf1d9e4 100644
+--- a/drivers/bus/moxtet.c
++++ b/drivers/bus/moxtet.c
+@@ -552,7 +552,7 @@ static const struct file_operations output_fops = {
+ 
+ static int moxtet_register_debugfs(struct moxtet *moxtet)
+ {
+-	struct dentry *root, *entry;
++	struct debugfs_node *root, *entry;
+ 
+ 	root = debugfs_create_dir("moxtet", NULL);
+ 
+diff --git a/fs/inode.c b/fs/inode.c
+index 8ba8a0baebe4..6b4c77268fc0 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -679,7 +679,7 @@ void dump_mapping(const struct address_space *mapping)
+ 	struct inode *host;
+ 	const struct address_space_operations *a_ops;
+ 	struct hlist_node *dentry_first;
+-	struct debugfs_node *dentry_ptr;
++	struct dentry *dentry_ptr;
+ 	struct dentry dentry;
+ 	char fname[64] = {};
+ 	unsigned long ino;
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index 5bce25192143..bff956f7b2b9 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -84,7 +84,7 @@ struct dentry {
+ 	unsigned int d_flags;		/* protected by d_lock */
+ 	seqcount_spinlock_t d_seq;	/* per dentry seqlock */
+ 	struct hlist_bl_node d_hash;	/* lookup hash list */
+-	struct debugfs_node *d_parent;	/* parent directory */
++	struct dentry *d_parent;	/* parent directory */
+ 	struct qstr d_name;
+ 	struct inode *d_inode;		/* Where the name belongs to - NULL is
+ 					 * negative */
+diff --git a/include/linux/fs_context.h b/include/linux/fs_context.h
+index 1f37877876be..4b4bfef6f053 100644
+--- a/include/linux/fs_context.h
++++ b/include/linux/fs_context.h
+@@ -93,7 +93,7 @@ struct fs_context {
+ 	struct file_system_type	*fs_type;
+ 	void			*fs_private;	/* The filesystem's context */
+ 	void			*sget_key;
+-	struct debugfs_node *root;		/* The root and superblock */
++	struct dentry		*root;		/* The root and superblock */
+ 	struct user_namespace	*user_ns;	/* The user namespace for this mount */
+ 	struct net		*net_ns;	/* The network namespace for this mount */
+ 	const struct cred	*cred;		/* The mounter's credentials */
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index b7a4ef87b0b6..bfa4ffd15bd7 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1586,7 +1586,7 @@ int kvm_arch_pm_notifier(struct kvm *kvm, unsigned long state);
+ #endif
+ 
+ #ifdef __KVM_HAVE_ARCH_VCPU_DEBUGFS
+-void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry);
++void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct debugfs_node *debugfs_dentry);
+ #else
+ static inline void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu) {}
+ #endif
+diff --git a/mm/shrinker.c b/mm/shrinker.c
+index 4a93fd433689..35989087d387 100644
+--- a/mm/shrinker.c
++++ b/mm/shrinker.c
+@@ -768,7 +768,7 @@ static void shrinker_free_rcu_cb(struct rcu_head *head)
+ 
+ void shrinker_free(struct shrinker *shrinker)
+ {
+-	struct dentry *debugfs_entry = NULL;
++	struct debugfs_node *debugfs_entry = NULL;
+ 	int debugfs_id;
+ 
+ 	if (!shrinker)

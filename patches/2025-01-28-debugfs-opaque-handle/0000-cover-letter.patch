@@ -1,7 +1,7 @@
-From aa3a34fbc3b8604099d2e094b76780b67e4a511c Mon Sep 17 00:00:00 2001
+From 41ebe756229ca5ffe75c035ce7880b71c305f7e9 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 29 Jan 2025 15:56:14 -0800
-Subject: [PATCH 0/2] *** SUBJECT HERE ***
+Date: Wed, 29 Jan 2025 16:10:44 -0800
+Subject: [PATCH 0/3] *** SUBJECT HERE ***
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>
@@ -12,9 +12,10 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 *** BLURB HERE ***
 
-David Reaver (2):
+David Reaver (3):
   debugfs: Use opaque debugfs_node handle to support kernfs migration
   debugfs: tmp commit to show coccinelle output
+  debugfs: tmp commit with fixups not handled by coccinelle script
 
  arch/arm/mach-omap1/pm.c                      |   2 +-
  arch/arm/mach-omap2/pm-debug.c                |   4 +-
@@ -69,11 +70,12 @@ David Reaver (2):
  arch/x86/platform/atom/punit_atom_debug.c     |   2 +-
  arch/x86/platform/intel/iosf_mbi.c            |   2 +-
  arch/x86/xen/debugfs.c                        |   4 +-
- arch/x86/xen/p2m.c                            |   2 +-
+ arch/x86/xen/p2m.c                            |   4 +-
  arch/x86/xen/xen-ops.h                        |   2 +-
- block/blk-core.c                              |   2 +-
+ block/blk-core.c                              |   9 +-
  block/blk-mq-debugfs.c                        |   4 +-
  block/blk-rq-qos.h                            |   2 +-
+ block/blk-timeout.c                           |   6 +-
  block/blk.h                                   |   2 +-
  drivers/accel/drm_accel.c                     |   2 +-
  drivers/accel/habanalabs/common/habanalabs.h  |   2 +-
@@ -102,6 +104,7 @@ David Reaver (2):
  drivers/bluetooth/btmrvl_debugfs.c            |   4 +-
  drivers/bluetooth/hci_qca.c                   |   2 +-
  drivers/bus/mhi/host/debugfs.c                |   2 +-
+ drivers/bus/moxtet.c                          |   2 +-
  drivers/bus/mvebu-mbus.c                      |   6 +-
  drivers/cache/sifive_ccache.c                 |   2 +-
  drivers/cdx/cdx.c                             |   2 +-
@@ -720,7 +723,6 @@ David Reaver (2):
  fs/f2fs/debug.c                               |   2 +-
  fs/gfs2/glock.c                               |   2 +-
  fs/gfs2/incore.h                              |   6 +-
- fs/inode.c                                    |   2 +-
  fs/ocfs2/blockcheck.c                         |   4 +-
  fs/ocfs2/blockcheck.h                         |   4 +-
  fs/ocfs2/cluster/heartbeat.c                  |   6 +-
@@ -752,13 +754,11 @@ David Reaver (2):
  include/linux/ceph/libceph.h                  |   8 +-
  include/linux/ceph/mon_client.h               |   2 +-
  include/linux/configfs.h                      |   2 +-
- include/linux/dcache.h                        |   2 +-
  include/linux/debugfs.h                       | 194 +++++++++--------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  10 +-
  include/linux/firmware/cirrus/cs_dsp.h        |   5 +-
- include/linux/fs_context.h                    |   2 +-
  include/linux/fsl/ptp_qoriq.h                 |   2 +-
  include/linux/greybus.h                       |   2 +-
  include/linux/hid.h                           |   6 +-
@@ -770,7 +770,7 @@ David Reaver (2):
  include/linux/intel_tpmi.h                    |   2 +-
  include/linux/iommu.h                         |   2 +-
  include/linux/irqdesc.h                       |   2 +-
- include/linux/kvm_host.h                      |   2 +-
+ include/linux/kvm_host.h                      |   4 +-
  include/linux/mhi.h                           |   2 +-
  include/linux/mlx5/driver.h                   |  24 +--
  include/linux/mmc/card.h                      |   2 +-
@@ -846,6 +846,7 @@ David Reaver (2):
  mm/internal.h                                 |   8 +-
  mm/kfence/core.c                              |   2 +-
  mm/page_owner.c                               |   2 +-
+ mm/shrinker.c                                 |   2 +-
  mm/shrinker_debug.c                           |  11 +-
  mm/slub.c                                     |   4 +-
  mm/vmstat.c                                   |   2 +-
@@ -894,7 +895,7 @@ David Reaver (2):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 878 files changed, 2046 insertions(+), 1877 deletions(-)
+ 878 files changed, 2055 insertions(+), 1883 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

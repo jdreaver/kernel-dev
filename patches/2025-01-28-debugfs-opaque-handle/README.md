@@ -21,9 +21,18 @@ git format-patch master...HEAD \
 # TODO
 
 - Make another commit before (or after? or both?) the commit where we apply coccinelle with manual fixups while we get coccinelle working.
-- Something is messing with `struct dentry *d_parent;` in `dentry` in `include/linux/dcache.h`
-- `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
-  - Problem is `struct dentry *root, *entry;` on one line
+- Script is overreaching:
+  - (most concerning one) Line 679 in `inode.c`, `struct dentry *dentry_ptr;` is getting touched
+  - `struct dentry *d_parent;` in `dentry` in `include/linux/dcache.h`
+  - `struct dentry *root;` in `fs_context` in `include/linux/fs_context.h`
+- Script isn't doing enough:
+  - In `kvm_host.h`: `void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry);`. The actual function definition is getting modified, but not the header file. I might need to handle these differently.
+    - Can I run spatch against header files directly?
+  - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
+    - Problem is `struct dentry *root, *entry;` on one line
+  - block/blk-{core,timeout}.c _uses_ `fault_create_debugfs_attr`, which is defined in fault-inject.{c,h}, but doesn't modify the return argument.
+    - I wonder if I can make the script more general so that for a given list of functions, both change the function definition and "infect" all users of it.
+    - Same for `xen_init_debugfs`
 
 - Get feedback on approach
 - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
