@@ -1,6 +1,6 @@
-From 6c48d0f86774c9c881721327df55b68a3610c0d5 Mon Sep 17 00:00:00 2001
+From de5200ca4974762788ca9afd97c92e53d7eff19d Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Thu, 30 Jan 2025 06:01:30 -0800
+Date: Thu, 30 Jan 2025 06:29:39 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -61,6 +61,7 @@ David Reaver (3):
  arch/s390/pci/pci_debug.c                     |   2 +-
  arch/sh/kernel/kdebugfs.c                     |   2 +-
  arch/x86/kernel/callthunks.c                  |   2 +-
+ arch/x86/kernel/cpu/debugfs.c                 |   2 +-
  arch/x86/kernel/cpu/mce/core.c                |   6 +-
  arch/x86/kernel/cpu/mce/inject.c              |   2 +-
  arch/x86/kernel/cpu/mce/internal.h            |   2 +-
@@ -117,7 +118,8 @@ David Reaver (3):
  drivers/cdx/cdx.c                             |   2 +-
  drivers/char/virtio_console.c                 |   4 +-
  drivers/clk/bcm/clk-bcm2835.c                 |   2 +-
- drivers/clk/clk.c                             |   6 +-
+ drivers/clk/clk-fractional-divider.c          |   2 +-
+ drivers/clk/clk.c                             |   8 +-
  drivers/clk/tegra/clk-dfll.c                  |   4 +-
  .../crypto/allwinner/sun8i-ce/sun8i-ce-core.c |   4 +-
  drivers/crypto/allwinner/sun8i-ce/sun8i-ce.h  |   4 +-
@@ -163,8 +165,8 @@ David Reaver (3):
  drivers/dma/bcm-sba-raid.c                    |   2 +-
  drivers/dma/dmaengine.c                       |   2 +-
  drivers/dma/dmaengine.h                       |   4 +-
- drivers/dma/dw-edma/dw-edma-v0-debugfs.c      |  11 +-
- drivers/dma/dw-edma/dw-hdma-v0-debugfs.c      |  13 +-
+ drivers/dma/dw-edma/dw-edma-v0-debugfs.c      |  15 +-
+ drivers/dma/dw-edma/dw-hdma-v0-debugfs.c      |  17 +-
  drivers/dma/hisi_dma.c                        |   2 +-
  drivers/dma/idxd/debugfs.c                    |   2 +-
  drivers/dma/idxd/idxd.h                       |   4 +-
@@ -197,7 +199,7 @@ David Reaver (3):
  drivers/firmware/xilinx/zynqmp-debug.c        |   2 +-
  drivers/gpio/gpio-mockup.c                    |   4 +-
  drivers/gpio/gpio-sloppy-logic-analyzer.c     |   6 +-
- drivers/gpio/gpio-virtuser.c                  |  11 +-
+ drivers/gpio/gpio-virtuser.c                  |  17 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_aca.c       |   3 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_aca.h       |   3 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c   |   2 +-
@@ -712,6 +714,7 @@ David Reaver (3):
  drivers/scsi/qla2xxx/qla_def.h                |  18 +-
  drivers/scsi/qla2xxx/qla_dfs.c                |   2 +-
  drivers/scsi/scsi_debug.c                     |   8 +-
+ drivers/soc/mediatek/mtk-svs.c                |   2 +-
  drivers/soc/qcom/qcom_aoss.c                  |   4 +-
  drivers/soc/qcom/qcom_stats.c                 |   2 +-
  drivers/soc/qcom/socinfo.c                    |   4 +-
@@ -779,6 +782,7 @@ David Reaver (3):
  drivers/usb/typec/tcpm/tcpm.c                 |   2 +-
  drivers/usb/typec/ucsi/debugfs.c              |   2 +-
  drivers/usb/typec/ucsi/ucsi.h                 |   2 +-
+ drivers/vdpa/mlx5/net/debug.c                 |   2 +-
  drivers/vdpa/mlx5/net/mlx5_vnet.h             |  12 +-
  drivers/vdpa/pds/aux_drv.h                    |   2 +-
  drivers/vdpa/pds/debugfs.c                    |   2 +-
@@ -830,6 +834,7 @@ David Reaver (3):
  include/linux/ceph/libceph.h                  |   8 +-
  include/linux/ceph/mon_client.h               |   2 +-
  include/linux/ceph/osd_client.h               |   2 +-
+ include/linux/clk-provider.h                  |   3 +-
  include/linux/debugfs.h                       | 197 ++++++++++--------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
@@ -878,13 +883,13 @@ David Reaver (3):
  include/net/bluetooth/hci_core.h              |   4 +-
  include/net/bonding.h                         |   2 +-
  include/net/cfg80211.h                        |   2 +-
- include/net/mac80211.h                        |   2 +-
+ include/net/mac80211.h                        |  14 +-
  include/net/mana/gdma.h                       |   4 +-
  include/net/mana/mana.h                       |  10 +-
  include/soc/tegra/bpmp.h                      |   2 +-
  include/sound/core.h                          |   4 +-
  include/sound/soc-component.h                 |   2 +-
- include/sound/soc-dapm.h                      |   2 +-
+ include/sound/soc-dapm.h                      |   5 +-
  include/sound/soc-dpcm.h                      |   2 +-
  include/sound/soc.h                           |   6 +-
  include/ufs/ufshcd.h                          |   2 +-
@@ -893,7 +898,7 @@ David Reaver (3):
  kernel/dma/pool.c                             |   2 +-
  kernel/fail_function.c                        |   6 +-
  kernel/futex/core.c                           |   2 +-
- kernel/gcov/fs.c                              |   2 +-
+ kernel/gcov/fs.c                              |   6 +-
  kernel/irq/debugfs.c                          |   4 +-
  kernel/irq/internals.h                        |   4 +-
  kernel/irq/irqdomain.c                        |   4 +-
@@ -910,13 +915,14 @@ David Reaver (3):
  lib/842/842_debugfs.h                         |   2 +-
  lib/debugobjects.c                            |   2 +-
  lib/dynamic_debug.c                           |   2 +-
+ lib/error-inject.c                            |   2 +-
  lib/fault-inject-usercopy.c                   |   2 +-
  lib/fault-inject.c                            |  13 +-
  lib/kunit/debugfs.c                           |   2 +-
  lib/memory-notifier-error-inject.c            |   2 +-
  lib/netdev-notifier-error-inject.c            |   2 +-
- lib/notifier-error-inject.c                   |  12 +-
- lib/notifier-error-inject.h                   |   2 +-
+ lib/notifier-error-inject.c                   |  17 +-
+ lib/notifier-error-inject.h                   |   9 +-
  lib/of-reconfig-notifier-error-inject.c       |   2 +-
  lib/pm-notifier-error-inject.c                |   2 +-
  lib/stackdepot.c                              |   2 +-
@@ -931,7 +937,7 @@ David Reaver (3):
  mm/memblock.c                                 |   2 +-
  mm/page_owner.c                               |   2 +-
  mm/shrinker.c                                 |   2 +-
- mm/shrinker_debug.c                           |  11 +-
+ mm/shrinker_debug.c                           |  13 +-
  mm/slub.c                                     |   4 +-
  mm/vmstat.c                                   |   2 +-
  mm/zsmalloc.c                                 |   4 +-
@@ -953,7 +959,7 @@ David Reaver (3):
  net/mac80211/debugfs.c                        |   2 +-
  net/mac80211/debugfs_netdev.c                 |   4 +-
  net/mac80211/driver-ops.h                     |   6 +-
- net/mac80211/ieee80211_i.h                    |   2 +-
+ net/mac80211/ieee80211_i.h                    |  16 +-
  net/mac80211/rate.h                           |   2 +-
  net/mac80211/rc80211_minstrel_ht.c            |   2 +-
  net/mac80211/rc80211_minstrel_ht.h            |   3 +-
@@ -967,6 +973,7 @@ David Reaver (3):
  sound/core/sound.c                            |   2 +-
  sound/drivers/pcmtest.c                       |   2 +-
  sound/pci/hda/cs35l56_hda.h                   |   2 +-
+ sound/soc/fsl/fsl_ssi.h                       |   2 +-
  sound/soc/fsl/imx-audmux.c                    |   2 +-
  sound/soc/intel/avs/avs.h                     |   2 +-
  sound/soc/mediatek/mt8365/mt8365-afe-common.h |   2 +-
@@ -984,7 +991,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 964 files changed, 2079 insertions(+), 1902 deletions(-)
+ 971 files changed, 2120 insertions(+), 1939 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

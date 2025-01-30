@@ -23,10 +23,17 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Script isn't doing enough:
+- Catch `struct dentry *root, *entry;` on one line
+  - Idea: if any one of the vars is implicated, change the type for all of them
+  - Even 3 in a line for mtk-svs.c in mediatek!
   - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
-    - Problem is `struct dentry *root, *entry;` on one line
-
+  - Same with `dw-edma-v0-debugfs.c` and a few others
+  - `meson-clk-measure.c`
+- Find a way to change declarations in _function arguments_. E.g. if a function has `dentry *parent` and `parent` is used in a debugfs function, we should rename the decl type.
+- Also catch things with `dbgfs` in the name, like in `gpio-virtuser.c`
+  - Consider even `debug` and `dbg` dentrys. Do this in isolation without other changes to see if it is okay.
+- Make `debugfs_node_name` helper for security/selinux/selinuxfs.c, which is accessing dentry->d_name.name
+- `shrinker_debug.c`: Don't just catch `= NULL`, catch `= <anything>`. Can probably use an `expression` var instead of `NULL` in script.
 - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
 
 - Manual stuff:
