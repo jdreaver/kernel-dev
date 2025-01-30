@@ -30,6 +30,8 @@ git format-patch master...HEAD \
   - block/blk-{core,timeout}.c _uses_ `fault_create_debugfs_attr`, which is defined in fault-inject.{c,h}, but doesn't modify the return argument.
     - I wonder if I can make the script more general so that for a given list of functions, both change the function definition and "infect" all users of it.
     - Same for `xen_init_debugfs`
+- Manual stuff:
+  - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
 
 - Get feedback on approach
 - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
@@ -110,100 +112,56 @@ I think this plan is good, except I'm sad we have to pollute all the names with 
 List of names (in case we want to use this in coccinelle):
 
 ```
-struct debugfs_node *debugfs_lookup(const char *name, struct debugfs_node *parent);
-
-char *debugfs_node_path_raw(struct debugfs_node *node, char *buf, size_t buflen);
-
-struct debugfs_node *debugfs_node_get(struct debugfs_node *node);
-void debugfs_node_put(struct debugfs_node *node);
-
-struct debugfs_node *debugfs_create_file_full(const char *name, umode_t mode,
-					struct debugfs_node *parent, void *data,
-					const void *aux,
-					const struct file_operations *fops);
-struct debugfs_node *debugfs_create_file_short(const char *name, umode_t mode,
-					 struct debugfs_node *parent, void *data,
-					 const void *aux,
-					 const struct debugfs_short_fops *fops);
-
-#define debugfs_create_file(name, mode, parent, data, fops)			\
-	_Generic(fops,								\
-		 const struct file_operations *: debugfs_create_file_full,	\
-		 const struct debugfs_short_fops *: debugfs_create_file_short,	\
-		 struct file_operations *: debugfs_create_file_full,		\
-		 struct debugfs_short_fops *: debugfs_create_file_short)	\
-		(name, mode, parent, data, NULL, fops)
-
-#define debugfs_create_file_aux(name, mode, parent, data, aux, fops)		\
-	_Generic(fops,								\
-		 const struct file_operations *: debugfs_create_file_full,	\
-		 const struct debugfs_short_fops *: debugfs_create_file_short,	\
-		 struct file_operations *: debugfs_create_file_full,		\
-		 struct debugfs_short_fops *: debugfs_create_file_short)	\
-		(name, mode, parent, data, aux, fops)
-
-struct debugfs_node *debugfs_create_file_unsafe(const char *name, umode_t mode,
-				   struct debugfs_node *parent, void *data,
-				   const struct file_operations *fops);
-
-void debugfs_create_file_size(const char *name, umode_t mode,
-			      struct debugfs_node *parent, void *data,
-			      const struct file_operations *fops,
-			      loff_t file_size);
-
-struct debugfs_node *debugfs_create_dir(const char *name, struct debugfs_node *parent);
-
-struct debugfs_node *debugfs_create_symlink(const char *name, struct debugfs_node *parent,
-				      const char *dest);
-
-struct debugfs_node *debugfs_create_automount(const char *name,
-					struct debugfs_node *parent,
-					debugfs_automount_t f,
-					void *data);
-
-void debugfs_remove(struct debugfs_node *debugfs_node);
-#define debugfs_remove_recursive debugfs_remove
-
-void debugfs_lookup_and_remove(const char *name, struct debugfs_node *parent);
-
-const struct file_operations *debugfs_real_fops(const struct file *filp);
-const void *debugfs_get_aux(const struct file *file);
-
-int debugfs_file_get(struct debugfs_node *debugfs_node);
-void debugfs_file_put(struct debugfs_node *debugfs_node);
-
-ssize_t debugfs_attr_read(struct file *file, char __user *buf,
-			size_t len, loff_t *ppos);
-ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
-			size_t len, loff_t *ppos);
-ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
+debugfs_attr_read
+debugfs_attr_write
+debugfs_attr_write_signed
 debugfs_change_name
-debugfs_create_u8
+debugfs_create_atomic_t
+debugfs_create_automount
+debugfs_create_bool
+debugfs_create_devm_seqfile
+debugfs_create_dir
+debugfs_create_file
+debugfs_create_file_aux
+debugfs_create_file_aux_num
+debugfs_create_file_full
+debugfs_create_file_short
+debugfs_create_file_size
+debugfs_create_file_unsafe
+debugfs_create_regset32
+debugfs_create_size
+debugfs_create_str
+debugfs_create_symlink
 debugfs_create_u16
 debugfs_create_u32
+debugfs_create_u32_array
 debugfs_create_u64
+debugfs_create_u8
 debugfs_create_ulong
-debugfs_create_x8
 debugfs_create_x16
 debugfs_create_x32
 debugfs_create_x64
-debugfs_create_size
-debugfs_create_atomic_t(const char *name, umode_t mode,
-debugfs_create_bool(const char *name, umode_t mode, struct debugfs_node *parent,
-debugfs_create_str
-debugfs_node
-debugfs_create_regset32
-debugfs_print_regs32
-debugfs_create_u32_array
-debugfs_create_devm_seqfile
-debugfs_initialized
-debugfs_read_file_bool
-debugfs_write_file_bool
-debugfs_read_file_str
+debugfs_create_x8
 debugfs_enter_cancellation
-debugfs_leave_cancellation
-debugfs_create_file_aux_num
+debugfs_file_get
+debugfs_file_put
+debugfs_get_aux
 debugfs_get_aux_num
+debugfs_initialized
+debugfs_leave_cancellation
+debugfs_lookup
+debugfs_lookup_and_remove
+debugfs_node
+debugfs_node_get
+debugfs_node_path_raw
+debugfs_node_put
+debugfs_print_regs32
+debugfs_read_file_bool
+debugfs_read_file_str
+debugfs_real_fops
+debugfs_remove
+debugfs_remove_recursive
+debugfs_write_file_bool
 ```
 
 Raw declarations:
