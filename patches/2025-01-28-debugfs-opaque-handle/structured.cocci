@@ -17,6 +17,29 @@ identifier fn =~ "^debugfs_";
   E.var = fn(...)
 )
 
+// Transform declarations
+@transform_assign depends on match_assign@
+identifier match_assign.var;
+identifier struct_name;
+@@
+
+// Global declarations
+(
+- struct dentry *var;
++ struct debugfs_node *var;
+|
+- static struct dentry *var;
++ static struct debugfs_node *var;
+|
+// Struct field declarations
+struct struct_name {
+    ...
+-   struct dentry *var;
++   struct debugfs_node *var;
+    ...
+};
+)
+
 // Match both direct args and field args
 @match_usage@
 expression E;
@@ -32,9 +55,10 @@ identifier fn =~ "^debugfs_";
   fn(..., E.var, ...)
 )
 
-// Transform declarations
-@transform_decls depends on match_assign || match_usage@
-identifier match_assign.var, match_usage.var;
+// Transform declarations. It would be nice to DRY this with the above, but we
+// can't easily reuse identifiers.var like that.
+@transform_usage depends on match_usage@
+identifier match_usage.var;
 identifier struct_name;
 @@
 
@@ -84,8 +108,6 @@ identifier var, E;
 + debugfs_node_path_raw(E->var,
    ...)
 )
-
-//@depends on file in "lib/fault-inject.c"@
 
 // Transform wrapper function args.
 @@

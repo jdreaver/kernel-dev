@@ -1,0 +1,7 @@
+This is a test!
+
+Hello, welcome to my cover letter.
+
+TODO (things to cover):
+
+- Latter parts of coccinelle script can be manual fixups if necessary (only like 1-2 callers for each of those functions)
