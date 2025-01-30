@@ -25,7 +25,9 @@ git format-patch master...HEAD \
 
 - v2 cocci problems:
   - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
+    - Similar with struct fields.
   - Local variables are being changed inside other functions just because they have the same name. That makes no sense.
+  - Not catching some uses of `E.var`, like in `gpio-virtuser.c`
 
 - Generic spatch ideas
   - Try different rulekinds, like identifier or type
