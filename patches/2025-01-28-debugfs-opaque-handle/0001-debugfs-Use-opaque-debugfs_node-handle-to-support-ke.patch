@@ -1,4 +1,4 @@
-From 1dd8408e566552e6b0fcb6dc79ea7f8f69681ce2 Mon Sep 17 00:00:00 2001
+From fa54440f0ab85a3d51084e7a591d9e8a7e139faa Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 28 Jan 2025 13:53:41 -0800
 Subject: [RFC PATCH 1/3] debugfs: Use opaque debugfs_node handle to support
@@ -13,10 +13,10 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- fs/debugfs/file.c       | 192 +++++++++++++++++++++------------------
- fs/debugfs/inode.c      | 142 ++++++++++++++++++-----------
- include/linux/debugfs.h | 194 +++++++++++++++++++++++-----------------
- 3 files changed, 302 insertions(+), 226 deletions(-)
+ fs/debugfs/file.c       | 192 ++++++++++++++++++++------------------
+ fs/debugfs/inode.c      | 147 ++++++++++++++++++-----------
+ include/linux/debugfs.h | 201 +++++++++++++++++++++++-----------------
+ 3 files changed, 314 insertions(+), 226 deletions(-)
 
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
 index e33cc77699cd..6f7b74337df9 100644
@@ -680,7 +680,7 @@ index e33cc77699cd..6f7b74337df9 100644
  {
  	struct debugfs_devm_entry *entry;
 diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index 75715d8877ee..df933010c571 100644
+index 75715d8877ee..2d004b2afceb 100644
 --- a/fs/debugfs/inode.c
 +++ b/fs/debugfs/inode.c
 @@ -253,8 +253,9 @@ static void debugfs_release_dentry(struct dentry *dentry)
@@ -694,7 +694,7 @@ index 75715d8877ee..df933010c571 100644
  }
  
  static const struct dentry_operations debugfs_dops = {
-@@ -332,27 +333,46 @@ MODULE_ALIAS_FS("debugfs");
+@@ -332,27 +333,51 @@ MODULE_ALIAS_FS("debugfs");
   * This function will return a pointer to a dentry if it succeeds.  If the file
   * doesn't exist or an error occurs, %NULL will be returned.  The returned
   * dentry must be passed to dput() when it is no longer needed.
@@ -743,10 +743,15 @@ index 75715d8877ee..df933010c571 100644
 +	dput((struct dentry *)node);
 +}
 +
++struct inode *debugfs_node_inode(struct debugfs_node *node)
++{
++	return d_inode((struct dentry *)node);
++}
++
  static struct dentry *start_creating(const char *name, struct dentry *parent)
  {
  	struct dentry *dentry;
-@@ -466,25 +486,34 @@ static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
+@@ -466,25 +491,34 @@ static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
  	return end_creating(dentry);
  }
  
@@ -791,7 +796,7 @@ index 75715d8877ee..df933010c571 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_file_short);
  
-@@ -515,14 +544,17 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_short);
+@@ -515,14 +549,17 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_short);
   * DEFINE_DEBUGFS_ATTRIBUTE() is protected against file removals and
   * thus, may be used here.
   */
@@ -802,19 +807,19 @@ index 75715d8877ee..df933010c571 100644
  				   const struct file_operations *fops)
  {
 +	struct dentry *dentry;
++
++	dentry = __debugfs_create_file(name, mode, (struct dentry *)parent, data,
++				       NULL, &debugfs_open_proxy_file_operations,
++				       fops);
  
 -	return __debugfs_create_file(name, mode, parent, data, NULL,
 -				&debugfs_open_proxy_file_operations,
 -				fops);
-+	dentry = __debugfs_create_file(name, mode, (struct dentry *)parent, data,
-+				       NULL, &debugfs_open_proxy_file_operations,
-+				       fops);
-+
 +	return (struct debugfs_node *) dentry;
  }
  EXPORT_SYMBOL_GPL(debugfs_create_file_unsafe);
  
-@@ -546,14 +578,14 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_unsafe);
+@@ -546,14 +583,14 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_unsafe);
   * recommended to be used instead.)
   */
  void debugfs_create_file_size(const char *name, umode_t mode,
@@ -832,7 +837,7 @@ index 75715d8877ee..df933010c571 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_file_size);
  
-@@ -581,13 +613,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_size);
+@@ -581,13 +618,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_file_size);
   * passed to them could be an error and they don't crash in that case.
   * Drivers should generally work fine even if debugfs fails to init anyway.
   */
@@ -849,7 +854,7 @@ index 75715d8877ee..df933010c571 100644
  
  	if (!(debugfs_allow & DEBUGFS_ALLOW_API)) {
  		failed_creating(dentry);
-@@ -598,7 +630,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
+@@ -598,7 +635,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
  	if (unlikely(!inode)) {
  		pr_err("out of free dentries, can not create directory '%s'\n",
  		       name);
@@ -858,7 +863,7 @@ index 75715d8877ee..df933010c571 100644
  	}
  
  	inode->i_mode = S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO;
-@@ -610,7 +642,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
+@@ -610,7 +647,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
  	d_instantiate(dentry, inode);
  	inc_nlink(d_inode(dentry->d_parent));
  	fsnotify_mkdir(d_inode(dentry->d_parent), dentry);
@@ -867,7 +872,7 @@ index 75715d8877ee..df933010c571 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_dir);
  
-@@ -625,16 +657,16 @@ EXPORT_SYMBOL_GPL(debugfs_create_dir);
+@@ -625,16 +662,16 @@ EXPORT_SYMBOL_GPL(debugfs_create_dir);
   *
   * @f should return what ->d_automount() would.
   */
@@ -890,7 +895,7 @@ index 75715d8877ee..df933010c571 100644
  
  	if (!(debugfs_allow & DEBUGFS_ALLOW_API)) {
  		failed_creating(dentry);
-@@ -645,7 +677,7 @@ struct dentry *debugfs_create_automount(const char *name,
+@@ -645,7 +682,7 @@ struct dentry *debugfs_create_automount(const char *name,
  	if (unlikely(!inode)) {
  		pr_err("out of free dentries, can not create automount '%s'\n",
  		       name);
@@ -899,7 +904,7 @@ index 75715d8877ee..df933010c571 100644
  	}
  
  	make_empty_dir_inode(inode);
-@@ -657,7 +689,7 @@ struct dentry *debugfs_create_automount(const char *name,
+@@ -657,7 +694,7 @@ struct dentry *debugfs_create_automount(const char *name,
  	d_instantiate(dentry, inode);
  	inc_nlink(d_inode(dentry->d_parent));
  	fsnotify_mkdir(d_inode(dentry->d_parent), dentry);
@@ -908,7 +913,7 @@ index 75715d8877ee..df933010c571 100644
  }
  EXPORT_SYMBOL(debugfs_create_automount);
  
-@@ -684,8 +716,9 @@ EXPORT_SYMBOL(debugfs_create_automount);
+@@ -684,8 +721,9 @@ EXPORT_SYMBOL(debugfs_create_automount);
   * If debugfs is not enabled in the kernel, the value -%ENODEV will be
   * returned.
   */
@@ -920,7 +925,7 @@ index 75715d8877ee..df933010c571 100644
  {
  	struct dentry *dentry;
  	struct inode *inode;
-@@ -693,10 +726,10 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
+@@ -693,10 +731,10 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
  	if (!link)
  		return ERR_PTR(-ENOMEM);
  
@@ -933,7 +938,7 @@ index 75715d8877ee..df933010c571 100644
  	}
  
  	inode = debugfs_get_inode(dentry->d_sb);
-@@ -704,13 +737,13 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
+@@ -704,13 +742,13 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
  		pr_err("out of free dentries, can not create symlink '%s'\n",
  		       name);
  		kfree(link);
@@ -949,7 +954,7 @@ index 75715d8877ee..df933010c571 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_create_symlink);
  
-@@ -768,7 +801,7 @@ static void __debugfs_file_removed(struct dentry *dentry)
+@@ -768,7 +806,7 @@ static void __debugfs_file_removed(struct dentry *dentry)
  		while ((c = list_first_entry_or_null(&fsd->cancellations,
  						     typeof(*c), list))) {
  			list_del_init(&c->list);
@@ -958,7 +963,7 @@ index 75715d8877ee..df933010c571 100644
  		}
  		mutex_unlock(&fsd->cancellations_mtx);
  
-@@ -796,13 +829,13 @@ static void remove_one(struct dentry *victim)
+@@ -796,13 +834,13 @@ static void remove_one(struct dentry *victim)
   * removed, no automatic cleanup of files will happen when a module is
   * removed, you are responsible here.
   */
@@ -975,7 +980,7 @@ index 75715d8877ee..df933010c571 100644
  	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
  }
  EXPORT_SYMBOL_GPL(debugfs_remove);
-@@ -816,16 +849,16 @@ EXPORT_SYMBOL_GPL(debugfs_remove);
+@@ -816,16 +854,16 @@ EXPORT_SYMBOL_GPL(debugfs_remove);
   * debugfs_remove(debugfs_lookup(..)) but with the proper reference counting
   * handled for the directory being looked up.
   */
@@ -998,7 +1003,7 @@ index 75715d8877ee..df933010c571 100644
  }
  EXPORT_SYMBOL_GPL(debugfs_lookup_and_remove);
  
-@@ -842,11 +875,12 @@ EXPORT_SYMBOL_GPL(debugfs_lookup_and_remove);
+@@ -842,11 +880,12 @@ EXPORT_SYMBOL_GPL(debugfs_lookup_and_remove);
   * If debugfs is not enabled in the kernel, the value -%ENODEV will be
   * returned.
   */
@@ -1013,7 +1018,7 @@ index 75715d8877ee..df933010c571 100644
  	struct inode *dir;
  	va_list ap;
 diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index fa2568b4380d..37ca057c325e 100644
+index fa2568b4380d..4e0e7bbee1af 100644
 --- a/include/linux/debugfs.h
 +++ b/include/linux/debugfs.h
 @@ -21,6 +21,11 @@
@@ -1048,19 +1053,26 @@ index fa2568b4380d..37ca057c325e 100644
  
  struct debugfs_short_fops {
  	ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
-@@ -75,14 +82,19 @@ struct debugfs_short_fops {
+@@ -75,14 +82,26 @@ struct debugfs_short_fops {
  
  #if defined(CONFIG_DEBUG_FS)
  
 -struct dentry *debugfs_lookup(const char *name, struct dentry *parent);
 +struct debugfs_node *debugfs_lookup(const char *name, struct debugfs_node *parent);
++
++char *debugfs_node_path_raw(struct debugfs_node *node, char *buf, size_t buflen);
  
 -struct dentry *debugfs_create_file_full(const char *name, umode_t mode,
 -					struct dentry *parent, void *data,
-+char *debugfs_node_path_raw(struct debugfs_node *node, char *buf, size_t buflen);
-+
 +struct debugfs_node *debugfs_node_get(struct debugfs_node *node);
 +void debugfs_node_put(struct debugfs_node *node);
++
++/*
++ * TODO remove this if we ever migrate to kernfs. It was only added because
++ * blk-mq-debugfs.c was using d_inode(dentry) before struct debugfs_node was
++ * created.
++ */
++struct inode *debugfs_node_inode(struct debugfs_node *);
 +
 +struct debugfs_node *debugfs_create_file_full(const char *name, umode_t mode,
 +					struct debugfs_node *parent, void *data,
@@ -1073,7 +1085,7 @@ index fa2568b4380d..37ca057c325e 100644
  					 const void *aux,
  					 const struct debugfs_short_fops *fops);
  
-@@ -90,8 +102,8 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -90,8 +109,8 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
   * debugfs_create_file - create a file in the debugfs filesystem
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have.
@@ -1084,7 +1096,7 @@ index fa2568b4380d..37ca057c325e 100644
   *          file will be created in the root of the debugfs filesystem.
   * @data: a pointer to something that the caller will want to get to later
   *        on.  The inode.i_private pointer will point to this value on
-@@ -104,7 +116,7 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -104,7 +123,7 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
   * to create a directory, the debugfs_create_dir() function is
   * recommended to be used instead.)
   *
@@ -1093,7 +1105,7 @@ index fa2568b4380d..37ca057c325e 100644
   * pointer must be passed to the debugfs_remove() function when the file is
   * to be removed (no automatic cleanup happens if your module is unloaded,
   * you are responsible here.)  If an error occurs, ERR_PTR(-ERROR) will be
-@@ -118,7 +130,7 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -118,7 +137,7 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
   * so no module reference or release are needed.
   *
   * NOTE: it's expected that most callers should _ignore_ the errors returned
@@ -1102,7 +1114,7 @@ index fa2568b4380d..37ca057c325e 100644
   * passed to them could be an error and they don't crash in that case.
   * Drivers should generally work fine even if debugfs fails to init anyway.
   */
-@@ -138,35 +150,35 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -138,35 +157,35 @@ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
  		 struct debugfs_short_fops *: debugfs_create_file_short)	\
  		(name, mode, parent, data, aux, fops)
  
@@ -1149,7 +1161,7 @@ index fa2568b4380d..37ca057c325e 100644
  
  ssize_t debugfs_attr_read(struct file *file, char __user *buf,
  			size_t len, loff_t *ppos);
-@@ -175,52 +187,52 @@ ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
+@@ -175,52 +194,52 @@ ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
  ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
  			size_t len, loff_t *ppos);
  
@@ -1221,7 +1233,7 @@ index fa2568b4380d..37ca057c325e 100644
  				 int (*read_fn)(struct seq_file *s, void *data));
  
  bool debugfs_initialized(void);
-@@ -242,7 +254,7 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
+@@ -242,7 +261,7 @@ ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
   */
  struct debugfs_cancellation {
  	struct list_head list;
@@ -1230,7 +1242,7 @@ index fa2568b4380d..37ca057c325e 100644
  	void *cancel_data;
  };
  
-@@ -263,29 +275,43 @@ debugfs_leave_cancellation(struct file *file,
+@@ -263,29 +282,43 @@ debugfs_leave_cancellation(struct file *file,
   * want to duplicate the design decision mistakes of procfs and devfs again.
   */
  
@@ -1238,10 +1250,12 @@ index fa2568b4380d..37ca057c325e 100644
 -					    struct dentry *parent)
 +static inline struct debugfs_node *debugfs_lookup(const char *name,
 +					    struct debugfs_node *parent)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+-static inline struct dentry *debugfs_create_file_aux(const char *name,
+-					umode_t mode, struct dentry *parent,
 +static inline char *debugfs_node_path_raw(struct debugfs_node *node, char *buf,
 +					  size_t buflen)
 +{
@@ -1249,12 +1263,10 @@ index fa2568b4380d..37ca057c325e 100644
 +}
 +
 +static inline struct debugfs_node *debugfs_node_get(struct debugfs_node *node)
- {
- 	return ERR_PTR(-ENODEV);
- }
- 
--static inline struct dentry *debugfs_create_file_aux(const char *name,
--					umode_t mode, struct dentry *parent,
++{
++	return ERR_PTR(-ENODEV);
++}
++
 +static inline void debugfs_node_put(struct debugfs_node *node)
 +{ }
 +
@@ -1282,7 +1294,7 @@ index fa2568b4380d..37ca057c325e 100644
  					void *data,
  					const struct file_operations *fops)
  {
-@@ -293,51 +319,51 @@ static inline struct dentry *debugfs_create_file_unsafe(const char *name,
+@@ -293,51 +326,51 @@ static inline struct dentry *debugfs_create_file_unsafe(const char *name,
  }
  
  static inline void debugfs_create_file_size(const char *name, umode_t mode,
@@ -1346,7 +1358,7 @@ index fa2568b4380d..37ca057c325e 100644
  { }
  
  static inline ssize_t debugfs_attr_read(struct file *file, char __user *buf,
-@@ -360,66 +386,66 @@ static inline ssize_t debugfs_attr_write_signed(struct file *file,
+@@ -360,66 +393,66 @@ static inline ssize_t debugfs_attr_write_signed(struct file *file,
  	return -ENODEV;
  }
  
@@ -1430,7 +1442,7 @@ index fa2568b4380d..37ca057c325e 100644
  					   struct debugfs_regset32 *regset)
  {
  }
-@@ -435,14 +461,14 @@ static inline bool debugfs_initialized(void)
+@@ -435,14 +468,14 @@ static inline bool debugfs_initialized(void)
  }
  
  static inline void debugfs_create_u32_array(const char *name, umode_t mode,
@@ -1447,7 +1459,7 @@ index fa2568b4380d..37ca057c325e 100644
  					       int (*read_fn)(struct seq_file *s,
  							      void *data))
  {
-@@ -481,14 +507,14 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
+@@ -481,14 +514,14 @@ static inline ssize_t debugfs_read_file_str(struct file *file,
   * unsigned long value, formatted in hexadecimal
   * @name: a pointer to a string containing the name of the file to create.
   * @mode: the permission that the file should have

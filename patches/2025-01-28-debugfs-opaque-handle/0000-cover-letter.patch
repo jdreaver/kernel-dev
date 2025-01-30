@@ -1,6 +1,6 @@
-From 50e17d3c4f042d883a765e8b604cf080d7c4110a Mon Sep 17 00:00:00 2001
+From 294baab6c469582911dcffe6704481f055165acb Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 29 Jan 2025 21:04:15 -0800
+Date: Wed, 29 Jan 2025 21:12:26 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -77,7 +77,7 @@ David Reaver (3):
  arch/x86/xen/p2m.c                            |   4 +-
  arch/x86/xen/xen-ops.h                        |   2 +-
  block/blk-core.c                              |   4 +-
- block/blk-mq-debugfs.c                        |   4 +-
+ block/blk-mq-debugfs.c                        |   6 +-
  block/blk-rq-qos.h                            |   2 +-
  block/blk-timeout.c                           |   2 +-
  block/blk.h                                   |   2 +-
@@ -793,7 +793,7 @@ David Reaver (3):
  fs/ceph/mds_client.c                          |   4 +-
  fs/ceph/super.h                               |  10 +-
  fs/debugfs/file.c                             | 192 +++++++++--------
- fs/debugfs/inode.c                            | 142 ++++++++-----
+ fs/debugfs/inode.c                            | 147 ++++++++-----
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
  fs/f2fs/debug.c                               |   2 +-
@@ -830,7 +830,7 @@ David Reaver (3):
  include/linux/ceph/libceph.h                  |   8 +-
  include/linux/ceph/mon_client.h               |   2 +-
  include/linux/ceph/osd_client.h               |   2 +-
- include/linux/debugfs.h                       | 194 ++++++++++--------
+ include/linux/debugfs.h                       | 201 ++++++++++--------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
@@ -984,7 +984,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 964 files changed, 2112 insertions(+), 1932 deletions(-)
+ 964 files changed, 2125 insertions(+), 1933 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

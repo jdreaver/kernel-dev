@@ -23,7 +23,6 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Handle blk-mq-debugfs.c use of dentry's inode's i_private. (We can just expose getting the inode for now with a helper function)
 - Script isn't doing enough:
   - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
     - Problem is `struct dentry *root, *entry;` on one line

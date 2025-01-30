@@ -1,4 +1,4 @@
-From 50e17d3c4f042d883a765e8b604cf080d7c4110a Mon Sep 17 00:00:00 2001
+From 294baab6c469582911dcffe6704481f055165acb Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -13,6 +13,7 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
+ block/blk-mq-debugfs.c             |  2 +-
  drivers/bus/moxtet.c               |  2 +-
  drivers/phy/realtek/phy-rtk-usb2.c |  2 +-
  drivers/phy/realtek/phy-rtk-usb3.c |  2 +-
@@ -22,8 +23,21 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  kernel/sched/debug.c               |  2 +-
  lib/fault-inject.c                 |  2 +-
  virt/kvm/kvm_main.c                |  5 +++--
- 9 files changed, 23 insertions(+), 24 deletions(-)
+ 10 files changed, 24 insertions(+), 25 deletions(-)
 
+diff --git a/block/blk-mq-debugfs.c b/block/blk-mq-debugfs.c
+index f8aeffe1ef20..26f82b9b191e 100644
+--- a/block/blk-mq-debugfs.c
++++ b/block/blk-mq-debugfs.c
+@@ -609,7 +609,7 @@ static void debugfs_create_files(struct debugfs_node *parent, void *data,
+ 	if (IS_ERR_OR_NULL(parent))
+ 		return;
+ 
+-	d_inode(parent)->i_private = data;
++	debugfs_node_inode(parent)->i_private = data;
+ 
+ 	for (; attr->name; attr++)
+ 		debugfs_create_file(attr->name, attr->mode, parent,
 diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
 index 6276551d7968..e2d7fcf1d9e4 100644
 --- a/drivers/bus/moxtet.c
@@ -78,7 +92,7 @@ index 570087bbb9fc..6f7b74337df9 100644
  	struct debugfs_fsdata *fsd;
  	void *d_fsd;
 diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index 807c93eb015c..df933010c571 100644
+index f72866817376..2d004b2afceb 100644
 --- a/fs/debugfs/inode.c
 +++ b/fs/debugfs/inode.c
 @@ -43,7 +43,7 @@ static unsigned int debugfs_allow __ro_after_init = DEFAULT_DEBUGFS_ALLOW_BITS;
@@ -117,7 +131,7 @@ index 807c93eb015c..df933010c571 100644
  
  	if (!debugfs_initialized() || IS_ERR_OR_NULL(name) || IS_ERR(parent))
  		return NULL;
-@@ -375,7 +375,7 @@ void debugfs_node_put(struct debugfs_node *node)
+@@ -380,7 +380,7 @@ struct inode *debugfs_node_inode(struct debugfs_node *node)
  
  static struct dentry *start_creating(const char *name, struct dentry *parent)
  {
@@ -126,7 +140,7 @@ index 807c93eb015c..df933010c571 100644
  	int error;
  
  	if (!(debugfs_allow & DEBUGFS_ALLOW_API))
-@@ -442,13 +442,13 @@ static struct dentry *end_creating(struct dentry *dentry)
+@@ -447,13 +447,13 @@ static struct dentry *end_creating(struct dentry *dentry)
  	return dentry;
  }
  
@@ -143,7 +157,7 @@ index 807c93eb015c..df933010c571 100644
  	struct inode *inode;
  
  	if (!(mode & S_IFMT))
-@@ -491,7 +491,7 @@ struct debugfs_node *debugfs_create_file_full(const char *name, umode_t mode,
+@@ -496,7 +496,7 @@ struct debugfs_node *debugfs_create_file_full(const char *name, umode_t mode,
  					const void *aux,
  					const struct file_operations *fops)
  {
@@ -152,7 +166,7 @@ index 807c93eb015c..df933010c571 100644
  
  	dentry = __debugfs_create_file(name, mode, (struct dentry *)parent,
  				       data, aux,
-@@ -507,7 +507,7 @@ struct debugfs_node *debugfs_create_file_short(const char *name, umode_t mode,
+@@ -512,7 +512,7 @@ struct debugfs_node *debugfs_create_file_short(const char *name, umode_t mode,
  					const struct debugfs_short_fops *fops)
  {
  
@@ -161,7 +175,7 @@ index 807c93eb015c..df933010c571 100644
  
  	dentry = __debugfs_create_file(name, mode, (struct dentry *)parent,
  				       data, aux,
-@@ -548,7 +548,7 @@ struct debugfs_node *debugfs_create_file_unsafe(const char *name, umode_t mode,
+@@ -553,7 +553,7 @@ struct debugfs_node *debugfs_create_file_unsafe(const char *name, umode_t mode,
  				   struct debugfs_node *parent, void *data,
  				   const struct file_operations *fops)
  {
@@ -170,7 +184,7 @@ index 807c93eb015c..df933010c571 100644
  
  	dentry = __debugfs_create_file(name, mode, (struct dentry *)parent, data,
  				       NULL, &debugfs_open_proxy_file_operations,
-@@ -720,7 +720,7 @@ struct debugfs_node *debugfs_create_symlink(const char *name,
+@@ -725,7 +725,7 @@ struct debugfs_node *debugfs_create_symlink(const char *name,
  					    struct debugfs_node *parent,
  					    const char *target)
  {
@@ -179,7 +193,7 @@ index 807c93eb015c..df933010c571 100644
  	struct inode *inode;
  	char *link = kstrdup(target, GFP_KERNEL);
  	if (!link)
-@@ -747,7 +747,7 @@ struct debugfs_node *debugfs_create_symlink(const char *name,
+@@ -752,7 +752,7 @@ struct debugfs_node *debugfs_create_symlink(const char *name,
  }
  EXPORT_SYMBOL_GPL(debugfs_create_symlink);
  
