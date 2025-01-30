@@ -1,4 +1,4 @@
-From 294baab6c469582911dcffe6704481f055165acb Mon Sep 17 00:00:00 2001
+From bfa89c4fab07656968a526ad74631cc2cce2fd05 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -20,10 +20,11 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  fs/debugfs/file.c                  |  3 +--
  fs/debugfs/inode.c                 | 26 +++++++++++++-------------
  include/linux/fault-inject.h       |  3 +--
+ kernel/power/energy_model.c        |  2 +-
  kernel/sched/debug.c               |  2 +-
  lib/fault-inject.c                 |  2 +-
  virt/kvm/kvm_main.c                |  5 +++--
- 10 files changed, 24 insertions(+), 25 deletions(-)
+ 11 files changed, 25 insertions(+), 26 deletions(-)
 
 diff --git a/block/blk-mq-debugfs.c b/block/blk-mq-debugfs.c
 index f8aeffe1ef20..26f82b9b191e 100644
@@ -223,6 +224,19 @@ index e5bfc36b35e2..f7e5d2463713 100644
  };
  
  enum fault_flags {
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 14ca55ca6d56..4052657cc6ba 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -67,7 +67,7 @@ DEFINE_EM_DBG_SHOW(flags, inefficiency);
+ 
+ static void em_debug_create_ps(struct em_perf_domain *em_pd,
+ 			       struct em_dbg_info *em_dbg, int i,
+-			       struct dentry *pd)
++			       struct debugfs_node *pd)
+ {
+ 	struct em_perf_state *table;
+ 	unsigned long freq;
 diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
 index 668b0cc9925e..6a1f6b50edc3 100644
 --- a/kernel/sched/debug.c

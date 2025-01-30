@@ -23,6 +23,9 @@ git format-patch master...HEAD \
 
 # TODO
 
+- `debugfs_file_get` needs to accept dentry
+  - In kernfs, public users would use kernfs_node's private data
+  - In fs/debugfs/, dentry is actually more convenient!
 - Script isn't doing enough:
   - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
     - Problem is `struct dentry *root, *entry;` on one line
