@@ -1,7 +1,8 @@
 From 093721f8c0c82aad943feb522d95d2efc8ea5f71 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 29 Jan 2025 17:47:29 -0800
-Subject: [RFC PATCH 0/3] *** SUBJECT HERE ***
+Date: Wed, 29 Jan 2025 17:58:50 -0800
+Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
+ kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>
@@ -9,10 +10,6 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     Christian Brauner <brauner@kernel.org>,
     linux-fsdevel@vger.kernel.org,
     linux-kernel@vger.kernel.org
-
-This is a test!
-
-Hello, welcome to my cover letter.
 
 TODO (things to cover):
 

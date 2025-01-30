@@ -10,6 +10,7 @@ git format-patch master...HEAD \
       -o ../patches/2025-01-28-debugfs-opaque-handle/ \
       --cover-letter \
       --description-file=../patches/2025-01-28-debugfs-opaque-handle/cover-letter-description.txt \
+      --cover-from-description=subject \
       --rfc \
       --to 'Greg Kroah-Hartman <gregkh@linuxfoundation.org>' \
       --to 'Rafael J. Wysocki <rafael@kernel.org>' \
@@ -22,7 +23,6 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Figure out `git format-patch` command to get subject into cover letter
 - Some stuff isn't getting hit like in `arch/s390/include/asm/debug.h`. The `dentry` fields in a struct have `debugfs` in the name; clearly they should be part of this, but spatch probably can't figure out that is the right thing to include. Either debug the include or add a rule to have `dentry` vars with `debugfs` in the name get included.
 - Script isn't doing enough:
   - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
