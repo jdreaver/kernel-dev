@@ -7,7 +7,6 @@ identifier f = {
   debugfs_create_file
 };
 identifier var;
-identifier E;
 @@
 
 (
@@ -18,6 +17,7 @@ identifier E;
 
 @rewrite_decls@
 identifier vars_to_rewrite.var;
+expression E;
 @@
 
 (
@@ -26,6 +26,10 @@ identifier vars_to_rewrite.var;
 |
 -static struct dentry *var;
 +static struct debugfs_node *var;
+|
+-struct dentry *var
++struct debugfs_node *var
+= E;
 )
 
 @fields_to_rewrite@
