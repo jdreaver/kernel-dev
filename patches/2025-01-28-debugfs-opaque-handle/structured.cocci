@@ -2,11 +2,13 @@
 
 virtual patch
 
-// Match both direct assignments and field assignments
+// Match both direct assignments and field assignments to functions with
+// "debugfs" in the name. Purposely casting a wide net to include wrapper
+// functions that some modules imlpement, not just the debugfs.h functions.
 @match_assign@
 expression E;
 identifier var;
-identifier fn =~ "^debugfs_";
+identifier fn =~ "debugfs";
 @@
 
 (
@@ -23,7 +25,7 @@ identifier match_assign.var;
 identifier struct_name;
 @@
 
-// Global declarations
+// Declarations
 (
 - struct dentry *var;
 + struct debugfs_node *var;
@@ -44,7 +46,7 @@ struct struct_name {
 @match_usage@
 expression E;
 identifier var;
-identifier fn =~ "^debugfs_";
+identifier fn =~ "debugfs";
 @@
 
 (
@@ -62,7 +64,7 @@ identifier match_usage.var;
 identifier struct_name;
 @@
 
-// Global declarations
+// Declarations
 (
 - struct dentry *var;
 + struct debugfs_node *var;
@@ -79,35 +81,81 @@ struct struct_name {
 };
 )
 
-// Transform various helper functions
-@transform_helpers depends on match_assign || match_usage@
-identifier var, E;
+// Declaration and assignment in one
+@@
+identifier var;
+identifier fn =~ "debugfs";
 @@
 
+- struct dentry *var
++ struct debugfs_node *var
+= fn(...);
+
+// Variable declarations that are almost certainly supposed to be debugfs_node
+@@
+identifier var =~ "debugfs";
+identifier struct_name;
+@@
+
+// Declarations
 (
-// Replace dput
-- dput(var)
-+ debugfs_node_put(var)
+- struct dentry *var;
++ struct debugfs_node *var;
 |
-- dput(E->var)
-+ debugfs_node_put(E->var)
+- static struct dentry *var;
++ static struct debugfs_node *var;
+// Struct field declarations
+struct struct_name {
+    ...
+-   struct dentry *var;
++   struct debugfs_node *var;
+    ...
+};
 |
-// Replace dget
-- dget(var)
-+ debugfs_node_get(var)
-|
-- dget(E->var)
-+ debugfs_node_get(E->var)
-|
-// Replace dentry_path_raw
-- dentry_path_raw(var,
-+ debugfs_node_path_raw(var,
-   ...)
-|
-- dentry_path_raw(E->var,
-+ debugfs_node_path_raw(E->var,
-   ...)
+struct struct_name {
+    ...
+    // Match arrays too
+-   struct dentry *var
++   struct debugfs_node *var
+    [...];
+    ...
+};
+
 )
+
+// Transform various helper functions
+//
+// TODO: This is way too wide, and depending on match_assign/match_usage is
+// buggy. Restrict this a ton.
+//
+// @transform_helpers depends on match_assign || match_usage@
+// identifier var, E;
+// @@
+//
+// (
+// // Replace dput
+// - dput(var)
+// + debugfs_node_put(var)
+// |
+// - dput(E->var)
+// + debugfs_node_put(E->var)
+// |
+// // Replace dget
+// - dget(var)
+   // + debugfs_node_get(var)
+// |
+// - dget(E->var)
+// + debugfs_node_get(E->var)
+// |
+// // Replace dentry_path_raw
+// - dentry_path_raw(var,
+// + debugfs_node_path_raw(var,
+//    ...)
+// |
+// - dentry_path_raw(E->var,
+// + debugfs_node_path_raw(E->var,
+//    ...)
+// )
 
 // Transform wrapper function args.
 @@

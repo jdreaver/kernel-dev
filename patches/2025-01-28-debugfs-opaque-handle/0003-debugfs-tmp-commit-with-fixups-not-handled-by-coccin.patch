@@ -1,4 +1,4 @@
-From 093721f8c0c82aad943feb522d95d2efc8ea5f71 Mon Sep 17 00:00:00 2001
+From 47facb9e32e702fe565388cc8de199ffa4257b7a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -13,59 +13,14 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- arch/x86/xen/p2m.c   | 2 +-
- block/blk-core.c     | 5 +++--
- block/blk-timeout.c  | 6 ++++--
- drivers/bus/moxtet.c | 2 +-
- mm/shrinker.c        | 2 +-
- 5 files changed, 10 insertions(+), 7 deletions(-)
+ drivers/bus/moxtet.c             | 2 +-
+ include/linux/backing-dev-defs.h | 2 +-
+ include/linux/fault-inject.h     | 3 +--
+ lib/fault-inject.c               | 2 +-
+ mm/shrinker.c                    | 2 +-
+ virt/kvm/kvm_main.c              | 5 +++--
+ 6 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/xen/p2m.c b/arch/x86/xen/p2m.c
-index 5b9181f687ce..74204f2c94e8 100644
---- a/arch/x86/xen/p2m.c
-+++ b/arch/x86/xen/p2m.c
-@@ -919,7 +919,7 @@ static struct debugfs_node *d_mmu_debug;
- 
- static int __init xen_p2m_debugfs(void)
- {
--	struct dentry *d_xen = xen_init_debugfs();
-+	struct debugfs_node *d_xen = xen_init_debugfs();
- 
- 	d_mmu_debug = debugfs_create_dir("mmu", d_xen);
- 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index a4b2b216cc16..2f216943d84d 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -504,8 +504,9 @@ bool should_fail_request(struct block_device *part, unsigned int bytes)
- 
- static int __init fail_make_request_debugfs(void)
- {
--	struct dentry *dir = fault_create_debugfs_attr("fail_make_request",
--						NULL, &fail_make_request);
-+	struct debugfs_node *dir;
-+	dir = fault_create_debugfs_attr("fail_make_request", NULL,
-+					&fail_make_request);
- 
- 	return PTR_ERR_OR_ZERO(dir);
- }
-diff --git a/block/blk-timeout.c b/block/blk-timeout.c
-index 1b8de0417fc1..cb435df1082d 100644
---- a/block/blk-timeout.c
-+++ b/block/blk-timeout.c
-@@ -28,8 +28,10 @@ EXPORT_SYMBOL_GPL(__blk_should_fake_timeout);
- 
- static int __init fail_io_timeout_debugfs(void)
- {
--	struct dentry *dir = fault_create_debugfs_attr("fail_io_timeout",
--						NULL, &fail_io_timeout);
-+	struct debugfs_node *dir;
-+
-+	dir = fault_create_debugfs_attr("fail_io_timeout", NULL,
-+					&fail_io_timeout);
- 
- 	return PTR_ERR_OR_ZERO(dir);
- }
 diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
 index 6276551d7968..e2d7fcf1d9e4 100644
 --- a/drivers/bus/moxtet.c
@@ -79,6 +34,53 @@ index 6276551d7968..e2d7fcf1d9e4 100644
  
  	root = debugfs_create_dir("moxtet", NULL);
  
+diff --git a/include/linux/backing-dev-defs.h b/include/linux/backing-dev-defs.h
+index 2ad261082bba..4f560f13d0e6 100644
+--- a/include/linux/backing-dev-defs.h
++++ b/include/linux/backing-dev-defs.h
+@@ -199,7 +199,7 @@ struct backing_dev_info {
+ 	struct timer_list laptop_mode_wb_timer;
+ 
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry *debug_dir;
++	struct debugfs_node *debug_dir;
+ #endif
+ };
+ 
+diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
+index e5bfc36b35e2..f7e5d2463713 100644
+--- a/include/linux/fault-inject.h
++++ b/include/linux/fault-inject.h
+@@ -5,7 +5,6 @@
+ #include <linux/err.h>
+ #include <linux/types.h>
+ 
+-struct dentry;
+ struct kmem_cache;
+ 
+ #ifdef CONFIG_FAULT_INJECTION
+@@ -33,7 +32,7 @@ struct fault_attr {
+ 
+ 	unsigned long count;
+ 	struct ratelimit_state ratelimit_state;
+-	struct dentry *dname;
++	struct debugfs_node *dname;
+ };
+ 
+ enum fault_flags {
+diff --git a/lib/fault-inject.c b/lib/fault-inject.c
+index d9a8fe11e6a4..5bf0f47725e8 100644
+--- a/lib/fault-inject.c
++++ b/lib/fault-inject.c
+@@ -262,7 +262,7 @@ struct debugfs_node *fault_create_debugfs_attr(const char *name,
+ 	debugfs_create_xul("reject-end", mode, dir, &attr->reject_end);
+ #endif /* CONFIG_FAULT_INJECTION_STACKTRACE_FILTER */
+ 
+-	attr->dname = dget(dir);
++	attr->dname = debugfs_node_get(dir);
+ 	return dir;
+ }
+ EXPORT_SYMBOL_GPL(fault_create_debugfs_attr);
 diff --git a/mm/shrinker.c b/mm/shrinker.c
 index 4a93fd433689..35989087d387 100644
 --- a/mm/shrinker.c
@@ -92,3 +94,26 @@ index 4a93fd433689..35989087d387 100644
  	int debugfs_id;
  
  	if (!shrinker)
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index edba5dd67c41..165764eafe9e 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1017,7 +1017,7 @@ static int kvm_create_vm_debugfs(struct kvm *kvm, const char *fdname)
+ 	dent = debugfs_lookup(dir_name, kvm_debugfs_dir);
+ 	if (dent) {
+ 		pr_warn_ratelimited("KVM: debugfs: duplicate directory %s\n", dir_name);
+-		dput(dent);
++		debugfs_node_put(dent);
+ 		mutex_unlock(&kvm_debugfs_lock);
+ 		return 0;
+ 	}
+@@ -6216,7 +6216,8 @@ static void kvm_uevent_notify_change(unsigned int type, struct kvm *kvm)
+ 		char *tmp, *p = kmalloc(PATH_MAX, GFP_KERNEL);
+ 
+ 		if (p) {
+-			tmp = dentry_path_raw(kvm->debugfs_dentry, p, PATH_MAX);
++			tmp = debugfs_node_path_raw(kvm->debugfs_dentry, p,
++						    PATH_MAX);
+ 			if (!IS_ERR(tmp))
+ 				add_uevent_var(env, "STATS_PATH=%s", tmp);
+ 			kfree(p);

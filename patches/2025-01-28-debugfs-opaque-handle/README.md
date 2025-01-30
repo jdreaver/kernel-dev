@@ -23,6 +23,8 @@ git format-patch master...HEAD \
 
 # TODO
 
+- mm/shrinker.c includes a `struct debugfs_node *debugfs_entry = NULL;`. Handle null initialization.
+- Ensure `fs/debugfs/` stays out of spatch
 - Some stuff isn't getting hit like in `arch/s390/include/asm/debug.h`. The `dentry` fields in a struct have `debugfs` in the name; clearly they should be part of this, but spatch probably can't figure out that is the right thing to include. Either debug the include or add a rule to have `dentry` vars with `debugfs` in the name get included.
 - Script isn't doing enough:
   - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
@@ -55,7 +57,7 @@ Good directories to test:
 Run patch script with (note that `--in-place` doesn't appear to work):
 
 ```
-$ spatch ../patches/2025-01-28-debugfs-opaque-handle/structured.cocci --all-includes . > patch.patch
+$ spatch ../patches/2025-01-28-debugfs-opaque-handle/structured.cocci --all-includes --include-headers . > patch.patch
 $ patch -p1 < patch.patch
 ```
 
