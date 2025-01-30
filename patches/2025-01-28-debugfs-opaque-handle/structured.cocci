@@ -13,6 +13,8 @@ identifier fn =~ "^debugfs_";
   var = fn(...)
 |
   E->var = fn(...)
+|
+  E.var = fn(...)
 )
 
 // Match both direct args and field args
@@ -26,11 +28,13 @@ identifier fn =~ "^debugfs_";
   fn(..., var, ...)
 |
   fn(..., E->var, ...)
+|
+  fn(..., E.var, ...)
 )
 
 // Transform declarations
 @transform_decls depends on match_assign || match_usage@
-identifier var;
+identifier match_assign.var, match_usage.var;
 identifier struct_name;
 @@
 
