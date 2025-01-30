@@ -23,22 +23,19 @@ git format-patch master...HEAD \
 
 # TODO
 
-- mm/shrinker.c includes a `struct debugfs_node *debugfs_entry = NULL;`. Handle null initialization.
-- Ensure `fs/debugfs/` stays out of spatch
-- Some stuff isn't getting hit like in `arch/s390/include/asm/debug.h`. The `dentry` fields in a struct have `debugfs` in the name; clearly they should be part of this, but spatch probably can't figure out that is the right thing to include. Either debug the include or add a rule to have `dentry` vars with `debugfs` in the name get included.
 - Script isn't doing enough:
   - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
     - Problem is `struct dentry *root, *entry;` on one line
-  - block/blk-{core,timeout}.c _uses_ `fault_create_debugfs_attr`, which is defined in fault-inject.{c,h}, but doesn't modify the return argument.
-    - I wonder if I can make the script more general so that for a given list of functions, both change the function definition and "infect" all users of it.
-    - Same for `xen_init_debugfs`
+
+- Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
+
 - Manual stuff:
+  - Revert `fs/debugfs/` changes or find a way to exclude them from spatch
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
 
-- Get feedback on approach
 - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
-- Consider reducing casts by using helper functions to convert to/from dentry
-  - Less important if users can't access dentry
+
+- Get feedback on approach
 - If we eventually want to use `kernfs`, we need to consider `file_operations` as well. That would be a super hard thing to migrate across all of the kernel.
   - Maybe not actually. There are lots of helper macros being used by debugfs users that will make this easier.
 

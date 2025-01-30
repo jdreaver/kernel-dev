@@ -30,6 +30,10 @@ identifier struct_name;
 - struct dentry *var;
 + struct debugfs_node *var;
 |
+- struct dentry *var
++ struct debugfs_node *var
+= NULL;
+|
 - static struct dentry *var;
 + static struct debugfs_node *var;
 |
@@ -69,6 +73,10 @@ identifier struct_name;
 - struct dentry *var;
 + struct debugfs_node *var;
 |
+- struct dentry *var
++ struct debugfs_node *var
+= NULL;
+|
 - static struct dentry *var;
 + static struct debugfs_node *var;
 |
@@ -91,9 +99,11 @@ identifier fn =~ "debugfs";
 + struct debugfs_node *var
 = fn(...);
 
-// Variable declarations that are almost certainly supposed to be debugfs_node
+// Variable declarations that are almost certainly supposed to be debugfs_node.
+// Sometimes these are in headers that the other rules don't traverse because
+// spatch misses some imports.
 @@
-identifier var =~ "debugfs";
+identifier var =~ "debugfs|^debug_dir$|^debug_root$";
 identifier struct_name;
 @@
 

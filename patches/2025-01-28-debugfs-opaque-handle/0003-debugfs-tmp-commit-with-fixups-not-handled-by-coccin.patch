@@ -1,4 +1,4 @@
-From 47facb9e32e702fe565388cc8de199ffa4257b7a Mon Sep 17 00:00:00 2001
+From d9a3bd33ef5acae39e762d649c9a8ca2712176b8 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -13,13 +13,14 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- drivers/bus/moxtet.c             | 2 +-
- include/linux/backing-dev-defs.h | 2 +-
- include/linux/fault-inject.h     | 3 +--
- lib/fault-inject.c               | 2 +-
- mm/shrinker.c                    | 2 +-
- virt/kvm/kvm_main.c              | 5 +++--
- 6 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/bus/moxtet.c             |  2 +-
+ fs/debugfs/file.c                |  3 +--
+ fs/debugfs/inode.c               | 26 +++++++++++++-------------
+ include/linux/backing-dev-defs.h |  2 +-
+ include/linux/fault-inject.h     |  3 +--
+ lib/fault-inject.c               |  2 +-
+ virt/kvm/kvm_main.c              |  5 +++--
+ 7 files changed, 21 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
 index 6276551d7968..e2d7fcf1d9e4 100644
@@ -33,6 +34,131 @@ index 6276551d7968..e2d7fcf1d9e4 100644
 +	struct debugfs_node *root, *entry;
  
  	root = debugfs_create_dir("moxtet", NULL);
+ 
+diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
+index 570087bbb9fc..6f7b74337df9 100644
+--- a/fs/debugfs/file.c
++++ b/fs/debugfs/file.c
+@@ -76,8 +76,7 @@ enum dbgfs_get_mode {
+ 	DBGFS_GET_SHORT,
+ };
+ 
+-static int __debugfs_file_get(struct debugfs_node *dentry,
+-			      enum dbgfs_get_mode mode)
++static int __debugfs_file_get(struct dentry *dentry, enum dbgfs_get_mode mode)
+ {
+ 	struct debugfs_fsdata *fsd;
+ 	void *d_fsd;
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index 807c93eb015c..df933010c571 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -43,7 +43,7 @@ static unsigned int debugfs_allow __ro_after_init = DEFAULT_DEBUGFS_ALLOW_BITS;
+  * to lock down individual files.
+  */
+ static int debugfs_setattr(struct mnt_idmap *idmap,
+-			   struct debugfs_node *dentry, struct iattr *ia)
++			   struct dentry *dentry, struct iattr *ia)
+ {
+ 	int ret;
+ 
+@@ -192,7 +192,7 @@ static int debugfs_reconfigure(struct fs_context *fc)
+ 	return 0;
+ }
+ 
+-static int debugfs_show_options(struct seq_file *m, struct debugfs_node *root)
++static int debugfs_show_options(struct seq_file *m, struct dentry *root)
+ {
+ 	struct debugfs_fs_info *fsi = root->d_sb->s_fs_info;
+ 
+@@ -239,7 +239,7 @@ static const struct super_operations debugfs_super_operations = {
+ 	.free_inode	= debugfs_free_inode,
+ };
+ 
+-static void debugfs_release_dentry(struct debugfs_node *dentry)
++static void debugfs_release_dentry(struct dentry *dentry)
+ {
+ 	struct debugfs_fsdata *fsd = dentry->d_fsdata;
+ 
+@@ -341,7 +341,7 @@ MODULE_ALIAS_FS("debugfs");
+ struct debugfs_node *debugfs_lookup(const char *name, struct debugfs_node *parent)
+ {
+ 	struct debugfs_node *node;
+-	struct debugfs_node *dentry;
++	struct dentry *dentry;
+ 
+ 	if (!debugfs_initialized() || IS_ERR_OR_NULL(name) || IS_ERR(parent))
+ 		return NULL;
+@@ -375,7 +375,7 @@ void debugfs_node_put(struct debugfs_node *node)
+ 
+ static struct dentry *start_creating(const char *name, struct dentry *parent)
+ {
+-	struct debugfs_node *dentry;
++	struct dentry *dentry;
+ 	int error;
+ 
+ 	if (!(debugfs_allow & DEBUGFS_ALLOW_API))
+@@ -442,13 +442,13 @@ static struct dentry *end_creating(struct dentry *dentry)
+ 	return dentry;
+ }
+ 
+-static struct debugfs_node *__debugfs_create_file(const char *name, umode_t mode,
+-				struct debugfs_node *parent, void *data,
++static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
++				struct dentry *parent, void *data,
+ 				const void *aux,
+ 				const struct file_operations *proxy_fops,
+ 				const void *real_fops)
+ {
+-	struct debugfs_node *dentry;
++	struct dentry *dentry;
+ 	struct inode *inode;
+ 
+ 	if (!(mode & S_IFMT))
+@@ -491,7 +491,7 @@ struct debugfs_node *debugfs_create_file_full(const char *name, umode_t mode,
+ 					const void *aux,
+ 					const struct file_operations *fops)
+ {
+-	struct debugfs_node *dentry;
++	struct dentry *dentry;
+ 
+ 	dentry = __debugfs_create_file(name, mode, (struct dentry *)parent,
+ 				       data, aux,
+@@ -507,7 +507,7 @@ struct debugfs_node *debugfs_create_file_short(const char *name, umode_t mode,
+ 					const struct debugfs_short_fops *fops)
+ {
+ 
+-	struct debugfs_node *dentry;
++	struct dentry *dentry;
+ 
+ 	dentry = __debugfs_create_file(name, mode, (struct dentry *)parent,
+ 				       data, aux,
+@@ -548,7 +548,7 @@ struct debugfs_node *debugfs_create_file_unsafe(const char *name, umode_t mode,
+ 				   struct debugfs_node *parent, void *data,
+ 				   const struct file_operations *fops)
+ {
+-	struct debugfs_node *dentry;
++	struct dentry *dentry;
+ 
+ 	dentry = __debugfs_create_file(name, mode, (struct dentry *)parent, data,
+ 				       NULL, &debugfs_open_proxy_file_operations,
+@@ -720,7 +720,7 @@ struct debugfs_node *debugfs_create_symlink(const char *name,
+ 					    struct debugfs_node *parent,
+ 					    const char *target)
+ {
+-	struct debugfs_node *dentry;
++	struct dentry *dentry;
+ 	struct inode *inode;
+ 	char *link = kstrdup(target, GFP_KERNEL);
+ 	if (!link)
+@@ -747,7 +747,7 @@ struct debugfs_node *debugfs_create_symlink(const char *name,
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_symlink);
+ 
+-static void __debugfs_file_removed(struct debugfs_node *dentry)
++static void __debugfs_file_removed(struct dentry *dentry)
+ {
+ 	struct debugfs_fsdata *fsd;
  
 diff --git a/include/linux/backing-dev-defs.h b/include/linux/backing-dev-defs.h
 index 2ad261082bba..4f560f13d0e6 100644
@@ -81,19 +207,6 @@ index d9a8fe11e6a4..5bf0f47725e8 100644
  	return dir;
  }
  EXPORT_SYMBOL_GPL(fault_create_debugfs_attr);
-diff --git a/mm/shrinker.c b/mm/shrinker.c
-index 4a93fd433689..35989087d387 100644
---- a/mm/shrinker.c
-+++ b/mm/shrinker.c
-@@ -768,7 +768,7 @@ static void shrinker_free_rcu_cb(struct rcu_head *head)
- 
- void shrinker_free(struct shrinker *shrinker)
- {
--	struct dentry *debugfs_entry = NULL;
-+	struct debugfs_node *debugfs_entry = NULL;
- 	int debugfs_id;
- 
- 	if (!shrinker)
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
 index edba5dd67c41..165764eafe9e 100644
 --- a/virt/kvm/kvm_main.c
