@@ -23,7 +23,17 @@ git format-patch master...HEAD \
 
 # TODO
 
-- `arch/s390/asm/include/debug.h` has a dentry array that wasn't fixed in a full run of spatch, but upon running spatch again it was included. Hmm.
+- Generic spatch ideas
+  - Try different rulekinds, like identifier or type
+  - Try idexpression to only match `struct dentry *` identifiers for transformation
+
+- Need to optimize script. It is taking way too long to run. Ideas:
+  - Match all function names "in scope" literally, without a regex. Then use function matches in subsequent transformations (e.g. transform definitions, transform args, transform return values)
+    - Maybe we can also match function names in specific files
+
+- spatch needing two runs to work
+  - Example now is `drivers/scsi/lpfc/`
+    - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
   - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
   - `bnxt_re.h` has an event simpler one that wasn't caught
   - Only change I can think of is changing the regex to include `dbgfs`, but that doesn't apply to some of the misses
@@ -31,6 +41,10 @@ git format-patch master...HEAD \
   - I wonder if we have to split up our cocci script to run in stages
 - Catch `struct dentry *root, *entry;` on one line
   - Idea: if any one of the vars is implicated, change the type for all of them
+  - Maybe we need `declaration`. From the cocci docs:
+
+    > A declaration metavariable matches the declaration of one or more variables, all sharing the same type specification (e.g., int a,b,c=3;)
+
   - Even 3 in a line for mtk-svs.c in mediatek!
   - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
   - Same with `dw-edma-v0-debugfs.c` and a few others
@@ -40,6 +54,7 @@ git format-patch master...HEAD \
   - Consider even `debug` and `dbg` dentrys. Do this in isolation without other changes to see if it is okay.
 - Make `debugfs_node_name` helper for security/selinux/selinuxfs.c, which is accessing dentry->d_name.name
 - `shrinker_debug.c`: Don't just catch `= NULL`, catch `= <anything>`. Can probably use an `expression` var instead of `NULL` in script.
+  - We have to be careful with this. In `arch/s390/kernel/debug.c` if we match `struct dentry *var = E` (`expression E;`) then it changes a random `dentry` in `include/linux/fs.h` just because it is also called `dentry`.
 - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
 
 - Manual stuff:
@@ -68,7 +83,7 @@ Good directories to test:
 Run patch script with (note that `--in-place` doesn't appear to work):
 
 ```
-$ spatch ../patches/2025-01-28-debugfs-opaque-handle/structured.cocci --all-includes --include-headers . > patch.patch
+$ spatch ../patches/2025-01-28-debugfs-opaque-handle/structured.cocci --all-includes --include-headers . --jobs $(nproc) > patch.patch
 $ patch -p1 < patch.patch
 ```
 
