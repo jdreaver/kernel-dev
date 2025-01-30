@@ -1,6 +1,5 @@
 virtual patch
 
-
 @vars_to_rewrite@
 identifier f = {
   debugfs_create_dir,
@@ -62,3 +61,30 @@ struct struct_name {
 + struct debugfs_node *var;
   ...
 };
+
+@find_helper_functions@
+identifier f = {
+  my_debugfs_helper
+};
+@@
+
+f(...) {...}
+
+@rewrite_helper_return_types@
+identifier find_helper_functions.f;
+@@
+
+- struct dentry *
++ struct debugfs_node *
+f(...) {...}
+
+@rewrite_helper_args@
+identifier arg;
+identifier find_helper_functions.f;
+@@
+
+f(...,
+- struct dentry *arg
++ struct debugfs_node *arg
+  ,...)
+{ ... }

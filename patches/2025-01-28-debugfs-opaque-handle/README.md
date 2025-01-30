@@ -23,6 +23,10 @@ git format-patch master...HEAD \
 
 # TODO
 
+- v2 cocci problems:
+  - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
+  - Local variables are being changed inside other functions just because they have the same name. That makes no sense.
+
 - Generic spatch ideas
   - Try different rulekinds, like identifier or type
   - Try idexpression to only match `struct dentry *` identifiers for transformation
