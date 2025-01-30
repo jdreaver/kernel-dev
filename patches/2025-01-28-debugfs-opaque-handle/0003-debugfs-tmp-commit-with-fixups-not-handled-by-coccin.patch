@@ -1,4 +1,4 @@
-From d9a3bd33ef5acae39e762d649c9a8ca2712176b8 Mon Sep 17 00:00:00 2001
+From fc0d59a19b7e85586f37544c1b6d37421a034b9b Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -13,14 +13,13 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- drivers/bus/moxtet.c             |  2 +-
- fs/debugfs/file.c                |  3 +--
- fs/debugfs/inode.c               | 26 +++++++++++++-------------
- include/linux/backing-dev-defs.h |  2 +-
- include/linux/fault-inject.h     |  3 +--
- lib/fault-inject.c               |  2 +-
- virt/kvm/kvm_main.c              |  5 +++--
- 7 files changed, 21 insertions(+), 22 deletions(-)
+ drivers/bus/moxtet.c         |  2 +-
+ fs/debugfs/file.c            |  3 +--
+ fs/debugfs/inode.c           | 26 +++++++++++++-------------
+ include/linux/fault-inject.h |  3 +--
+ lib/fault-inject.c           |  2 +-
+ virt/kvm/kvm_main.c          |  5 +++--
+ 6 files changed, 20 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
 index 6276551d7968..e2d7fcf1d9e4 100644
@@ -159,19 +158,6 @@ index 807c93eb015c..df933010c571 100644
 +static void __debugfs_file_removed(struct dentry *dentry)
  {
  	struct debugfs_fsdata *fsd;
- 
-diff --git a/include/linux/backing-dev-defs.h b/include/linux/backing-dev-defs.h
-index 2ad261082bba..4f560f13d0e6 100644
---- a/include/linux/backing-dev-defs.h
-+++ b/include/linux/backing-dev-defs.h
-@@ -199,7 +199,7 @@ struct backing_dev_info {
- 	struct timer_list laptop_mode_wb_timer;
- 
- #ifdef CONFIG_DEBUG_FS
--	struct dentry *debug_dir;
-+	struct debugfs_node *debug_dir;
- #endif
- };
  
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
 index e5bfc36b35e2..f7e5d2463713 100644

@@ -114,6 +114,7 @@ identifier struct_name;
 |
 - static struct dentry *var;
 + static struct debugfs_node *var;
+|
 // Struct field declarations
 struct struct_name {
     ...
@@ -130,7 +131,6 @@ struct struct_name {
     [...];
     ...
 };
-
 )
 
 // Transform various helper functions
@@ -152,7 +152,7 @@ struct struct_name {
 // |
 // // Replace dget
 // - dget(var)
-   // + debugfs_node_get(var)
+// + debugfs_node_get(var)
 // |
 // - dget(E->var)
 // + debugfs_node_get(E->var)

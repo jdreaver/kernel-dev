@@ -31,6 +31,7 @@ git format-patch master...HEAD \
 
 - Manual stuff:
   - Revert `fs/debugfs/` changes or find a way to exclude them from spatch
+    - I think I can do `depends on !(file in "fs/debugfs/")`
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
 
 - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
