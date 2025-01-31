@@ -141,7 +141,7 @@ struct struct_name {
 //
 
 @obvious_debugfs_decls depends on !(file in "fs/debugfs")@
-identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$";
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 @@
 
 (
@@ -180,3 +180,37 @@ struct struct_name {
     [...];
     ...
 };
+
+// Transform various helper functions
+//
+// TODO: This is way too wide, and depending on match_assign/match_usage is
+// buggy. Restrict this a ton.
+//
+// @transform_helpers depends on match_assign || match_usage@
+// identifier var, E;
+// @@
+//
+// (
+// // Replace dput
+// - dput(var)
+// + debugfs_node_put(var)
+// |
+// - dput(E->var)
+// + debugfs_node_put(E->var)
+// |
+// // Replace dget
+// - dget(var)
+// + debugfs_node_get(var)
+// |
+// - dget(E->var)
+// + debugfs_node_get(E->var)
+// |
+// // Replace dentry_path_raw
+// - dentry_path_raw(var,
+// + debugfs_node_path_raw(var,
+//    ...)
+// |
+// - dentry_path_raw(E->var,
+// + debugfs_node_path_raw(E->var,
+//    ...)
+// )

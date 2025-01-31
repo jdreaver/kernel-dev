@@ -23,7 +23,16 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Combine coccinelle files
+- Core fs/debugfs changes
+  - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
+
+- We should easily be able to catch declaration + assignment to a debugfs function because we have both `var` and `f` (do this in addition to `= NULL`)
+  - We have to be careful with this. In `arch/s390/kernel/debug.c` if we match `struct dentry *var = E` (`expression E;`) then it changes a random `dentry` in `include/linux/fs.h` just because it is also called `dentry`.
+
+- not catching wrappers
+  - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c` because of double pointer. Dumb.
+  - Might need two passes: one to transform wrappers, and then we can use the wrappers in the next pass
+    - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
 - spatch needing two runs to work
   - I wonder if I need to split up the file to run the checks independently. Is it only running if all checks match? Read about mulitiple scripts in one file.
@@ -35,15 +44,11 @@ git format-patch master...HEAD \
   - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
   - `bnxt_re.h` has an event simpler one that wasn't caught
   - Only change I can think of is changing the regex to include `dbgfs`, but that doesn't apply to some of the misses
-  - Try it by itself with no changes applied.
   - I wonder if we have to split up our cocci script to run in stages
 
-- not catching wrappers
-  - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c`. Is it because of `static`?
-  - Might need two passes: one to transform wrappers, and then we can use the wrappers in the next pass
-- We should easily be able to catch declaration + assignment to a debugfs function because we have both `var` and `f` (do this in addition to `= NULL`)
 - Try to catch function arguments in an enclosing function (might be super hard)
 - In `gpu/drm/nouveau/nvkm/subdev/gsp/r535.c` `create_debugfs()`, there is a dentry that should be clearly transformed but isn't
+
 - v2 cocci problems:
   - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
     - Similar with struct fields.
@@ -51,50 +56,7 @@ git format-patch master...HEAD \
     - I could just accept this and fix them in the fixup commit
   - Not catching some uses of `E.var`, like in `gpio-virtuser.c`
 
-- Generic spatch ideas
-  - Try different rulekinds, like identifier or type
-  - Try idexpression to only match `struct dentry *` identifiers for transformation
-  - Consider two passes: one to rewrite wrapper functions, and then another to just change declarations
-
-- Need to optimize script. It is taking way too long to run. Ideas:
-  - Match all function names "in scope" literally, without a regex. Then use function matches in subsequent transformations (e.g. transform definitions, transform args, transform return values)
-    - Maybe we can also match function names in specific files
-
-- Catch `struct dentry *root, *entry;` on one line
-  - Idea: if any one of the vars is implicated, change the type for all of them
-  - Maybe we need `declaration`. From the cocci docs:
-
-    > A declaration metavariable matches the declaration of one or more variables, all sharing the same type specification (e.g., int a,b,c=3;)
-
-  - Something that kinda works:
-
-  ```
-  @@
-  identifier var;
-  @@
-
-  -int var;
-  ++double var;
-  ```
-
-  ```
-  -       int a, b;
-  -       int c;
-  +       double a;double b;
-  +       double c;
-  ```
-
-  - Even 3 in a line for mtk-svs.c in mediatek!
-  - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
-  - Same with `dw-edma-v0-debugfs.c` and a few others
-  - `meson-clk-measure.c`
 - Find a way to change declarations in _function arguments_. E.g. if a function has `dentry *parent` and `parent` is used in a debugfs function, we should rename the decl type.
-- Also catch things with `dbgfs` in the name, like in `gpio-virtuser.c`
-  - Consider even `debug` and `dbg` dentrys. Do this in isolation without other changes to see if it is okay.
-- Make `debugfs_node_name` helper for security/selinux/selinuxfs.c, which is accessing dentry->d_name.name
-- `shrinker_debug.c`: Don't just catch `= NULL`, catch `= <anything>`. Can probably use an `expression` var instead of `NULL` in script.
-  - We have to be careful with this. In `arch/s390/kernel/debug.c` if we match `struct dentry *var = E` (`expression E;`) then it changes a random `dentry` in `include/linux/fs.h` just because it is also called `dentry`.
-- Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
 
 - Manual stuff:
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
