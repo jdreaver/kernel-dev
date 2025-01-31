@@ -21,15 +21,51 @@ git format-patch master...HEAD \
       --cc 'linux-kernel@vger.kernel.org'
 ```
 
+# TODOs pending testing
+
+- Replace uses of `d_inode()` on a `struct debugfs_node *` with `debugfs_node_inode` (probably needs to be done in a pass after transforming types)
+- Find a way to change declarations in _function arguments_. E.g. if a function has `dentry *parent` and `parent` is used in a debugfs function, we should rename the decl type.
+- We should easily be able to catch declaration + assignment to a debugfs function because we have both `var` and `f` (do this in addition to `= NULL`)
+  - We have to be careful with this. In `arch/s390/kernel/debug.c` if we match `struct dentry *var = E` (`expression E;`) then it changes a random `dentry` in `include/linux/fs.h` just because it is also called `dentry`.
+
+- Catch `struct dentry *root, *entry;` on one line
+  - Idea: if any one of the vars is implicated, change the type for all of them
+  - Weirdness in arch/x86/kernel/cpu/debugfs.c with a multiple declaration and an assignment in one
+    - In drivers/hwmon/pmbus/dps920ab.c there is just a duplicate declaration
+
+  - Maybe we need `declaration`. From the cocci docs:
+
+    > A declaration metavariable matches the declaration of one or more variables, all sharing the same type specification (e.g., int a,b,c=3;)
+
+  - Something that kinda works:
+
+  ```
+  @@
+  identifier var;
+  @@
+
+  -int var;
+  ++double var;
+  ```
+
+  ```
+  -       int a, b;
+  -       int c;
+  +       double a;double b;
+  +       double c;
+  ```
+
+  - Even 3 in a line for mtk-svs.c in mediatek!
+  - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
+  - Same with `dw-edma-v0-debugfs.c` and a few others
+  - `meson-clk-measure.c`
+
 # TODO
 
 - Core fs/debugfs changes
   - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
+  - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
 
-- Investigate the `type` rule kind for transforming types more easily
-
-- We should easily be able to catch declaration + assignment to a debugfs function because we have both `var` and `f` (do this in addition to `= NULL`)
-  - We have to be careful with this. In `arch/s390/kernel/debug.c` if we match `struct dentry *var = E` (`expression E;`) then it changes a random `dentry` in `include/linux/fs.h` just because it is also called `dentry`.
 
 - not catching wrappers
   - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c` because of double pointer. Dumb.
@@ -38,10 +74,7 @@ git format-patch master...HEAD \
     - I think we can just do `depends on` to run rules in order without having to split the file up
   - Recreate the problem in my test file
 
-- Replace uses of `d_inode()` on a `struct debugfs_node *` with `debugfs_node_inode` (probably needs to be done in a pass after transforming types)
-
 - spatch needing two runs to work
-  - I wonder if I need to split up the file to run the checks independently. Is it only running if all checks match? Read about mulitiple scripts in one file.
   - Issue with parallelism?
   - Need `--recursive-includes`?
   - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
@@ -50,10 +83,7 @@ git format-patch master...HEAD \
   - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
   - `bnxt_re.h` has an event simpler one that wasn't caught
   - `drivers/net/netdevsim/netdevsim.h` was another
-  - Only change I can think of is changing the regex to include `dbgfs`, but that doesn't apply to some of the misses
-  - I wonder if we have to split up our cocci script to run in stages
 
-- Try to catch function arguments in an enclosing function (might be super hard)
 - In `gpu/drm/nouveau/nvkm/subdev/gsp/r535.c` `create_debugfs()`, there is a dentry that should be clearly transformed but isn't
 
 - v2 cocci problems:
@@ -63,12 +93,8 @@ git format-patch master...HEAD \
     - I could just accept this and fix them in the fixup commit
   - Not catching some uses of `E.var`, like in `gpio-virtuser.c`
 
-- Find a way to change declarations in _function arguments_. E.g. if a function has `dentry *parent` and `parent` is used in a debugfs function, we should rename the decl type.
-
 - Manual stuff:
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
-
-- Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
 
 - Get feedback on approach
 - If we eventually want to use `kernfs`, we need to consider `file_operations` as well. That would be a super hard thing to migrate across all of the kernel.

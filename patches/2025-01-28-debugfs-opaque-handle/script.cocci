@@ -79,16 +79,18 @@ identifier f;
 identifier function_calls.f;
 idexpression struct dentry *var;
 identifier var2;
+identifier f2;
 @@
 
 (
-  var@var2 = f(...)
+  var@var2 = f@f2(...)
 |
-  f(..., var@var2, ...)
+  f@f2(..., var@var2, ...)
 )
 
 @rewrite_decls@
-identifier decls_need_rewrite.var2;
+identifier decls_need_rewrite.var2, decls_need_rewrite.f2;
+identifier f;
 @@
 
 (
@@ -101,7 +103,21 @@ identifier decls_need_rewrite.var2;
 -  struct dentry *var2
 +  struct debugfs_node *var2
 = NULL;
+|
+-  struct dentry *var2
++  struct debugfs_node *var2
+= f2(...);
 )
+
+@rewrite_function_arg_decls@
+identifier decls_need_rewrite.var2, decls_need_rewrite.f2;
+identifier f;
+@@
+
+f(...,
+- struct dentry *var2,
++ struct debugfs_node *var2,
+ ...) {...}
 
 //
 // Structs
@@ -180,6 +196,38 @@ struct struct_name {
     [...];
     ...
 };
+
+// Replace d_inode with debugfs_node_inode
+@@
+idexpression struct debugfs_node *e;
+@@
+
+-d_inode(e)
++debugfs_node_inode(e)
+
+// Rewrite return types of helper functions that return a debugfs_node now.
+@@
+identifier f;
+idexpression struct debugfs_node *e;
+@@
+
+(
+-static struct dentry *
++static struct debugfs_node *
+  f(...) {
+    ...
+    return e;
+    ...
+  }
+|
+-struct dentry *
++struct debugfs_node *
+  f(...) {
+    ...
+    return e;
+    ...
+  }
+)
 
 // Transform various helper functions
 //
