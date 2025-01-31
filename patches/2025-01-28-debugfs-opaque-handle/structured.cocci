@@ -111,7 +111,6 @@ identifier fn =~ "debugfs|dbgfs";
 // spatch misses some imports.
 @depends on !(file in "fs/debugfs/")@
 identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$";
-identifier struct_name;
 @@
 
 (
