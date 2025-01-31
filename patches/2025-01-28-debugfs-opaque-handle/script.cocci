@@ -75,25 +75,34 @@ identifier f;
   wfa@f(...)
 )
 
-@find_dentry_vars@
+// We need to separate cases for when a variable is in the return position vs a
+// function arg. If we combine them, then we will miss cases where they both
+// happen at the same time, e.g. x = f(y) where x and y are both dentries.
+@find_dentry_return_vars@
 identifier function_calls.f;
 idexpression struct dentry *e;
 identifier var;
 identifier f2;
 @@
 
-(
-  e@var = f@f2(...)
-|
-  f@f2(..., e@var, ...)
-)
+e@var = f@f2(...)
+
+@find_dentry_arg_vars@
+identifier function_calls.f;
+idexpression struct dentry *e;
+identifier var;
+identifier f2;
+@@
+
+f@f2(..., e@var, ...)
 
 // find_decls and change_decl_types are separate so we properly handle static
 // declarations as well as multi-declarations (e.g. struct dentry *a, *b, *c;).
 // The "= NULL" and "= f2(...)" cases get thrown off when we combine them into
 // one rule.
 @find_decls@
-identifier find_dentry_vars.var, find_dentry_vars.f2;
+identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
+identifier f = { find_dentry_return_vars.f2, find_dentry_arg_vars.f2 };
 position p;
 @@
 
@@ -102,26 +111,31 @@ position p;
 |
   struct dentry@p *var = NULL;
 |
-  struct dentry@p *var = f2(...);
+  struct dentry@p *var = f(...);
 )
 
-@change_decl_types type@
+@change_decls type@
 position find_decls.p;
 @@
 
 -struct dentry@p
 +struct debugfs_node
 
-@rewrite_function_arg_decls@
-identifier find_dentry_vars.var;
+@find_function_arg_decls@
+identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
 identifier f;
+position p;
 @@
 
-f(...,
-- struct dentry *
-+ struct debugfs_node *
-  var,
- ...) {...}
+f(..., struct dentry@p *var, ...) {...}
+
+@change_function_arg_decls type@
+position find_function_arg_decls.p;
+@@
+
+-struct dentry@p
++struct debugfs_node
+
 
 //
 // Structs
