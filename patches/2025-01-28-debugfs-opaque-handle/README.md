@@ -23,42 +23,6 @@ git format-patch master...HEAD \
 
 # TODOs pending testing
 
-- BUG: we miss cases like x = f(y) where x and y are both dentries.
-- We should easily be able to catch declaration + assignment to a debugfs function because we have both `var` and `f` (do this in addition to `= NULL`)
-  - We have to be careful with this. In `arch/s390/kernel/debug.c` if we match `struct dentry *var = E` (`expression E;`) then it changes a random `dentry` in `include/linux/fs.h` just because it is also called `dentry`.
-
-- Catch `struct dentry *root, *entry;` on one line
-  - Idea: if any one of the vars is implicated, change the type for all of them
-  - Weirdness in arch/x86/kernel/cpu/debugfs.c with a multiple declaration and an assignment in one
-    - In drivers/hwmon/pmbus/dps920ab.c there is just a duplicate declaration
-
-  - Maybe we need `declaration`. From the cocci docs:
-
-    > A declaration metavariable matches the declaration of one or more variables, all sharing the same type specification (e.g., int a,b,c=3;)
-
-  - Something that kinda works:
-
-  ```
-  @@
-  identifier var;
-  @@
-
-  -int var;
-  ++double var;
-  ```
-
-  ```
-  -       int a, b;
-  -       int c;
-  +       double a;double b;
-  +       double c;
-  ```
-
-  - Even 3 in a line for mtk-svs.c in mediatek!
-  - `drivers/bus/moxtet.c` not matching anything, but clearly it needs to <https://github.com/jdreaver/linux/blob/bdc4ca114ce02b5c7aa23dee1a7aad41f6cc1da6/drivers/bus/moxtet.c#L553-L578>
-  - Same with `dw-edma-v0-debugfs.c` and a few others
-  - `meson-clk-measure.c`
-
 # TODO
 
 - Core fs/debugfs changes
@@ -67,15 +31,17 @@ git format-patch master...HEAD \
 
 - Consider removing the "all_function_calls" thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
 
-- not catching wrappers
+- Split up coccinelle file, primarily for ease of understanding, but also some other benefits
+  - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
+
+- (is this still a problem?) not catching wrappers
+  - Recreate the problem in my test file
   - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c` because of double pointer. Dumb.
   - Might need two passes: one to transform wrappers, and then we can use the wrappers in the next pass
-    - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
-    - I think we can just do `depends on` to run rules in order without having to split the file up
-  - Recreate the problem in my test file
 
 - spatch needing two runs to work
   - Issue with parallelism?
+  - Need `--chunksize=1`?
   - Need `--recursive-includes`?
   - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
   - Example now is `drivers/scsi/lpfc/`
@@ -83,8 +49,6 @@ git format-patch master...HEAD \
   - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
   - `bnxt_re.h` has an event simpler one that wasn't caught
   - `drivers/net/netdevsim/netdevsim.h` was another
-
-- In `gpu/drm/nouveau/nvkm/subdev/gsp/r535.c` `create_debugfs()`, there is a dentry that should be clearly transformed but isn't
 
 - v2 cocci problems:
   - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
