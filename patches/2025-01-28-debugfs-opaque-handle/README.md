@@ -43,6 +43,7 @@ git format-patch master...HEAD \
     - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
   - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
   - `bnxt_re.h` has an event simpler one that wasn't caught
+  - `drivers/net/netdevsim/netdevsim.h` was another
   - Only change I can think of is changing the regex to include `dbgfs`, but that doesn't apply to some of the misses
   - I wonder if we have to split up our cocci script to run in stages
 

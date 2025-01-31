@@ -1,6 +1,6 @@
-From 83b8fa12a2acecd9b6a7f19fd39a6e85b20353d7 Mon Sep 17 00:00:00 2001
+From 80691a540289ebdbe90e8ccad71cd5f429bda785 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Thu, 30 Jan 2025 20:47:13 -0800
+Date: Thu, 30 Jan 2025 21:18:30 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -475,7 +475,7 @@ David Reaver (3):
  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   2 +-
  .../net/ethernet/intel/ixgbe/ixgbe_debugfs.c  |   2 +-
  drivers/net/ethernet/marvell/mvpp2/mvpp2.h    |   2 +-
- .../ethernet/marvell/mvpp2/mvpp2_debugfs.c    |  22 +-
+ .../ethernet/marvell/mvpp2/mvpp2_debugfs.c    |  43 ++--
  drivers/net/ethernet/marvell/skge.c           |   2 +-
  drivers/net/ethernet/marvell/skge.h           |   2 +-
  drivers/net/ethernet/marvell/sky2.c           |   4 +-
@@ -523,7 +523,7 @@ David Reaver (3):
  drivers/net/netdevsim/dev.c                   |   6 +-
  drivers/net/netdevsim/ethtool.c               |   2 +-
  drivers/net/netdevsim/fib.c                   |   2 +-
- drivers/net/netdevsim/netdevsim.h             |  18 +-
+ drivers/net/netdevsim/netdevsim.h             |  10 +-
  drivers/net/netdevsim/psample.c               |   2 +-
  drivers/net/phy/sfp.c                         |   2 +-
  drivers/net/wireless/ath/ath10k/core.h        |   2 +-
@@ -563,9 +563,12 @@ David Reaver (3):
  drivers/net/wireless/intel/iwlegacy/4965-rs.c |   2 +-
  drivers/net/wireless/intel/iwlegacy/common.h  |   2 +-
  drivers/net/wireless/intel/iwlegacy/debug.c   |   2 +-
- .../net/wireless/intel/iwlwifi/dvm/debugfs.c  |   5 +-
+ drivers/net/wireless/intel/iwlwifi/dvm/agn.h  |   4 +-
+ .../net/wireless/intel/iwlwifi/dvm/debugfs.c  |   7 +-
  drivers/net/wireless/intel/iwlwifi/dvm/dev.h  |   2 +-
  drivers/net/wireless/intel/iwlwifi/dvm/rs.c   |   2 +-
+ .../net/wireless/intel/iwlwifi/fw/debugfs.c   |   2 +-
+ .../net/wireless/intel/iwlwifi/fw/debugfs.h   |   4 +-
  drivers/net/wireless/intel/iwlwifi/iwl-drv.c  |  10 +-
  .../net/wireless/intel/iwlwifi/iwl-trans.h    |   2 +-
  drivers/net/wireless/intel/iwlwifi/mei/main.c |   2 +-
@@ -578,7 +581,7 @@ David Reaver (3):
  .../net/wireless/marvell/mwifiex/debugfs.c    |   2 +-
  drivers/net/wireless/marvell/mwifiex/main.h   |   2 +-
  drivers/net/wireless/mediatek/mt76/debugfs.c  |   4 +-
- drivers/net/wireless/mediatek/mt76/mt76.h     |   4 +-
+ drivers/net/wireless/mediatek/mt76/mt76.h     |   2 +-
  .../wireless/mediatek/mt76/mt7603/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt7615/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt76x02_debugfs.c  |   2 +-
@@ -688,7 +691,7 @@ David Reaver (3):
  drivers/regulator/internal.h                  |   2 +-
  drivers/remoteproc/remoteproc_debugfs.c       |   2 +-
  drivers/s390/block/dasd.c                     |  16 +-
- drivers/s390/block/dasd_int.h                 |   6 +-
+ drivers/s390/block/dasd_int.h                 |   8 +-
  drivers/s390/char/zcore.c                     |   6 +-
  drivers/s390/cio/cio_debug.h                  |   2 +-
  drivers/s390/cio/cio_debugfs.c                |   2 +-
@@ -709,10 +712,10 @@ David Reaver (3):
  drivers/scsi/hisi_sas/hisi_sas_v3_hw.c        |  12 +-
  drivers/scsi/lpfc/lpfc.h                      |  74 +++----
  drivers/scsi/lpfc/lpfc_debugfs.c              |   2 +-
- drivers/scsi/megaraid/megaraid_sas.h          |   2 +-
+ drivers/scsi/megaraid/megaraid_sas.h          |   4 +-
  drivers/scsi/megaraid/megaraid_sas_base.c     |   2 +-
  drivers/scsi/megaraid/megaraid_sas_debugfs.c  |   2 +-
- drivers/scsi/mpt3sas/mpt3sas_base.h           |   4 +-
+ drivers/scsi/mpt3sas/mpt3sas_base.h           |   2 +-
  drivers/scsi/mpt3sas/mpt3sas_debugfs.c        |   2 +-
  drivers/scsi/qedf/qedf_dbg.h                  |   2 +-
  drivers/scsi/qedf/qedf_debugfs.c              |   2 +-
@@ -852,7 +855,7 @@ David Reaver (3):
  include/linux/greybus.h                       |   2 +-
  include/linux/greybus/svc.h                   |   2 +-
  include/linux/hid.h                           |   6 +-
- include/linux/hisi_acc_qm.h                   |   2 +-
+ include/linux/hisi_acc_qm.h                   |   4 +-
  include/linux/hyperv.h                        |   2 +-
  include/linux/i2c.h                           |   4 +-
  include/linux/iio/iio-opaque.h                |   2 +-
@@ -994,7 +997,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 971 files changed, 2153 insertions(+), 1961 deletions(-)
+ 974 files changed, 2168 insertions(+), 1973 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5
