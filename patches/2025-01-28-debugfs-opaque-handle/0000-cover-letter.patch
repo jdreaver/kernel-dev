@@ -1,6 +1,6 @@
-From 5c47b2e9a923678fab7691425f1e4066389d24ce Mon Sep 17 00:00:00 2001
+From a88329ac546cb6078bae1a30fee5c3a586e88690 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 13:45:53 -0800
+Date: Fri, 31 Jan 2025 14:00:25 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -792,7 +792,7 @@ David Reaver (3):
  drivers/scsi/scsi_debug.c                     |   8 +-
  drivers/soc/amlogic/meson-clk-measure.c       |   2 +-
  drivers/soc/mediatek/mtk-svs.c                |   2 +-
- drivers/soc/qcom/qcom_aoss.c                  |   4 +-
+ drivers/soc/qcom/qcom_aoss.c                  |   8 +-
  drivers/soc/qcom/qcom_stats.c                 |   9 +-
  drivers/soc/qcom/rpm_master_stats.c           |   4 +-
  drivers/soc/qcom/socinfo.c                    |   4 +-
@@ -876,7 +876,8 @@ David Reaver (3):
  fs/bcachefs/debug.c                           |   4 +-
  fs/ceph/super.h                               |  10 +-
  fs/debugfs/file.c                             | 117 +++++------
- fs/debugfs/inode.c                            | 133 ++++++++-----
+ fs/debugfs/inode.c                            | 140 +++++++++-----
+ fs/debugfs/internal.h                         |   7 +
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
  fs/f2fs/debug.c                               |   2 +-
@@ -914,7 +915,7 @@ David Reaver (3):
  include/linux/ceph/mon_client.h               |   2 +-
  include/linux/ceph/osd_client.h               |   2 +-
  include/linux/clk-provider.h                  |   3 +-
- include/linux/debugfs.h                       | 185 ++++++++++--------
+ include/linux/debugfs.h                       | 183 ++++++++++--------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
@@ -1070,7 +1071,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1047 files changed, 2341 insertions(+), 2127 deletions(-)
+ 1048 files changed, 2356 insertions(+), 2128 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

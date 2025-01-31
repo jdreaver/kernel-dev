@@ -25,9 +25,6 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Core fs/debugfs changes
-  - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
-
 - Change `rchan_callbacks` to use `debugfs_node`. All users use debugfs.
 
 - Consider removing the "all_function_calls" thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
