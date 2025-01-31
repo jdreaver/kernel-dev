@@ -26,7 +26,6 @@ git format-patch master...HEAD \
 # TODO
 
 - Core fs/debugfs changes
-  - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
   - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
 
 - Change `rchan_callbacks` to use `debugfs_node`. All users use debugfs.

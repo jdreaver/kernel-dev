@@ -1,6 +1,6 @@
-From 88fcb0736b27e69c823f0335b48d727bab63407e Mon Sep 17 00:00:00 2001
+From 5c47b2e9a923678fab7691425f1e4066389d24ce Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 13:31:21 -0800
+Date: Fri, 31 Jan 2025 13:45:53 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -876,7 +876,7 @@ David Reaver (3):
  fs/bcachefs/debug.c                           |   4 +-
  fs/ceph/super.h                               |  10 +-
  fs/debugfs/file.c                             | 117 +++++------
- fs/debugfs/inode.c                            | 128 +++++++-----
+ fs/debugfs/inode.c                            | 133 ++++++++-----
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
  fs/f2fs/debug.c                               |   2 +-
@@ -1070,7 +1070,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1047 files changed, 2336 insertions(+), 2127 deletions(-)
+ 1047 files changed, 2341 insertions(+), 2127 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

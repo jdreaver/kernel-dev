@@ -1,4 +1,4 @@
-From 88fcb0736b27e69c823f0335b48d727bab63407e Mon Sep 17 00:00:00 2001
+From 5c47b2e9a923678fab7691425f1e4066389d24ce Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
