@@ -75,48 +75,52 @@ identifier f;
   wfa@f(...)
 )
 
-@decls_need_rewrite@
+@find_dentry_vars@
 identifier function_calls.f;
-idexpression struct dentry *var;
-identifier var2;
+idexpression struct dentry *e;
+identifier var;
 identifier f2;
 @@
 
 (
-  var@var2 = f@f2(...)
+  e@var = f@f2(...)
 |
-  f@f2(..., var@var2, ...)
+  f@f2(..., e@var, ...)
 )
 
-@rewrite_decls@
-identifier decls_need_rewrite.var2, decls_need_rewrite.f2;
-identifier f;
+// find_decls and change_decl_types are separate so we properly handle static
+// declarations as well as multi-declarations (e.g. struct dentry *a, *b, *c;).
+// The "= NULL" and "= f2(...)" cases get thrown off when we combine them into
+// one rule.
+@find_decls@
+identifier find_dentry_vars.var, find_dentry_vars.f2;
+position p;
 @@
 
 (
--  struct dentry *var2;
-++ struct debugfs_node *var2;
+  struct dentry@p *var;
 |
--  static struct dentry *var2;
-++ static struct debugfs_node *var2;
+  struct dentry@p *var = NULL;
 |
--  struct dentry *var2
-+  struct debugfs_node *var2
-= NULL;
-|
--  struct dentry *var2
-+  struct debugfs_node *var2
-= f2(...);
+  struct dentry@p *var = f2(...);
 )
 
+@change_decl_types type@
+position find_decls.p;
+@@
+
+-struct dentry@p
++struct debugfs_node
+
 @rewrite_function_arg_decls@
-identifier decls_need_rewrite.var2, decls_need_rewrite.f2;
+identifier find_dentry_vars.var;
 identifier f;
 @@
 
 f(...,
-- struct dentry *var2,
-+ struct debugfs_node *var2,
+- struct dentry *
++ struct debugfs_node *
+  var,
  ...) {...}
 
 //
@@ -145,8 +149,9 @@ identifier struct_name;
 
 struct struct_name {
     ...
--   struct dentry *var;
-+   struct debugfs_node *var;
+-   struct dentry *
++   struct debugfs_node *
+    var;
     ...
 };
 
@@ -161,15 +166,13 @@ identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 @@
 
 (
--  struct dentry *var;
-++ struct debugfs_node *var;
+- struct dentry *
++ struct debugfs_node *
+  var;
 |
--  static struct dentry *var;
-++ static struct debugfs_node *var;
-|
--  struct dentry *var
-+  struct debugfs_node *var
-= NULL;
+- struct dentry *
++ struct debugfs_node *
+  var = NULL;
 )
 
 @obvious_debugfs_fields depends on !(file in "fs/debugfs")@
@@ -179,8 +182,9 @@ identifier struct_name;
 
 struct struct_name {
     ...
--   struct dentry *var;
-+   struct debugfs_node *var;
+-   struct dentry *
++   struct debugfs_node *
+    var;
     ...
 };
 
@@ -191,9 +195,9 @@ identifier struct_name;
 
 struct struct_name {
     ...
--   struct dentry *var
-+   struct debugfs_node *var
-    [...];
+-   struct dentry *
++   struct debugfs_node *
+    var [...];
     ...
 };
 
