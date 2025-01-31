@@ -58,6 +58,7 @@ git format-patch master...HEAD \
   - Not catching some uses of `E.var`, like in `gpio-virtuser.c`
 
 - Manual stuff:
+  - Revert include/linux/fs.h changes (maybe we can exclude this file in the cocci script)
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
 
 - Get feedback on approach

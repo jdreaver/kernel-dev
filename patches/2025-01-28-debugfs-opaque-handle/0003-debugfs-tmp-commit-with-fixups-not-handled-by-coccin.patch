@@ -1,4 +1,4 @@
-From 479858116a40a1132b483bd9a7f39b81111e5acb Mon Sep 17 00:00:00 2001
+From 6f1caf1b735ddfc235c8c48d8da7a3fe281d567d Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -20,6 +20,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/gpu/host1x/dev.h                       |  2 +-
  include/linux/clk-provider.h                   |  3 ++-
  include/linux/fault-inject.h                   |  3 +--
+ include/linux/fs.h                             |  8 ++++----
  include/linux/hid.h                            |  4 ++--
  include/net/mac80211.h                         | 12 ++++++------
  include/sound/soc-dapm.h                       |  3 ++-
@@ -29,7 +30,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/mac80211/ieee80211_i.h                     | 14 +++++++-------
  sound/soc/sof/sof-client-ipc-flood-test.c      |  2 +-
  virt/kvm/kvm_main.c                            |  5 +++--
- 16 files changed, 47 insertions(+), 44 deletions(-)
+ 17 files changed, 51 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -194,6 +195,34 @@ index e5bfc36b35e2..f7e5d2463713 100644
  };
  
  enum fault_flags {
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index cd4b198fe424..be3ad155ec9f 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1180,11 +1180,11 @@ static inline struct inode *file_inode(const struct file *f)
+  * Files with "fake" path should not exist nowadays, so use an assertion to make
+  * sure that file_dentry() was not papering over filesystem bugs.
+  */
+-inline static struct debugfs_node *file_dentry(const struct file *file)
++static inline struct dentry *file_dentry(const struct file *file)
+ {
+-	struct debugfs_node *dentry = file->f_path.dentry;
++	struct dentry *dentry = file->f_path.dentry;
+ 
+-	WARN_ON_ONCE(debugfs_node_inode(dentry) != file_inode(file));
++	WARN_ON_ONCE(d_inode(dentry) != file_inode(file));
+ 	return dentry;
+ }
+ 
+@@ -2006,7 +2006,7 @@ struct renamedata {
+ int vfs_rename(struct renamedata *);
+ 
+ static inline int vfs_whiteout(struct mnt_idmap *idmap,
+-			       struct inode *dir, struct debugfs_node *dentry)
++			       struct inode *dir, struct dentry *dentry)
+ {
+ 	return vfs_mknod(idmap, dir, dentry, S_IFCHR | WHITEOUT_MODE,
+ 			 WHITEOUT_DEV);
 diff --git a/include/linux/hid.h b/include/linux/hid.h
 index d796ada2dde8..4321ae40c35b 100644
 --- a/include/linux/hid.h

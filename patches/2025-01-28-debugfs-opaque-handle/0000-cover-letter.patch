@@ -1,6 +1,6 @@
-From 479858116a40a1132b483bd9a7f39b81111e5acb Mon Sep 17 00:00:00 2001
+From 6f1caf1b735ddfc235c8c48d8da7a3fe281d567d Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 11:49:02 -0800
+Date: Fri, 31 Jan 2025 13:04:39 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -919,7 +919,6 @@ David Reaver (3):
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
  include/linux/firmware/cirrus/cs_dsp.h        |   5 +-
- include/linux/fs.h                            |   8 +-
  include/linux/fsl/ptp_qoriq.h                 |   2 +-
  include/linux/greybus.h                       |   2 +-
  include/linux/greybus/svc.h                   |   2 +-
@@ -1072,7 +1071,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1049 files changed, 2357 insertions(+), 2145 deletions(-)
+ 1048 files changed, 2353 insertions(+), 2141 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5
