@@ -18,8 +18,9 @@ identifier arg;
 @@
 
 wfa(...,
-- struct dentry *arg
-+ struct debugfs_node *arg
+- struct dentry
++ struct debugfs_node
+  *arg
   ,...)
 { ... }
 
