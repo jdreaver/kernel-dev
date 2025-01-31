@@ -26,6 +26,7 @@ git format-patch master...HEAD \
 # TODO
 
 - Core fs/debugfs changes
+  - `debugfs_create_automount` only has one user: tracefs. It should return a dentry for now.
   - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
   - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
 
@@ -39,7 +40,11 @@ git format-patch master...HEAD \
   - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c` because of double pointer. Dumb.
   - Might need two passes: one to transform wrappers, and then we can use the wrappers in the next pass
 
+- `include/sound/soc.h` has a `struct dentry *debugfs_dpcm_root;` field that refuses to get matches. I think all the `#define`s in the file are screwing with Coccinelle, because it works when I move that struct to my test file.
+
 - spatch needing two runs to work
+  - Check spatch exit code. Maybe it is alerting us to a problem.
+  - Is there a timeout? `drivers/scsi/lpfc/` takes a long time when I try to do it by itself.
   - Issue with parallelism?
   - Need `--chunksize=1`?
   - Need `--recursive-includes`?

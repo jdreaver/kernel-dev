@@ -1,4 +1,4 @@
-From 6f1caf1b735ddfc235c8c48d8da7a3fe281d567d Mon Sep 17 00:00:00 2001
+From a90fe2964b22be4f41fdb281abed6d5bacffbb95 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -24,13 +24,14 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/hid.h                            |  4 ++--
  include/net/mac80211.h                         | 12 ++++++------
  include/sound/soc-dapm.h                       |  3 ++-
+ include/sound/soc.h                            |  2 +-
  kernel/gcov/fs.c                               |  2 +-
  lib/fault-inject.c                             |  2 +-
  lib/notifier-error-inject.h                    |  7 ++++---
  net/mac80211/ieee80211_i.h                     | 14 +++++++-------
  sound/soc/sof/sof-client-ipc-flood-test.c      |  2 +-
  virt/kvm/kvm_main.c                            |  5 +++--
- 17 files changed, 51 insertions(+), 48 deletions(-)
+ 18 files changed, 52 insertions(+), 49 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -309,6 +310,19 @@ index bb8445b7a384..cd876d2d3060 100644
  
  /* dapm audio pin control and status */
  int snd_soc_dapm_enable_pin(struct snd_soc_dapm_context *dapm, const char *pin);
+diff --git a/include/sound/soc.h b/include/sound/soc.h
+index 03abd4d3f501..c2fcc98fb1de 100644
+--- a/include/sound/soc.h
++++ b/include/sound/soc.h
+@@ -1202,7 +1202,7 @@ struct snd_soc_pcm_runtime {
+ 	struct delayed_work delayed_work;
+ 	void (*close_delayed_work_func)(struct snd_soc_pcm_runtime *rtd);
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry *debugfs_dpcm_root;
++	struct debugfs_node *debugfs_dpcm_root;
+ #endif
+ 
+ 	unsigned int id; /* 0-based and monotonic increasing */
 diff --git a/kernel/gcov/fs.c b/kernel/gcov/fs.c
 index ed65d02010e0..8290ea6391ef 100644
 --- a/kernel/gcov/fs.c

@@ -1,6 +1,6 @@
-From 6f1caf1b735ddfc235c8c48d8da7a3fe281d567d Mon Sep 17 00:00:00 2001
+From a90fe2964b22be4f41fdb281abed6d5bacffbb95 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 13:04:39 -0800
+Date: Fri, 31 Jan 2025 13:22:58 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -969,7 +969,7 @@ David Reaver (3):
  include/sound/soc-component.h                 |   2 +-
  include/sound/soc-dapm.h                      |   5 +-
  include/sound/soc-dpcm.h                      |   2 +-
- include/sound/soc.h                           |   4 +-
+ include/sound/soc.h                           |   6 +-
  include/ufs/ufshcd.h                          |   2 +-
  kernel/dma/debug.c                            |   2 +-
  kernel/dma/map_benchmark.c                    |   4 +-
@@ -1071,7 +1071,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1048 files changed, 2353 insertions(+), 2141 deletions(-)
+ 1048 files changed, 2354 insertions(+), 2142 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5
