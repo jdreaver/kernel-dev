@@ -102,39 +102,28 @@ identifier decls_need_rewrite.var2;
 //
 // Structs
 //
-@structs_with_dentry@
-identifier S, var;
-@@
-
-struct S {
-       ...
-       struct dentry *var;
-       ...
-};
-
 @fields_need_rewrite@
 identifier function_calls.f;
-identifier structs_with_dentry.S, structs_with_dentry.var;
-idexpression struct S *sp;
-idexpression struct S sv;
+identifier var;
+expression E;
 @@
 
 (
-  sp->var = f(...)
+  E->var = f(...)
 |
-  sv.var = f(...)
+  E.var = f(...)
 |
-  f(..., sp->var, ...)
+  f(..., E->var, ...)
 |
-  f(..., sv.var, ...)
+  f(..., E.var, ...)
 )
 
-@rewrite_fields depends on fields_need_rewrite@
-//identifier fields_need_rewrite.S, fields_need_rewrite.var;
-identifier structs_with_dentry.S, structs_with_dentry.var;
+@rewrite_fields@
+identifier fields_need_rewrite.var;
+identifier struct_name;
 @@
 
-struct S {
+struct struct_name {
        ...
 -      struct dentry *var;
 +      struct debugfs_node *var;

@@ -23,6 +23,21 @@ git format-patch master...HEAD \
 
 # TODO
 
+- Combine coccinelle files
+
+- spatch needing two runs to work
+  - I wonder if I need to split up the file to run the checks independently. Is it only running if all checks match? Read about mulitiple scripts in one file.
+  - Issue with parallelism?
+  - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
+  - Example now is `drivers/scsi/lpfc/`
+    - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
+  - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
+  - `bnxt_re.h` has an event simpler one that wasn't caught
+  - Only change I can think of is changing the regex to include `dbgfs`, but that doesn't apply to some of the misses
+  - Try it by itself with no changes applied.
+  - I wonder if we have to split up our cocci script to run in stages
+
+
 - v2 cocci problems:
   - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
     - Similar with struct fields.
@@ -39,14 +54,6 @@ git format-patch master...HEAD \
   - Match all function names "in scope" literally, without a regex. Then use function matches in subsequent transformations (e.g. transform definitions, transform args, transform return values)
     - Maybe we can also match function names in specific files
 
-- spatch needing two runs to work
-  - Example now is `drivers/scsi/lpfc/`
-    - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
-  - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
-  - `bnxt_re.h` has an event simpler one that wasn't caught
-  - Only change I can think of is changing the regex to include `dbgfs`, but that doesn't apply to some of the misses
-  - Try it by itself with no changes applied.
-  - I wonder if we have to split up our cocci script to run in stages
 - Catch `struct dentry *root, *entry;` on one line
   - Idea: if any one of the vars is implicated, change the type for all of them
   - Maybe we need `declaration`. From the cocci docs:
