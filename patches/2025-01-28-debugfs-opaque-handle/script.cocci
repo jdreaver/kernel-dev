@@ -1,8 +1,8 @@
 virtual patch
 
 //
-// Rewrite wrapper functions. These are functions that return a dentry and look
-// like they are related to debugfs.
+// Rewrite wrapper functions. These are functions that return a dentry or accept
+// a dentry as an argument and look like they are related to debugfs.
 //
 @wrapper_function_returns depends on !(file in "fs/debugfs")@
 identifier wfr =~ "debugfs|dbgfs";
@@ -68,11 +68,11 @@ identifier f;
 @@
 
 (
-hf@f(...)
+  hf@f(...)
 |
-wfr@f(...)
+  wfr@f(...)
 |
-wfa@f(...)
+  wfa@f(...)
 )
 
 @decls_need_rewrite@
@@ -128,10 +128,10 @@ identifier struct_name;
 @@
 
 struct struct_name {
-       ...
--      struct dentry *var;
-+      struct debugfs_node *var;
-       ...
+    ...
+-   struct dentry *var;
++   struct debugfs_node *var;
+    ...
 };
 
 //

@@ -26,6 +26,8 @@ git format-patch master...HEAD \
 - Core fs/debugfs changes
   - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
 
+- Investigate the `type` rule kind for transforming types more easily
+
 - We should easily be able to catch declaration + assignment to a debugfs function because we have both `var` and `f` (do this in addition to `= NULL`)
   - We have to be careful with this. In `arch/s390/kernel/debug.c` if we match `struct dentry *var = E` (`expression E;`) then it changes a random `dentry` in `include/linux/fs.h` just because it is also called `dentry`.
 
@@ -33,6 +35,10 @@ git format-patch master...HEAD \
   - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c` because of double pointer. Dumb.
   - Might need two passes: one to transform wrappers, and then we can use the wrappers in the next pass
     - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
+    - I think we can just do `depends on` to run rules in order without having to split the file up
+  - Recreate the problem in my test file
+
+- Replace uses of `d_inode()` on a `struct debugfs_node *` with `debugfs_node_inode` (probably needs to be done in a pass after transforming types)
 
 - spatch needing two runs to work
   - I wonder if I need to split up the file to run the checks independently. Is it only running if all checks match? Read about mulitiple scripts in one file.
