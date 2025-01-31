@@ -29,7 +29,6 @@ wfa(...,
 identifier hf = {
   debugfs_change_name,
   debugfs_create_atomic_t,
-  debugfs_create_automount,
   debugfs_create_bool,
   debugfs_create_devm_seqfile,
   debugfs_create_dir,

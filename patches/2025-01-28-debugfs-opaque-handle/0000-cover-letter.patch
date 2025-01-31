@@ -1,6 +1,6 @@
-From a90fe2964b22be4f41fdb281abed6d5bacffbb95 Mon Sep 17 00:00:00 2001
+From 88fcb0736b27e69c823f0335b48d727bab63407e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 13:22:58 -0800
+Date: Fri, 31 Jan 2025 13:31:21 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -334,7 +334,7 @@ David Reaver (3):
  drivers/gpu/drm/xe/xe_gsc_debugfs.c           |   2 +-
  drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   2 +-
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   2 +-
- drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  22 +-
+ drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  22 ++-
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h   |   6 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c   |   5 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h   |   3 +-
@@ -499,7 +499,7 @@ David Reaver (3):
  drivers/mtd/nand/raw/nandsim.c                |   4 +-
  drivers/mtd/spi-nor/debugfs.c                 |   4 +-
  drivers/mtd/ubi/debug.c                       |   6 +-
- drivers/mtd/ubi/ubi.h                         |  22 +-
+ drivers/mtd/ubi/ubi.h                         |  22 +--
  drivers/net/bonding/bond_debugfs.c            |   2 +-
  drivers/net/caif/caif_serial.c                |   4 +-
  drivers/net/caif/caif_virtio.c                |   2 +-
@@ -756,7 +756,7 @@ David Reaver (3):
  drivers/regulator/core.c                      |   2 +-
  drivers/regulator/internal.h                  |   2 +-
  drivers/remoteproc/remoteproc_debugfs.c       |   4 +-
- drivers/s390/block/dasd.c                     |  22 +-
+ drivers/s390/block/dasd.c                     |  22 +--
  drivers/s390/block/dasd_int.h                 |   6 +-
  drivers/s390/char/zcore.c                     |   6 +-
  drivers/s390/cio/cio_debug.h                  |   2 +-
@@ -822,7 +822,7 @@ David Reaver (3):
  drivers/thermal/testing/thermal_testing.h     |   2 +-
  drivers/thermal/testing/zone.c                |   2 +-
  drivers/thermal/thermal_debugfs.c             |  11 +-
- drivers/thunderbolt/debugfs.c                 |  22 +-
+ drivers/thunderbolt/debugfs.c                 |  22 ++-
  drivers/thunderbolt/dma_test.c                |   2 +-
  drivers/thunderbolt/tb.h                      |   2 +-
  drivers/tty/serial/8250/8250_bcm7271.c        |   4 +-
@@ -876,7 +876,7 @@ David Reaver (3):
  fs/bcachefs/debug.c                           |   4 +-
  fs/ceph/super.h                               |  10 +-
  fs/debugfs/file.c                             | 117 +++++------
- fs/debugfs/inode.c                            | 147 ++++++++-----
+ fs/debugfs/inode.c                            | 128 +++++++-----
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
  fs/f2fs/debug.c                               |   2 +-
@@ -914,7 +914,7 @@ David Reaver (3):
  include/linux/ceph/mon_client.h               |   2 +-
  include/linux/ceph/osd_client.h               |   2 +-
  include/linux/clk-provider.h                  |   3 +-
- include/linux/debugfs.h                       | 197 ++++++++++--------
+ include/linux/debugfs.h                       | 185 ++++++++++--------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
@@ -989,7 +989,6 @@ David Reaver (3):
  kernel/printk/index.c                         |   4 +-
  kernel/sched/debug.c                          |  16 +-
  kernel/trace/blktrace.c                       |   6 +-
- kernel/trace/trace.h                          |   2 +-
  lib/842/842_debugfs.h                         |   2 +-
  lib/debugobjects.c                            |   2 +-
  lib/dynamic_debug.c                           |   2 +-
@@ -1071,7 +1070,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1048 files changed, 2354 insertions(+), 2142 deletions(-)
+ 1047 files changed, 2336 insertions(+), 2127 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

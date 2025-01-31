@@ -1,4 +1,4 @@
-From 36a15d31406964c47c00b2b7c7446a6cc8db6839 Mon Sep 17 00:00:00 2001
+From 0ed8e023b6d56822d826f01bb13af1a7f2ef8bde Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Fri, 31 Jan 2025 11:46:15 -0800
 Subject: [RFC PATCH 2/3] debugfs: tmp commit to show coccinelle output
@@ -973,7 +973,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  kernel/printk/index.c                         |  4 +-
  kernel/sched/debug.c                          | 16 +++----
  kernel/trace/blktrace.c                       |  6 +--
- kernel/trace/trace.h                          |  2 +-
  lib/842/842_debugfs.h                         |  2 +-
  lib/debugobjects.c                            |  2 +-
  lib/dynamic_debug.c                           |  2 +-
@@ -1055,7 +1054,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  2 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  6 +--
- 1043 files changed, 2043 insertions(+), 1907 deletions(-)
+ 1042 files changed, 2042 insertions(+), 1906 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -18940,19 +18939,6 @@ index 3679a6d18934..0bb9a7d1144a 100644
  	int ret;
  
  	lockdep_assert_held(&q->debugfs_mutex);
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 9c21ba45b7af..0b8e579b3bf1 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -387,7 +387,7 @@ struct trace_array {
- 	raw_spinlock_t		start_lock;
- 	const char		*system_names;
- 	struct list_head	err_log;
--	struct dentry		*dir;
-+	struct debugfs_node *dir;
- 	struct dentry		*options;
- 	struct dentry		*percpu_dir;
- 	struct eventfs_inode	*event_dir;
 diff --git a/lib/842/842_debugfs.h b/lib/842/842_debugfs.h
 index 4469407c3e0d..3e94d6474d12 100644
 --- a/lib/842/842_debugfs.h

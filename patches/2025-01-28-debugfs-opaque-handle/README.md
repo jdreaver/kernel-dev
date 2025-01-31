@@ -26,9 +26,10 @@ git format-patch master...HEAD \
 # TODO
 
 - Core fs/debugfs changes
-  - `debugfs_create_automount` only has one user: tracefs. It should return a dentry for now.
   - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
   - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
+
+- Change `rchan_callbacks` to use `debugfs_node`. All users use debugfs.
 
 - Consider removing the "all_function_calls" thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
 
