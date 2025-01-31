@@ -1,43 +1,31 @@
 virtual patch
 
-//
-// Declarations
-//
-@dentry_decls@
-identifier var;
-@@
-
-(
-  struct dentry* var;
-|
-  static struct dentry* var;
-)
-
 @decls_need_rewrite@
 // TODO: DRY function list
 identifier f = {
   debugfs_create_dir,
   debugfs_create_file
 };
-identifier dentry_decls.var;
+idexpression struct dentry *var;
+identifier var2;
 @@
 
 (
-  var = f(...)
+  var@var2 = f(...)
 |
-  f(..., var, ...)
+  f(..., var@var2, ...)
 )
 
 @rewrite_decls depends on decls_need_rewrite@
-identifier dentry_decls.var;
+identifier decls_need_rewrite.var2;
 @@
 
 (
-- struct dentry *var;
-+ struct debugfs_node *var;
+- struct dentry *var2;
++ struct debugfs_node *var2;
 |
-- static struct dentry *var;
-+ static struct debugfs_node *var;
+- static struct dentry *var2;
++ static struct debugfs_node *var2;
 )
 
 //
