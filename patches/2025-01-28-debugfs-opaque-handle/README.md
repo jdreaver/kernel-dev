@@ -66,7 +66,6 @@ git format-patch master...HEAD \
   - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
 
 - Consider removing the "all_function_calls" thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
-- Simplify `f@f2` nonsense with `identifier f = { function_calls.f };`
 
 - not catching wrappers
   - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c` because of double pointer. Dumb.

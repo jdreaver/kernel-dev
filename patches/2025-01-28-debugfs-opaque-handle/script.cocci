@@ -79,30 +79,28 @@ identifier f;
 // function arg. If we combine them, then we will miss cases where they both
 // happen at the same time, e.g. x = f(y) where x and y are both dentries.
 @find_dentry_return_vars@
-identifier function_calls.f;
+identifier f = { function_calls.f };
 idexpression struct dentry *e;
 identifier var;
-identifier f2;
 @@
 
-e@var = f@f2(...)
+e@var = f(...)
 
 @find_dentry_arg_vars@
-identifier function_calls.f;
+identifier f = { function_calls.f };
 idexpression struct dentry *e;
 identifier var;
-identifier f2;
 @@
 
-f@f2(..., e@var, ...)
+f(..., e@var, ...)
 
 // find_decls and change_decl_types are separate so we properly handle static
 // declarations as well as multi-declarations (e.g. struct dentry *a, *b, *c;).
-// The "= NULL" and "= f2(...)" cases get thrown off when we combine them into
+// The "= NULL" and "= f(...)" cases get thrown off when we combine them into
 // one rule.
 @find_decls@
 identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
-identifier f = { find_dentry_return_vars.f2, find_dentry_arg_vars.f2 };
+identifier f = { find_dentry_return_vars.f, find_dentry_arg_vars.f };
 position p;
 @@
 
