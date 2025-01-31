@@ -29,6 +29,8 @@ git format-patch master...HEAD \
 
 - Consider removing the "all_function_calls" thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
 
+- Sometimes `include/linux/debugfs.h` gets caught up in changes
+
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
   - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
@@ -48,6 +50,8 @@ git format-patch master...HEAD \
   - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
   - Example now is `drivers/scsi/lpfc/`
     - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
+  - Also `drivers/net/netdevsim/netdevsim.h`
+  - Also `include/linux/mlx5/driver.h`
   - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
   - `bnxt_re.h` has an event simpler one that wasn't caught
   - `drivers/net/netdevsim/netdevsim.h` was another

@@ -1,6 +1,6 @@
-From afc7f802aa3e9294ae3016382ef120f7499267ca Mon Sep 17 00:00:00 2001
+From e6ee1c47ed25b84e3eb861267671d3bba427365e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 14:20:52 -0800
+Date: Fri, 31 Jan 2025 15:59:06 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -17,7 +17,7 @@ TODO (things to cover):
   - Latter parts of coccinelle script can be manual fixups if necessary (only like 1-2 callers for each of those functions)
 - This patch will make any future internal migration much easier
   - Lots more to do before we could plug in kernfs. Biggest hurdle is refactoring file ops structs
-- One escape hatch to dentry was required for relay stuff. I noticed that kernfs also allows getting a kernfs_node's dentry.
+- One escape hatch to dentry was required for relay stuff. I noticed that kernfs also allows getting a kernfs_node's dentry. (One example is in blktrace.c)
 
 David Reaver (3):
   debugfs: Use opaque debugfs_node handle to support kernfs migration
@@ -777,7 +777,7 @@ David Reaver (3):
  drivers/scsi/hisi_sas/hisi_sas.h              |  10 +-
  drivers/scsi/hisi_sas/hisi_sas_main.c         |   2 +-
  drivers/scsi/hisi_sas/hisi_sas_v3_hw.c        |  14 +-
- drivers/scsi/lpfc/lpfc.h                      |  24 +--
+ drivers/scsi/lpfc/lpfc.h                      |  74 +++----
  drivers/scsi/lpfc/lpfc_debugfs.c              |   2 +-
  drivers/scsi/megaraid/megaraid_sas.h          |   2 +-
  drivers/scsi/megaraid/megaraid_sas_base.c     |   2 +-
@@ -992,6 +992,7 @@ David Reaver (3):
  kernel/printk/index.c                         |   4 +-
  kernel/sched/debug.c                          |  16 +-
  kernel/trace/blktrace.c                       |  21 +-
+ kernel/trace/trace.h                          |   2 +-
  lib/842/842_debugfs.h                         |   2 +-
  lib/debugobjects.c                            |   2 +-
  lib/dynamic_debug.c                           |   2 +-
@@ -1073,7 +1074,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1049 files changed, 2386 insertions(+), 2132 deletions(-)
+ 1050 files changed, 2412 insertions(+), 2158 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

@@ -1,4 +1,4 @@
-From afc7f802aa3e9294ae3016382ef120f7499267ca Mon Sep 17 00:00:00 2001
+From e6ee1c47ed25b84e3eb861267671d3bba427365e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -22,11 +22,9 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/clk-provider.h                  |  3 ++-
  include/linux/fault-inject.h                  |  3 +--
  include/linux/fs.h                            |  8 +++----
- include/linux/hid.h                           |  4 ++--
  include/linux/mfd/aat2870.h                   |  2 +-
  include/net/mac80211.h                        | 12 +++++-----
  include/sound/soc-dapm.h                      |  3 ++-
- include/sound/soc.h                           |  2 +-
  kernel/gcov/fs.c                              |  2 +-
  kernel/trace/blktrace.c                       | 23 +++++++++++++------
  lib/fault-inject.c                            |  2 +-
@@ -34,7 +32,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/mac80211/ieee80211_i.h                    | 14 +++++------
  sound/soc/sof/sof-client-ipc-flood-test.c     |  2 +-
  virt/kvm/kvm_main.c                           |  5 ++--
- 21 files changed, 72 insertions(+), 58 deletions(-)
+ 19 files changed, 69 insertions(+), 55 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -249,21 +247,6 @@ index cd4b198fe424..be3ad155ec9f 100644
  {
  	return vfs_mknod(idmap, dir, dentry, S_IFCHR | WHITEOUT_MODE,
  			 WHITEOUT_DEV);
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index d796ada2dde8..4321ae40c35b 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -679,8 +679,8 @@ struct hid_device {
- 	/* debugging support via debugfs */
- 	unsigned short debug;
- 	struct debugfs_node *debug_dir;
--	struct dentry *debug_rdesc;
--	struct dentry *debug_events;
-+	struct debugfs_node *debug_rdesc;
-+	struct debugfs_node *debug_events;
- 	struct list_head debug_list;
- 	spinlock_t  debug_list_lock;
- 	wait_queue_head_t debug_wait;
 diff --git a/include/linux/mfd/aat2870.h b/include/linux/mfd/aat2870.h
 index 2445842d482d..e05e4427fdf1 100644
 --- a/include/linux/mfd/aat2870.h
@@ -348,19 +331,6 @@ index bb8445b7a384..cd876d2d3060 100644
  
  /* dapm audio pin control and status */
  int snd_soc_dapm_enable_pin(struct snd_soc_dapm_context *dapm, const char *pin);
-diff --git a/include/sound/soc.h b/include/sound/soc.h
-index 03abd4d3f501..c2fcc98fb1de 100644
---- a/include/sound/soc.h
-+++ b/include/sound/soc.h
-@@ -1202,7 +1202,7 @@ struct snd_soc_pcm_runtime {
- 	struct delayed_work delayed_work;
- 	void (*close_delayed_work_func)(struct snd_soc_pcm_runtime *rtd);
- #ifdef CONFIG_DEBUG_FS
--	struct dentry *debugfs_dpcm_root;
-+	struct debugfs_node *debugfs_dpcm_root;
- #endif
- 
- 	unsigned int id; /* 0-based and monotonic increasing */
 diff --git a/kernel/gcov/fs.c b/kernel/gcov/fs.c
 index ed65d02010e0..8290ea6391ef 100644
 --- a/kernel/gcov/fs.c
