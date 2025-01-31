@@ -1,6 +1,6 @@
-From a88329ac546cb6078bae1a30fee5c3a586e88690 Mon Sep 17 00:00:00 2001
+From afc7f802aa3e9294ae3016382ef120f7499267ca Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 14:00:25 -0800
+Date: Fri, 31 Jan 2025 14:20:52 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -17,6 +17,7 @@ TODO (things to cover):
   - Latter parts of coccinelle script can be manual fixups if necessary (only like 1-2 callers for each of those functions)
 - This patch will make any future internal migration much easier
   - Lots more to do before we could plug in kernfs. Biggest hurdle is refactoring file ops structs
+- One escape hatch to dentry was required for relay stuff. I noticed that kernfs also allows getting a kernfs_node's dentry.
 
 David Reaver (3):
   debugfs: Use opaque debugfs_node handle to support kernfs migration
@@ -334,7 +335,7 @@ David Reaver (3):
  drivers/gpu/drm/xe/xe_gsc_debugfs.c           |   2 +-
  drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   2 +-
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   2 +-
- drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  22 ++-
+ drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  22 +-
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h   |   6 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c   |   5 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h   |   3 +-
@@ -499,7 +500,7 @@ David Reaver (3):
  drivers/mtd/nand/raw/nandsim.c                |   4 +-
  drivers/mtd/spi-nor/debugfs.c                 |   4 +-
  drivers/mtd/ubi/debug.c                       |   6 +-
- drivers/mtd/ubi/ubi.h                         |  22 +--
+ drivers/mtd/ubi/ubi.h                         |  22 +-
  drivers/net/bonding/bond_debugfs.c            |   2 +-
  drivers/net/caif/caif_serial.c                |   4 +-
  drivers/net/caif/caif_virtio.c                |   2 +-
@@ -756,7 +757,7 @@ David Reaver (3):
  drivers/regulator/core.c                      |   2 +-
  drivers/regulator/internal.h                  |   2 +-
  drivers/remoteproc/remoteproc_debugfs.c       |   4 +-
- drivers/s390/block/dasd.c                     |  22 +--
+ drivers/s390/block/dasd.c                     |  22 +-
  drivers/s390/block/dasd_int.h                 |   6 +-
  drivers/s390/char/zcore.c                     |   6 +-
  drivers/s390/cio/cio_debug.h                  |   2 +-
@@ -822,7 +823,7 @@ David Reaver (3):
  drivers/thermal/testing/thermal_testing.h     |   2 +-
  drivers/thermal/testing/zone.c                |   2 +-
  drivers/thermal/thermal_debugfs.c             |  11 +-
- drivers/thunderbolt/debugfs.c                 |  22 ++-
+ drivers/thunderbolt/debugfs.c                 |  22 +-
  drivers/thunderbolt/dma_test.c                |   2 +-
  drivers/thunderbolt/tb.h                      |   2 +-
  drivers/tty/serial/8250/8250_bcm7271.c        |   4 +-
@@ -876,7 +877,7 @@ David Reaver (3):
  fs/bcachefs/debug.c                           |   4 +-
  fs/ceph/super.h                               |  10 +-
  fs/debugfs/file.c                             | 117 +++++------
- fs/debugfs/inode.c                            | 140 +++++++++-----
+ fs/debugfs/inode.c                            | 145 +++++++++----
  fs/debugfs/internal.h                         |   7 +
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
@@ -915,7 +916,7 @@ David Reaver (3):
  include/linux/ceph/mon_client.h               |   2 +-
  include/linux/ceph/osd_client.h               |   2 +-
  include/linux/clk-provider.h                  |   3 +-
- include/linux/debugfs.h                       | 183 ++++++++++--------
+ include/linux/debugfs.h                       | 195 +++++++++++-------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
@@ -933,6 +934,7 @@ David Reaver (3):
  include/linux/iommu.h                         |   2 +-
  include/linux/irqdesc.h                       |   2 +-
  include/linux/kvm_host.h                      |   5 +-
+ include/linux/mfd/aat2870.h                   |   2 +-
  include/linux/mhi.h                           |   2 +-
  include/linux/mlx5/driver.h                   |  24 +--
  include/linux/mmc/card.h                      |   2 +-
@@ -989,7 +991,7 @@ David Reaver (3):
  kernel/power/energy_model.c                   |   8 +-
  kernel/printk/index.c                         |   4 +-
  kernel/sched/debug.c                          |  16 +-
- kernel/trace/blktrace.c                       |   6 +-
+ kernel/trace/blktrace.c                       |  21 +-
  lib/842/842_debugfs.h                         |   2 +-
  lib/debugobjects.c                            |   2 +-
  lib/dynamic_debug.c                           |   2 +-
@@ -1071,7 +1073,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1048 files changed, 2356 insertions(+), 2128 deletions(-)
+ 1049 files changed, 2386 insertions(+), 2132 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

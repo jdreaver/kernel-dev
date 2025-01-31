@@ -1,4 +1,4 @@
-From a88329ac546cb6078bae1a30fee5c3a586e88690 Mon Sep 17 00:00:00 2001
+From afc7f802aa3e9294ae3016382ef120f7499267ca Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -13,26 +13,28 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- drivers/accel/habanalabs/common/habanalabs.h   |  2 +-
- drivers/block/drbd/drbd_debugfs.c              |  2 +-
- .../gpu/drm/nouveau/include/nvkm/subdev/gsp.h  | 10 +++++-----
- drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c | 18 +++++++++---------
- drivers/gpu/host1x/dev.h                       |  2 +-
- drivers/soc/qcom/qcom_aoss.c                   |  4 +++-
- include/linux/clk-provider.h                   |  3 ++-
- include/linux/fault-inject.h                   |  3 +--
- include/linux/fs.h                             |  8 ++++----
- include/linux/hid.h                            |  4 ++--
- include/net/mac80211.h                         | 12 ++++++------
- include/sound/soc-dapm.h                       |  3 ++-
- include/sound/soc.h                            |  2 +-
- kernel/gcov/fs.c                               |  2 +-
- lib/fault-inject.c                             |  2 +-
- lib/notifier-error-inject.h                    |  7 ++++---
- net/mac80211/ieee80211_i.h                     | 14 +++++++-------
- sound/soc/sof/sof-client-ipc-flood-test.c      |  2 +-
- virt/kvm/kvm_main.c                            |  5 +++--
- 19 files changed, 55 insertions(+), 50 deletions(-)
+ drivers/accel/habanalabs/common/habanalabs.h  |  2 +-
+ drivers/block/drbd/drbd_debugfs.c             |  2 +-
+ .../gpu/drm/nouveau/include/nvkm/subdev/gsp.h | 10 ++++----
+ .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    | 18 +++++++--------
+ drivers/gpu/host1x/dev.h                      |  2 +-
+ drivers/soc/qcom/qcom_aoss.c                  |  4 +++-
+ include/linux/clk-provider.h                  |  3 ++-
+ include/linux/fault-inject.h                  |  3 +--
+ include/linux/fs.h                            |  8 +++----
+ include/linux/hid.h                           |  4 ++--
+ include/linux/mfd/aat2870.h                   |  2 +-
+ include/net/mac80211.h                        | 12 +++++-----
+ include/sound/soc-dapm.h                      |  3 ++-
+ include/sound/soc.h                           |  2 +-
+ kernel/gcov/fs.c                              |  2 +-
+ kernel/trace/blktrace.c                       | 23 +++++++++++++------
+ lib/fault-inject.c                            |  2 +-
+ lib/notifier-error-inject.h                   |  7 +++---
+ net/mac80211/ieee80211_i.h                    | 14 +++++------
+ sound/soc/sof/sof-client-ipc-flood-test.c     |  2 +-
+ virt/kvm/kvm_main.c                           |  5 ++--
+ 21 files changed, 72 insertions(+), 58 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -262,6 +264,19 @@ index d796ada2dde8..4321ae40c35b 100644
  	struct list_head debug_list;
  	spinlock_t  debug_list_lock;
  	wait_queue_head_t debug_wait;
+diff --git a/include/linux/mfd/aat2870.h b/include/linux/mfd/aat2870.h
+index 2445842d482d..e05e4427fdf1 100644
+--- a/include/linux/mfd/aat2870.h
++++ b/include/linux/mfd/aat2870.h
+@@ -135,7 +135,7 @@ struct aat2870_data {
+ 	int (*update)(struct aat2870_data *aat2870, u8 addr, u8 mask, u8 val);
+ 
+ 	/* for debugfs */
+-	struct dentry *dentry_root;
++	struct debugfs_node *dentry_root;
+ };
+ 
+ struct aat2870_subdev_info {
 diff --git a/include/net/mac80211.h b/include/net/mac80211.h
 index 3443ac47384a..8896fdc00ecb 100644
 --- a/include/net/mac80211.h
@@ -359,6 +374,68 @@ index ed65d02010e0..8290ea6391ef 100644
  	int num_loaded;
  	char name[];
  };
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 0bb9a7d1144a..e9423ddd5597 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -473,21 +473,29 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
+ 	return 0;
+ }
+ 
+-static int blk_remove_buf_file_callback(struct debugfs_node *dentry)
++static int blk_remove_buf_file_callback(struct dentry *dentry)
+ {
+-	debugfs_remove(dentry);
++	struct debugfs_node *node = debugfs_node_from_dentry(dentry);
++
++	debugfs_remove(node);
+ 
+ 	return 0;
+ }
+ 
+ static struct dentry *blk_create_buf_file_callback(const char *filename,
+-						   struct debugfs_node *parent,
++						   struct dentry *parent,
+ 						   umode_t mode,
+ 						   struct rchan_buf *buf,
+ 						   int *is_global)
+ {
+-	return debugfs_create_file(filename, mode, parent, buf,
+-					&relay_file_operations);
++	struct debugfs_node *node, *parent_node;
++
++	parent_node = debugfs_node_from_dentry(parent);
++
++	node = debugfs_create_file(filename, mode, parent_node, buf,
++				   &relay_file_operations);
++
++	return debugfs_node_dentry(node);
+ }
+ 
+ static const struct rchan_callbacks blk_relay_callbacks = {
+@@ -517,6 +525,7 @@ static int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ {
+ 	struct blk_trace *bt = NULL;
+ 	struct debugfs_node *dir = NULL;
++	struct dentry *dir_dentry;
+ 	int ret;
+ 
+ 	lockdep_assert_held(&q->debugfs_mutex);
+@@ -587,7 +596,8 @@ static int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ 	debugfs_create_file("dropped", 0444, dir, bt, &blk_dropped_fops);
+ 	debugfs_create_file("msg", 0222, dir, bt, &blk_msg_fops);
+ 
+-	bt->rchan = relay_open("trace", dir, buts->buf_size,
++	dir_dentry = debugfs_node_dentry(dir);
++	bt->rchan = relay_open("trace", dir_dentry, buts->buf_size,
+ 				buts->buf_nr, &blk_relay_callbacks, bt);
+ 	if (!bt->rchan)
+ 		goto err;
+@@ -1902,4 +1912,3 @@ void blk_fill_rwbs(char *rwbs, blk_opf_t opf)
+ EXPORT_SYMBOL_GPL(blk_fill_rwbs);
+ 
+ #endif /* CONFIG_EVENT_TRACING */
+-
 diff --git a/lib/fault-inject.c b/lib/fault-inject.c
 index d9a8fe11e6a4..5bf0f47725e8 100644
 --- a/lib/fault-inject.c

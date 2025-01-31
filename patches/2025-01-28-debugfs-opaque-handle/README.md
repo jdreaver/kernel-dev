@@ -25,7 +25,7 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Change `rchan_callbacks` to use `debugfs_node`. All users use debugfs.
+- (might be done) Change `rchan_callbacks` users to convert to `dentry`
 
 - Consider removing the "all_function_calls" thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
 
@@ -66,6 +66,9 @@ git format-patch master...HEAD \
 - Get feedback on approach
 - If we eventually want to use `kernfs`, we need to consider `file_operations` as well. That would be a super hard thing to migrate across all of the kernel.
   - Maybe not actually. There are lots of helper macros being used by debugfs users that will make this easier.
+
+Final checks:
+- Compile with debugfs disabled in kernel
 
 ## Coccinelle automation
 
