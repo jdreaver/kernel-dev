@@ -28,6 +28,7 @@ git format-patch master...HEAD \
 - spatch needing two runs to work
   - I wonder if I need to split up the file to run the checks independently. Is it only running if all checks match? Read about mulitiple scripts in one file.
   - Issue with parallelism?
+  - Need `--recursive-includes`?
   - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
   - Example now is `drivers/scsi/lpfc/`
     - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
@@ -37,7 +38,12 @@ git format-patch master...HEAD \
   - Try it by itself with no changes applied.
   - I wonder if we have to split up our cocci script to run in stages
 
-
+- not catching wrappers
+  - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c`. Is it because of `static`?
+  - Might need two passes: one to transform wrappers, and then we can use the wrappers in the next pass
+- We should easily be able to catch declaration + assignment to a debugfs function because we have both `var` and `f` (do this in addition to `= NULL`)
+- Try to catch function arguments in an enclosing function (might be super hard)
+- In `gpu/drm/nouveau/nvkm/subdev/gsp/r535.c` `create_debugfs()`, there is a dentry that should be clearly transformed but isn't
 - v2 cocci problems:
   - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
     - Similar with struct fields.
@@ -91,8 +97,6 @@ git format-patch master...HEAD \
 - Replace raw casts between debugfs_node and dentry with field accessors and getter/setter functions as much as possible
 
 - Manual stuff:
-  - Revert `fs/debugfs/` changes or find a way to exclude them from spatch
-    - I think I can do `depends on !(file in "fs/debugfs/")`
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
 
 - Try to make it impossible for users to access dentry. Move struct definition to some "internal.h" file
@@ -121,6 +125,12 @@ Run patch script with (note that `--in-place` doesn't appear to work):
 ```
 $ spatch ../patches/2025-01-28-debugfs-opaque-handle/structured.cocci --all-includes --include-headers . --jobs $(nproc) > patch.patch
 $ patch -p1 < patch.patch
+```
+
+Fixup one-liner for multi-declarations:
+
+```
+$ find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i -E ':a;s/(struct debugfs_node \*[^;]+);struct debugfs_node \*/\1, */g;ta; s/struct \*debugfs_node /struct debugfs_node */g' {} +
 ```
 
 Ideas:

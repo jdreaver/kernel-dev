@@ -5,7 +5,7 @@ virtual patch
 // like they are related to debugfs.
 //
 @wrapper_function_returns depends on !(file in "fs/debugfs")@
-identifier wfr =~ "debugfs";
+identifier wfr =~ "debugfs|dbgfs";
 @@
 
 - struct dentry *
@@ -13,7 +13,7 @@ identifier wfr =~ "debugfs";
 wfr(...) { ... }
 
 @wrapper_function_args depends on !(file in "fs/debugfs")@
-identifier wfa =~ "debugfs";
+identifier wfa =~ "debugfs|dbgfs";
 identifier arg;
 @@
 
@@ -92,11 +92,15 @@ identifier decls_need_rewrite.var2;
 @@
 
 (
-- struct dentry *var2;
-+ struct debugfs_node *var2;
+-  struct dentry *var2;
+++ struct debugfs_node *var2;
 |
-- static struct dentry *var2;
-+ static struct debugfs_node *var2;
+-  static struct dentry *var2;
+++ static struct debugfs_node *var2;
+|
+-  struct dentry *var2
++  struct debugfs_node *var2
+= NULL;
 )
 
 //
@@ -128,4 +132,51 @@ struct struct_name {
 -      struct dentry *var;
 +      struct debugfs_node *var;
        ...
+};
+
+//
+// Rewrite declarations and fields that are dentries with names that very
+// strongly imply they are for debugfs. This is necessary because sometimes
+// Coccinelle doesn't go into all headers/structs.
+//
+
+@obvious_debugfs_decls depends on !(file in "fs/debugfs")@
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$";
+@@
+
+(
+-  struct dentry *var;
+++ struct debugfs_node *var;
+|
+-  static struct dentry *var;
+++ static struct debugfs_node *var;
+|
+-  struct dentry *var
++  struct debugfs_node *var
+= NULL;
+)
+
+@obvious_debugfs_fields depends on !(file in "fs/debugfs")@
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
+identifier struct_name;
+@@
+
+struct struct_name {
+    ...
+-   struct dentry *var;
++   struct debugfs_node *var;
+    ...
+};
+
+@obvious_debugfs_field_arrays depends on !(file in "fs/debugfs")@
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
+identifier struct_name;
+@@
+
+struct struct_name {
+    ...
+-   struct dentry *var
++   struct debugfs_node *var
+    [...];
+    ...
 };
