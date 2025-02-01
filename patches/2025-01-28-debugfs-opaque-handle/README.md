@@ -23,6 +23,8 @@ git format-patch master...HEAD \
 
 # TODO
 
+## Submitting, final checks
+
 - Feedback/RFC email
   - Is it normal to do [RFC] in fsdevel?
   - Send to Steve first?
@@ -30,8 +32,16 @@ git format-patch master...HEAD \
   - Fill out cover letter
   - Decide on subject. Should we not mention kernfs in any of this?
 
-- Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
+- Compile with debugfs disabled in kernel
+
+## Non-coccinelle changes
+
 - Try removing a few `debugfs_node_dentry` calls. I think they are only used for `%pd2` printf'ing and fetching a parent.
+  - Consider a `->d_parent` -> new helper `debugfs_node_parent`
+
+## Coccinelle
+
+- Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
 
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
   - I think the rules are stepping on each other because if one rule proposes changes to a header file, and another proposes different changes, I think spatch doesn't like that
@@ -66,7 +76,6 @@ git format-patch master...HEAD \
 
 - Test more complex assignments like `hb->dbgfs.base_dir = debugfs_create_dir("heartbeat", accel_dev->debugfs_dir);` in test file
 - In `struct dentry *parent = ibd->hfi1_ibdev_dbg;` we know that `parent` is used as an arg to a debugfs_function, and `ibd->hfi1_ibdev_dbg` is debugfs_node, so we should have migrated parent. We should allow any expression on the RHS, not just function calls to debugfs functions.
-- Consider a `->d_parent` -> new helper `debugfs_node_parent`
 - `->d_inode` -> `debugfs_node_inode` (just check arg type)
 
 - Use this style for putting type on different line from function def (not pointer `*` position):
@@ -116,9 +125,6 @@ git format-patch master...HEAD \
 - Manual stuff:
   - Revert include/linux/fs.h changes (maybe we can exclude this file in the cocci script)
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
-
-Final checks:
-- Compile with debugfs disabled in kernel
 
 ## Coccinelle automation
 
@@ -248,148 +254,4 @@ debugfs_real_fops
 debugfs_remove
 debugfs_remove_recursive
 debugfs_write_file_bool
-```
-
-Raw declarations:
-
-```
-struct debugfs_node *debugfs_lookup(const char *name, struct debugfs_node *parent);
-
-char *debugfs_node_path_raw(struct debugfs_node *node, char *buf, size_t buflen);
-
-struct debugfs_node *debugfs_node_get(struct debugfs_node *node);
-void debugfs_node_put(struct debugfs_node *node);
-
-struct debugfs_node *debugfs_create_file_full(const char *name, umode_t mode,
-					struct debugfs_node *parent, void *data,
-					const void *aux,
-					const struct file_operations *fops);
-struct debugfs_node *debugfs_create_file_short(const char *name, umode_t mode,
-					 struct debugfs_node *parent, void *data,
-					 const void *aux,
-					 const struct debugfs_short_fops *fops);
-
-#define debugfs_create_file(name, mode, parent, data, fops)			\
-	_Generic(fops,								\
-		 const struct file_operations *: debugfs_create_file_full,	\
-		 const struct debugfs_short_fops *: debugfs_create_file_short,	\
-		 struct file_operations *: debugfs_create_file_full,		\
-		 struct debugfs_short_fops *: debugfs_create_file_short)	\
-		(name, mode, parent, data, NULL, fops)
-
-#define debugfs_create_file_aux(name, mode, parent, data, aux, fops)		\
-	_Generic(fops,								\
-		 const struct file_operations *: debugfs_create_file_full,	\
-		 const struct debugfs_short_fops *: debugfs_create_file_short,	\
-		 struct file_operations *: debugfs_create_file_full,		\
-		 struct debugfs_short_fops *: debugfs_create_file_short)	\
-		(name, mode, parent, data, aux, fops)
-
-struct debugfs_node *debugfs_create_file_unsafe(const char *name, umode_t mode,
-				   struct debugfs_node *parent, void *data,
-				   const struct file_operations *fops);
-
-void debugfs_create_file_size(const char *name, umode_t mode,
-			      struct debugfs_node *parent, void *data,
-			      const struct file_operations *fops,
-			      loff_t file_size);
-
-struct debugfs_node *debugfs_create_dir(const char *name, struct debugfs_node *parent);
-
-struct debugfs_node *debugfs_create_symlink(const char *name, struct debugfs_node *parent,
-				      const char *dest);
-
-struct debugfs_node *debugfs_create_automount(const char *name,
-					struct debugfs_node *parent,
-					debugfs_automount_t f,
-					void *data);
-
-void debugfs_remove(struct debugfs_node *debugfs_node);
-#define debugfs_remove_recursive debugfs_remove
-
-void debugfs_lookup_and_remove(const char *name, struct debugfs_node *parent);
-
-const struct file_operations *debugfs_real_fops(const struct file *filp);
-const void *debugfs_get_aux(const struct file *file);
-
-int debugfs_file_get(struct debugfs_node *debugfs_node);
-void debugfs_file_put(struct debugfs_node *debugfs_node);
-
-ssize_t debugfs_attr_read(struct file *file, char __user *buf,
-			size_t len, loff_t *ppos);
-ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
-			size_t len, loff_t *ppos);
-ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
-			size_t len, loff_t *ppos);
-
-int debugfs_change_name(struct debugfs_node *dentry, const char *fmt, ...) __printf(2, 3);
-
-void debugfs_create_u8(const char *name, umode_t mode, struct debugfs_node *parent,
-		       u8 *value);
-void debugfs_create_u16(const char *name, umode_t mode, struct debugfs_node *parent,
-			u16 *value);
-void debugfs_create_u32(const char *name, umode_t mode, struct debugfs_node *parent,
-			u32 *value);
-void debugfs_create_u64(const char *name, umode_t mode, struct debugfs_node *parent,
-			u64 *value);
-void debugfs_create_ulong(const char *name, umode_t mode, struct debugfs_node *parent,
-			  unsigned long *value);
-void debugfs_create_x8(const char *name, umode_t mode, struct debugfs_node *parent,
-		       u8 *value);
-void debugfs_create_x16(const char *name, umode_t mode, struct debugfs_node *parent,
-			u16 *value);
-void debugfs_create_x32(const char *name, umode_t mode, struct debugfs_node *parent,
-			u32 *value);
-void debugfs_create_x64(const char *name, umode_t mode, struct debugfs_node *parent,
-			u64 *value);
-void debugfs_create_size_t(const char *name, umode_t mode,
-			   struct debugfs_node *parent, size_t *value);
-void debugfs_create_atomic_t(const char *name, umode_t mode,
-			     struct debugfs_node *parent, atomic_t *value);
-void debugfs_create_bool(const char *name, umode_t mode, struct debugfs_node *parent,
-			 bool *value);
-void debugfs_create_str(const char *name, umode_t mode,
-			struct debugfs_node *parent, char **value);
-
-struct debugfs_node *debugfs_create_blob(const char *name, umode_t mode,
-				  struct debugfs_node *parent,
-				  struct debugfs_blob_wrapper *blob);
-
-void debugfs_create_regset32(const char *name, umode_t mode,
-			     struct debugfs_node *parent,
-			     struct debugfs_regset32 *regset);
-
-void debugfs_print_regs32(struct seq_file *s, const struct debugfs_reg32 *regs,
-			  int nregs, void __iomem *base, char *prefix);
-
-void debugfs_create_u32_array(const char *name, umode_t mode,
-			      struct debugfs_node *parent,
-			      struct debugfs_u32_array *array);
-
-void debugfs_create_devm_seqfile(struct device *dev, const char *name,
-				 struct debugfs_node *parent,
-				 int (*read_fn)(struct seq_file *s, void *data));
-
-bool debugfs_initialized(void);
-
-ssize_t debugfs_read_file_bool(struct file *file, char __user *user_buf,
-			       size_t count, loff_t *ppos);
-
-ssize_t debugfs_write_file_bool(struct file *file, const char __user *user_buf,
-				size_t count, loff_t *ppos);
-
-ssize_t debugfs_read_file_str(struct file *file, char __user *user_buf,
-			      size_t count, loff_t *ppos);
-
-void __acquires(cancellation)
-debugfs_enter_cancellation(struct file *file,
-			   struct debugfs_cancellation *cancellation);
-void __releases(cancellation)
-debugfs_leave_cancellation(struct file *file,
-			   struct debugfs_cancellation *cancellation);
-
-#define debugfs_create_file_aux_num(name, mode, parent, data, n, fops) \
-	debugfs_create_file_aux(name, mode, parent, data, \
-				(void *)(unsigned long)n, fops)
-#define debugfs_get_aux_num(f) (unsigned long)debugfs_get_aux(f)
 ```
