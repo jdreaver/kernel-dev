@@ -23,8 +23,12 @@ git format-patch master...HEAD \
 
 # TODO
 
-- Get feedback on approach
+- Feedback/RFC email
   - Is it normal to do [RFC] in fsdevel?
+  - Send to Steve first?
+  - Fill out commit messages
+  - Fill out cover letter
+  - Decide on subject. Should we not mention kernfs in any of this?
 
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
   - I think the rules are stepping on each other because if one rule proposes changes to a header file, and another proposes different changes, I think spatch doesn't like that
@@ -32,11 +36,12 @@ git format-patch master...HEAD \
 
 - spatch needing two runs to work, or just not working at top level and only when run on individual files/directories
   - Ideas to fix
+    - Run spatch with `find ... -exec` (plus a script to apply the patch) on every C file instead of running it on the tree.
+      - We can use grep for `debugfs` to find files, maybe? Wouldn't work with helper functions. Maybe do this in addition to running over the tree.
     - Run without `--jobs` in case parallelism is the enemy
     - Run with more verbose options
     - Try using `make coccicheck` or whatever method to generate patches to see if it fixes the problem where some files don't get processed
       - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
-    - Run single-threaded (maybe overnight?)
     - Need `--recursive-includes`?
     - Run without caching headers (`--no-include-cache`)
     - (didn't work) `--timeout=0` (drivers/scsi/lpfc is quite slow, for example)
