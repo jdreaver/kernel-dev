@@ -1,6 +1,6 @@
-From 99b706f7a86f64de03ff22b0a02dfc48bab6ee41 Mon Sep 17 00:00:00 2001
+From 56dd253731f942650129bcc3a134826c66bc735f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 19:44:46 -0800
+Date: Fri, 31 Jan 2025 20:30:49 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -144,6 +144,7 @@ David Reaver (3):
  drivers/crypto/amlogic/amlogic-gxl.h          |   2 +-
  drivers/crypto/axis/artpec6_crypto.c          |   2 +-
  drivers/crypto/bcm/cipher.h                   |   4 +-
+ drivers/crypto/caam/caamalg_qi2.h             |   2 +-
  drivers/crypto/caam/ctrl.c                    |   2 +-
  drivers/crypto/caam/debugfs.c                 |   2 +-
  drivers/crypto/caam/debugfs.h                 |   5 +-
@@ -209,6 +210,7 @@ David Reaver (3):
  drivers/extcon/extcon-rtk-type-c.c            |   2 +-
  drivers/firmware/arm_scmi/driver.c            |  14 +-
  drivers/firmware/arm_scmi/raw_mode.c          |   8 +-
+ drivers/firmware/arm_scmi/raw_mode.h          |   2 +-
  drivers/firmware/cirrus/cs_dsp.c              |   8 +-
  drivers/firmware/efi/efi.c                    |   2 +-
  drivers/firmware/tegra/bpmp-debugfs.c         |  10 +-
@@ -407,7 +409,7 @@ David Reaver (3):
  drivers/iio/imu/bno055/bno055.c               |   2 +-
  drivers/iio/industrialio-backend.c            |   4 +-
  drivers/iio/industrialio-core.c               |   4 +-
- drivers/infiniband/hw/bnxt_re/bnxt_re.h       |   2 +-
+ drivers/infiniband/hw/bnxt_re/bnxt_re.h       |   4 +-
  drivers/infiniband/hw/bnxt_re/debugfs.c       |   2 +-
  drivers/infiniband/hw/bnxt_re/ib_verbs.h      |   2 +-
  drivers/infiniband/hw/cxgb4/device.c          |   2 +-
@@ -415,10 +417,13 @@ David Reaver (3):
  drivers/infiniband/hw/hfi1/debugfs.c          |   4 +-
  drivers/infiniband/hw/hfi1/fault.c            |   2 +-
  drivers/infiniband/hw/hfi1/fault.h            |   2 +-
+ drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
  drivers/infiniband/hw/hns/hns_roce_debugfs.c  |   7 +-
+ drivers/infiniband/hw/hns/hns_roce_debugfs.h  |   4 +-
  drivers/infiniband/hw/mlx5/main.c             |   2 +-
  drivers/infiniband/hw/mlx5/mlx5_ib.h          |   8 +-
  drivers/infiniband/hw/mlx5/mr.c               |   4 +-
+ drivers/infiniband/hw/ocrdma/ocrdma.h         |   2 +-
  drivers/infiniband/hw/ocrdma/ocrdma_stats.c   |   2 +-
  drivers/infiniband/hw/qib/qib_debugfs.c       |   4 +-
  drivers/infiniband/hw/qib/qib_verbs.h         |   2 +-
@@ -562,6 +567,7 @@ David Reaver (3):
  .../net/ethernet/mellanox/mlx5/core/en/fs.h   |   5 +-
  .../ethernet/mellanox/mlx5/core/en/tc_ct.c    |   2 +-
  .../mellanox/mlx5/core/en_accel/ktls.c        |   2 +-
+ .../mellanox/mlx5/core/en_accel/ktls.h        |   4 +-
  .../mellanox/mlx5/core/en_accel/ktls_tx.c     |   2 +-
  .../net/ethernet/mellanox/mlx5/core/en_fs.c   |   8 +-
  .../net/ethernet/mellanox/mlx5/core/en_tc.c   |   4 +-
@@ -576,13 +582,15 @@ David Reaver (3):
  drivers/net/ethernet/meta/fbnic/fbnic.h       |   2 +-
  .../net/ethernet/meta/fbnic/fbnic_debugfs.c   |   2 +-
  .../ethernet/microchip/lan966x/lan966x_main.h |   2 +-
+ .../microchip/lan966x/lan966x_vcap_impl.c     |   2 +-
  .../ethernet/microchip/sparx5/sparx5_main.h   |   2 +-
+ .../microchip/sparx5/sparx5_vcap_impl.c       |   2 +-
  .../microchip/vcap/vcap_api_debugfs.c         |   9 +-
  .../microchip/vcap/vcap_api_debugfs.h         |  14 +-
  .../net/ethernet/microsoft/mana/gdma_main.c   |   2 +-
  drivers/net/ethernet/netronome/nfp/nfp_main.h |   2 +-
- drivers/net/ethernet/netronome/nfp/nfp_net.h  |  10 +-
- .../ethernet/netronome/nfp/nfp_net_debugfs.c  |   8 +-
+ drivers/net/ethernet/netronome/nfp/nfp_net.h  |  14 +-
+ .../ethernet/netronome/nfp/nfp_net_debugfs.c  |  10 +-
  .../ethernet/netronome/nfp/nfp_netvf_main.c   |   2 +-
  drivers/net/ethernet/pensando/ionic/ionic.h   |   2 +-
  .../ethernet/pensando/ionic/ionic_debugfs.c   |   8 +-
@@ -598,7 +606,7 @@ David Reaver (3):
  drivers/net/netdevsim/dev.c                   |   6 +-
  drivers/net/netdevsim/ethtool.c               |   2 +-
  drivers/net/netdevsim/fib.c                   |   2 +-
- drivers/net/netdevsim/netdevsim.h             |  18 +-
+ drivers/net/netdevsim/netdevsim.h             |  26 +--
  drivers/net/netdevsim/psample.c               |   2 +-
  drivers/net/phy/sfp.c                         |   2 +-
  drivers/net/wireless/ath/ath10k/core.h        |   2 +-
@@ -658,7 +666,7 @@ David Reaver (3):
  .../net/wireless/intel/iwlwifi/iwl-trans.h    |   2 +-
  drivers/net/wireless/intel/iwlwifi/mei/main.c |   2 +-
  .../wireless/intel/iwlwifi/mvm/debugfs-vif.c  |  10 +-
- .../net/wireless/intel/iwlwifi/mvm/debugfs.c  |   2 +-
+ .../net/wireless/intel/iwlwifi/mvm/debugfs.c  |   5 +-
  drivers/net/wireless/intel/iwlwifi/mvm/mvm.h  |  10 +-
  drivers/net/wireless/intel/iwlwifi/mvm/ops.c  |   2 +-
  drivers/net/wireless/intel/iwlwifi/mvm/rs.c   |   2 +-
@@ -672,11 +680,11 @@ David Reaver (3):
  .../wireless/mediatek/mt76/mt7603/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt7615/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt76x02_debugfs.c  |   2 +-
- .../wireless/mediatek/mt76/mt7915/debugfs.c   |  14 +-
+ .../wireless/mediatek/mt76/mt7915/debugfs.c   |  28 +--
  .../wireless/mediatek/mt76/mt7915/mt7915.h    |   5 +-
  .../wireless/mediatek/mt76/mt7921/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt7925/debugfs.c   |   2 +-
- .../wireless/mediatek/mt76/mt7996/debugfs.c   |  14 +-
+ .../wireless/mediatek/mt76/mt7996/debugfs.c   |  28 +--
  .../wireless/mediatek/mt76/mt7996/mt7996.h    |   5 +-
  .../net/wireless/mediatek/mt7601u/debugfs.c   |   2 +-
  drivers/net/wireless/quantenna/qtnfmac/bus.h  |   2 +-
@@ -684,18 +692,21 @@ David Reaver (3):
  drivers/net/wireless/quantenna/qtnfmac/core.h |   2 +-
  .../net/wireless/quantenna/qtnfmac/debug.c    |   2 +-
  .../net/wireless/ralink/rt2x00/rt2x00debug.c  |   6 +-
- drivers/net/wireless/realtek/rtlwifi/debug.c  |   2 +-
+ drivers/net/wireless/realtek/rtlwifi/debug.c  |   4 +-
  drivers/net/wireless/realtek/rtlwifi/wifi.h   |   2 +-
  drivers/net/wireless/realtek/rtw88/debug.c    |  11 +-
  drivers/net/wireless/realtek/rtw89/debug.c    |   8 +-
+ drivers/net/wireless/rsi/rsi_debugfs.h        |   4 +-
  drivers/net/wireless/silabs/wfx/debug.c       |   2 +-
  drivers/net/wireless/st/cw1200/debug.h        |   2 +-
+ drivers/net/wireless/ti/wl1251/wl1251.h       | 194 ++++++++---------
  drivers/net/wireless/ti/wl12xx/debugfs.c      |   4 +-
  drivers/net/wireless/ti/wl12xx/debugfs.h      |   2 +-
  drivers/net/wireless/ti/wl18xx/debugfs.c      |   4 +-
  drivers/net/wireless/ti/wl18xx/debugfs.h      |   2 +-
  drivers/net/wireless/ti/wlcore/debugfs.c      |   6 +-
  drivers/net/wireless/ti/wlcore/hw_ops.h       |   2 +-
+ drivers/net/wireless/ti/wlcore/wlcore.h       |   2 +-
  drivers/net/wireless/virtual/mac80211_hwsim.c |   4 +-
  drivers/net/wwan/iosm/iosm_ipc_imem.h         |   4 +-
  drivers/net/wwan/iosm/iosm_ipc_trace.c        |  13 +-
@@ -778,7 +789,8 @@ David Reaver (3):
  drivers/ras/debugfs.h                         |   4 +-
  drivers/regulator/core.c                      |   2 +-
  drivers/regulator/internal.h                  |   2 +-
- drivers/remoteproc/remoteproc_debugfs.c       |   4 +-
+ drivers/remoteproc/remoteproc_debugfs.c       |   6 +-
+ drivers/remoteproc/remoteproc_internal.h      |   7 +-
  drivers/s390/block/dasd.c                     |  22 +-
  drivers/s390/block/dasd_int.h                 |   6 +-
  drivers/s390/char/zcore.c                     |   6 +-
@@ -956,7 +968,7 @@ David Reaver (3):
  include/linux/greybus.h                       |   2 +-
  include/linux/greybus/svc.h                   |   2 +-
  include/linux/hid.h                           |   6 +-
- include/linux/hisi_acc_qm.h                   |   2 +-
+ include/linux/hisi_acc_qm.h                   |   4 +-
  include/linux/hyperv.h                        |   2 +-
  include/linux/i2c.h                           |   4 +-
  include/linux/iio/iio-opaque.h                |   2 +-
@@ -1107,7 +1119,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1082 files changed, 2690 insertions(+), 2373 deletions(-)
+ 1094 files changed, 2834 insertions(+), 2511 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

@@ -37,6 +37,7 @@ git format-patch master...HEAD \
       - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
     - Run single-threaded (maybe overnight?)
     - Need `--recursive-includes`?
+    - Run without caching headers (`--no-include-cache`)
     - (didn't work) `--timeout=0` (drivers/scsi/lpfc is quite slow, for example)
       - When we hit the timeout, there is an error message like `EXN: Coccinelle_modules.Common.Timeout in ./security/selinux/selinuxfs.c`, so look for that
   - Check spatch exit code. Maybe it is alerting us to a problem.
@@ -48,6 +49,7 @@ git format-patch master...HEAD \
     - `include/linux/mlx5/driver.h`
     - `bnxt_re.h` has an event simpler one that wasn't caught
     - `drivers/net/netdevsim/netdevsim.h` was another
+    - `drivers/crypto/intel/qat/qat_common/adf_cfg.c`
 
 - Consider a `->d_parent` -> new helper `debugfs_node_parent`
 - `->d_inode` -> `debugfs_node_inode` (just check arg type)
