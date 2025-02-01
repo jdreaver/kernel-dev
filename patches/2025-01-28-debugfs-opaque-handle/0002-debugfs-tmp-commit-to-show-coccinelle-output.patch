@@ -1,4 +1,4 @@
-From a0ad5e77074e76c414b32112d4f6daf2c3468004 Mon Sep 17 00:00:00 2001
+From 28faea1051c34443d8503226317bc3900ab88254 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sat, 1 Feb 2025 05:14:13 -0800
 Subject: [RFC PATCH 2/4] debugfs: tmp commit to show coccinelle output
@@ -164,6 +164,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/devfreq/devfreq.c                     |  2 +-
  drivers/dma-buf/dma-buf.c                     |  4 +-
  drivers/dma-buf/sync_debug.c                  |  2 +-
+ drivers/dma/amd/ptdma/ptdma-debugfs.c         |  2 +-
  drivers/dma/bcm-sba-raid.c                    |  2 +-
  drivers/dma/dmaengine.c                       |  2 +-
  drivers/dma/dmaengine.h                       |  4 +-
@@ -172,7 +173,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/dma/hisi_dma.c                        |  2 +-
  drivers/dma/idxd/debugfs.c                    |  2 +-
  drivers/dma/idxd/idxd.h                       |  4 +-
- drivers/dma/ptdma/ptdma-debugfs.c             |  2 +-
  drivers/dma/pxa_dma.c                         | 11 +--
  drivers/dma/qcom/hidma.h                      |  2 +-
  drivers/dma/qcom/hidma_dbg.c                  |  2 +-
@@ -930,7 +930,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/regulator/driver.h              |  2 +-
  include/linux/remoteproc.h                    |  2 +-
  include/linux/shrinker.h                      |  2 +-
- include/linux/soundwire/sdw.h                 |  4 +-
+ include/linux/soundwire/sdw.h                 |  2 +-
  include/linux/sunrpc/clnt.h                   |  2 +-
  include/linux/sunrpc/xprt.h                   |  2 +-
  include/linux/swiotlb.h                       |  2 +-
@@ -1055,7 +1055,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  2 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  6 +-
- 1043 files changed, 2068 insertions(+), 1932 deletions(-)
+ 1043 files changed, 2067 insertions(+), 1931 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -1626,7 +1626,7 @@ index 474e1f8d1d3c..5d63837a3185 100644
  	/* IOMMU and passthrough */
  	struct iommu_domain *s390_domain; /* attached IOMMU domain */
 diff --git a/arch/s390/kernel/debug.c b/arch/s390/kernel/debug.c
-index ba6b7329a10e..1d1e591bc900 100644
+index ce038e9205f7..b59401b28f0d 100644
 --- a/arch/s390/kernel/debug.c
 +++ b/arch/s390/kernel/debug.c
 @@ -167,7 +167,7 @@ static const struct file_operations debug_file_ops = {
@@ -1657,7 +1657,7 @@ index ba6b7329a10e..1d1e591bc900 100644
  	int i, rc = 0;
  
 diff --git a/arch/s390/kernel/hiperdispatch.c b/arch/s390/kernel/hiperdispatch.c
-index 2a99a216ab62..2dbad0dc6a77 100644
+index 7857a7e8e56c..a8f3631e6060 100644
 --- a/arch/s390/kernel/hiperdispatch.c
 +++ b/arch/s390/kernel/hiperdispatch.c
 @@ -395,7 +395,7 @@ DEFINE_SIMPLE_ATTRIBUTE(hd_adjustments_fops, hd_adjustment_count_get, NULL, "%ll
@@ -2024,7 +2024,7 @@ index 63c13a2ccf55..393ea778be26 100644
  enum pt_level {
  	PT_PGD,
 diff --git a/block/blk-core.c b/block/blk-core.c
-index 32fb28a6372c..ceb96f3f5bb6 100644
+index d6c4fa3943b5..c91d56b49d0a 100644
 --- a/block/blk-core.c
 +++ b/block/blk-core.c
 @@ -51,7 +51,7 @@
@@ -2036,7 +2036,7 @@ index 32fb28a6372c..ceb96f3f5bb6 100644
  
  EXPORT_TRACEPOINT_SYMBOL_GPL(block_bio_remap);
  EXPORT_TRACEPOINT_SYMBOL_GPL(block_rq_remap);
-@@ -504,7 +504,7 @@ bool should_fail_request(struct block_device *part, unsigned int bytes)
+@@ -503,7 +503,7 @@ bool should_fail_request(struct block_device *part, unsigned int bytes)
  
  static int __init fail_make_request_debugfs(void)
  {
@@ -2562,7 +2562,7 @@ index f7328f19ac5c..d0df015925fe 100644
  	bool sr;
  
 diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
-index b63a0f29a54a..a7a6f8510d3d 100644
+index 7bdc7eb808ea..a41d5dc1599c 100644
 --- a/drivers/block/nbd.c
 +++ b/drivers/block/nbd.c
 @@ -104,7 +104,7 @@ struct nbd_config {
@@ -2583,7 +2583,7 @@ index b63a0f29a54a..a7a6f8510d3d 100644
  #endif
  
  #define nbd_name(nbd) ((nbd)->disk->disk_name)
-@@ -1797,7 +1797,7 @@ DEFINE_SHOW_ATTRIBUTE(nbd_dbg_flags);
+@@ -1798,7 +1798,7 @@ DEFINE_SHOW_ATTRIBUTE(nbd_dbg_flags);
  
  static int nbd_dev_dbg_init(struct nbd_device *nbd)
  {
@@ -2592,7 +2592,7 @@ index b63a0f29a54a..a7a6f8510d3d 100644
  	struct nbd_config *config = nbd->config;
  
  	if (!nbd_dbg_dir)
-@@ -1827,7 +1827,7 @@ static void nbd_dev_dbg_close(struct nbd_device *nbd)
+@@ -1828,7 +1828,7 @@ static void nbd_dev_dbg_close(struct nbd_device *nbd)
  
  static int nbd_dbg_init(void)
  {
@@ -3689,6 +3689,19 @@ index 237bce21d1e7..92e55640ab8e 100644
  
  static LIST_HEAD(sync_timeline_list_head);
  static DEFINE_SPINLOCK(sync_timeline_list_lock);
+diff --git a/drivers/dma/amd/ptdma/ptdma-debugfs.c b/drivers/dma/amd/ptdma/ptdma-debugfs.c
+index c7c90bbf6fd8..a97fc9ba26b3 100644
+--- a/drivers/dma/amd/ptdma/ptdma-debugfs.c
++++ b/drivers/dma/amd/ptdma/ptdma-debugfs.c
+@@ -100,7 +100,7 @@ DEFINE_SHOW_ATTRIBUTE(pt_debugfs_stats);
+ 
+ void ptdma_debugfs_setup(struct pt_device *pt)
+ {
+-	struct dentry *debugfs_q_instance;
++	struct debugfs_node *debugfs_q_instance;
+ 	struct ae4_cmd_queue *ae4cmd_q;
+ 	struct pt_cmd_queue *cmd_q;
+ 	struct ae4_device *ae4;
 diff --git a/drivers/dma/bcm-sba-raid.c b/drivers/dma/bcm-sba-raid.c
 index 7f0e76439ce5..2c50172d13f0 100644
 --- a/drivers/dma/bcm-sba-raid.c
@@ -3888,7 +3901,7 @@ index ad4245cb301d..838ea5ac1033 100644
  static void dump_event_entry(struct idxd_device *idxd, struct seq_file *s,
  			     u16 index, int *count, bool processed)
 diff --git a/drivers/dma/idxd/idxd.h b/drivers/dma/idxd/idxd.h
-index d84e21daa991..e23b80cb9531 100644
+index 214b8039439f..7cd4e17b8787 100644
 --- a/drivers/dma/idxd/idxd.h
 +++ b/drivers/dma/idxd/idxd.h
 @@ -370,8 +370,8 @@ struct idxd_device {
@@ -3901,20 +3914,7 @@ index d84e21daa991..e23b80cb9531 100644
 +	struct debugfs_node *dbgfs_evl_file;
  
  	bool user_submission_safe;
- };
-diff --git a/drivers/dma/ptdma/ptdma-debugfs.c b/drivers/dma/ptdma/ptdma-debugfs.c
-index c8307d3044a3..1ffbf43ef1f4 100644
---- a/drivers/dma/ptdma/ptdma-debugfs.c
-+++ b/drivers/dma/ptdma/ptdma-debugfs.c
-@@ -85,7 +85,7 @@ DEFINE_SHOW_ATTRIBUTE(pt_debugfs_stats);
- void ptdma_debugfs_setup(struct pt_device *pt)
- {
- 	struct pt_cmd_queue *cmd_q;
--	struct dentry *debugfs_q_instance;
-+	struct debugfs_node *debugfs_q_instance;
  
- 	if (!debugfs_initialized())
- 		return;
 diff --git a/drivers/dma/pxa_dma.c b/drivers/dma/pxa_dma.c
 index e50cf3357e5e..a291654a6f89 100644
 --- a/drivers/dma/pxa_dma.c
@@ -7648,7 +7648,7 @@ index 78bd7e4bf9ce..dd24a570e42d 100644
  void intel_th_debug_init(void);
  void intel_th_debug_done(void);
 diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-index e2c2a2ef1c12..88d927ce7f07 100644
+index 5546184df05f..8369f62b9f49 100644
 --- a/drivers/i2c/i2c-core-base.c
 +++ b/drivers/i2c/i2c-core-base.c
 @@ -68,7 +68,7 @@ static int i2c_detect(struct i2c_adapter *adapter, struct i2c_driver *driver);
@@ -9484,7 +9484,7 @@ index d2a53961d8e2..885b311379d4 100644
  	dir = debugfs_create_dir("fault_inject", parent);
  	if (IS_ERR_OR_NULL(dir)) {
 diff --git a/drivers/mtd/ubi/ubi.h b/drivers/mtd/ubi/ubi.h
-index 26cc53ad34ec..5fae1f559859 100644
+index c792b9bcab9b..aff3c085b394 100644
 --- a/drivers/mtd/ubi/ubi.h
 +++ b/drivers/mtd/ubi/ubi.h
 @@ -421,17 +421,17 @@ struct ubi_debug_info {
@@ -9836,7 +9836,7 @@ index 8473c43d171a..3985b465683c 100644
  
  	root = debugfs_create_dir(name, hbg_dbgfs_root);
 diff --git a/drivers/net/ethernet/hisilicon/hns3/hnae3.h b/drivers/net/ethernet/hisilicon/hns3/hnae3.h
-index 12ba380eb701..e8226baebcab 100644
+index 4e44f28288f9..5dcda6c14e5d 100644
 --- a/drivers/net/ethernet/hisilicon/hns3/hnae3.h
 +++ b/drivers/net/ethernet/hisilicon/hns3/hnae3.h
 @@ -915,7 +915,7 @@ struct hnae3_handle {
@@ -10934,10 +10934,10 @@ index f05cae103d83..9d076f8cf902 100644
  
  	unsigned long state;
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index 5212dc439b1d..53cc816d9071 100644
+index d04543e5697b..030f82298754 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-@@ -6276,7 +6276,7 @@ static int stmmac_set_mac_address(struct net_device *ndev, void *addr)
+@@ -6263,7 +6263,7 @@ static int stmmac_set_mac_address(struct net_device *ndev, void *addr)
  }
  
  #ifdef CONFIG_DEBUG_FS
@@ -11058,7 +11058,7 @@ index 3e0b61202f0c..db68eac3b0bf 100644
  	u16 tx_share;
  	u16 tx_max;
 diff --git a/drivers/net/netdevsim/ethtool.c b/drivers/net/netdevsim/ethtool.c
-index 3b23f3d3ca2b..a997e4b73b66 100644
+index 5c80fbee7913..0e886495b4c7 100644
 --- a/drivers/net/netdevsim/ethtool.c
 +++ b/drivers/net/netdevsim/ethtool.c
 @@ -192,7 +192,7 @@ static void nsim_ethtool_ring_init(struct netdevsim *ns)
@@ -11084,10 +11084,10 @@ index 16c382c42227..c8d93b9bead7 100644
  	bool fail_res_nexthop_group_replace;
  	bool fail_nexthop_bucket_replace;
 diff --git a/drivers/net/netdevsim/netdevsim.h b/drivers/net/netdevsim/netdevsim.h
-index dcf073bc4802..cda34f3a0911 100644
+index 96d54c08043d..b0649881d946 100644
 --- a/drivers/net/netdevsim/netdevsim.h
 +++ b/drivers/net/netdevsim/netdevsim.h
-@@ -217,7 +217,7 @@ enum nsim_resource_id {
+@@ -218,7 +218,7 @@ enum nsim_resource_id {
  struct nsim_dev_health {
  	struct devlink_health_reporter *empty_reporter;
  	struct devlink_health_reporter *dummy_reporter;
@@ -11096,7 +11096,7 @@ index dcf073bc4802..cda34f3a0911 100644
  	char *recovered_break_msg;
  	u32 binary_len;
  	bool fail_recover;
-@@ -235,7 +235,7 @@ struct nsim_dev_hwstats_netdev {
+@@ -236,7 +236,7 @@ struct nsim_dev_hwstats_netdev {
  };
  
  struct nsim_dev_hwstats {
@@ -11105,7 +11105,7 @@ index dcf073bc4802..cda34f3a0911 100644
  	struct dentry *l3_ddir;
  
  	struct mutex hwsdev_list_lock; /* protects hwsdev list(s) */
-@@ -275,7 +275,7 @@ struct nsim_dev_port {
+@@ -276,7 +276,7 @@ struct nsim_dev_port {
  	struct devlink_port devlink_port;
  	unsigned int port_index;
  	enum nsim_dev_port_type port_type;
@@ -11114,7 +11114,7 @@ index dcf073bc4802..cda34f3a0911 100644
  	struct dentry *rate_parent;
  	char *parent_name;
  	struct netdevsim *ns;
-@@ -298,7 +298,7 @@ struct nsim_dev {
+@@ -299,7 +299,7 @@ struct nsim_dev {
  	struct nsim_bus_dev *nsim_bus_dev;
  	struct nsim_fib_data *fib_data;
  	struct nsim_trap_data *trap_data;
@@ -11123,7 +11123,7 @@ index dcf073bc4802..cda34f3a0911 100644
  	struct dentry *ports_ddir;
  	struct dentry *take_snapshot;
  	struct dentry *nodes_ddir;
-@@ -309,7 +309,7 @@ struct nsim_dev {
+@@ -310,7 +310,7 @@ struct nsim_dev {
  	bool bpf_bind_accept;
  	bool bpf_bind_verifier_accept;
  	u32 bpf_bind_verifier_delay;
@@ -13664,7 +13664,7 @@ index ef959e66db7c..b319e4af7e22 100644
  #ifdef CONFIG_DEBUG_FS
  static const char *arm_cmn_device_type(u8 type)
 diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
-index 413f76e2d174..45025d123ec9 100644
+index 8dfdce605a90..59865c202a14 100644
 --- a/drivers/phy/phy-core.c
 +++ b/drivers/phy/phy-core.c
 @@ -26,7 +26,7 @@ static const struct class phy_class = {
@@ -14504,7 +14504,7 @@ index 5a2f48439258..d9b36629e844 100644
  
  #endif /* __RAS_DEBUGFS_H__ */
 diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 6c0ef1182248..e25e0ec03989 100644
+index 89578b91c468..d365f2d86e69 100644
 --- a/drivers/regulator/core.c
 +++ b/drivers/regulator/core.c
 @@ -44,7 +44,7 @@ static LIST_HEAD(regulator_supply_alias_list);
@@ -15577,7 +15577,7 @@ index 206a8d511ebd..7b41ba0501be 100644
  	if (!root)
  		return;
 diff --git a/drivers/soundwire/qcom.c b/drivers/soundwire/qcom.c
-index e00c5ac496a6..854736965ff4 100644
+index 0f45e3404756..2ea9a7d2692f 100644
 --- a/drivers/soundwire/qcom.c
 +++ b/drivers/soundwire/qcom.c
 @@ -183,7 +183,7 @@ struct qcom_swrm_ctrl {
@@ -16955,10 +16955,10 @@ index c7a7235e6224..2a73ee9d3b8d 100644
  	dir = debugfs_create_dir(KBUILD_MODNAME, NULL);
  	wdt->dbgfs_dir = dir;
 diff --git a/fs/bcachefs/debug.c b/fs/bcachefs/debug.c
-index b5de52a50d10..05d4df55fccf 100644
+index 55333e82d1fe..143c6789d410 100644
 --- a/fs/bcachefs/debug.c
 +++ b/fs/bcachefs/debug.c
-@@ -28,7 +28,7 @@
+@@ -29,7 +29,7 @@
  #include <linux/random.h>
  #include <linux/seq_file.h>
  
@@ -16967,7 +16967,7 @@ index b5de52a50d10..05d4df55fccf 100644
  
  static bool bch2_btree_verify_replica(struct bch_fs *c, struct btree *b,
  				      struct extent_ptr_decoded pick)
-@@ -883,7 +883,7 @@ void bch2_fs_debug_exit(struct bch_fs *c)
+@@ -884,7 +884,7 @@ void bch2_fs_debug_exit(struct bch_fs *c)
  
  static void bch2_fs_debug_btree_init(struct bch_fs *c, struct btree_debug *bd)
  {
@@ -17249,7 +17249,7 @@ index e0b91dbaa0ac..b368ec43ef77 100644
  MODULE_AUTHOR("Oracle");
  MODULE_LICENSE("GPL");
 diff --git a/fs/orangefs/orangefs-debugfs.c b/fs/orangefs/orangefs-debugfs.c
-index 9729f071c5aa..877b7c319060 100644
+index f52073022fae..ba94ff6ad8ce 100644
 --- a/fs/orangefs/orangefs-debugfs.c
 +++ b/fs/orangefs/orangefs-debugfs.c
 @@ -99,8 +99,8 @@ static char *debug_help_string;
@@ -17277,10 +17277,10 @@ index 776cae20af4e..098c18c8ed39 100644
  static bool record_ftrace;
  module_param(record_ftrace, bool, 0400);
 diff --git a/fs/ubifs/debug.c b/fs/ubifs/debug.c
-index 5cc69beaa62e..96ee65e312d8 100644
+index b01f382ce8db..a98784f4425d 100644
 --- a/fs/ubifs/debug.c
 +++ b/fs/ubifs/debug.c
-@@ -2666,7 +2666,7 @@ int dbg_leb_map(struct ubifs_info *c, int lnum)
+@@ -2669,7 +2669,7 @@ int dbg_leb_map(struct ubifs_info *c, int lnum)
   * Root directory for UBIFS stuff in debugfs. Contains sub-directories which
   * contain the stuff specific to particular file-system mounts.
   */
@@ -17289,7 +17289,7 @@ index 5cc69beaa62e..96ee65e312d8 100644
  
  static int dfs_file_open(struct inode *inode, struct file *file)
  {
-@@ -2888,12 +2888,12 @@ void dbg_debugfs_exit_fs(struct ubifs_info *c)
+@@ -2891,12 +2891,12 @@ void dbg_debugfs_exit_fs(struct ubifs_info *c)
  
  struct ubifs_global_debug_info ubifs_dbg;
  
@@ -17530,7 +17530,7 @@ index 2ad261082bba..4f560f13d0e6 100644
  };
  
 diff --git a/include/linux/blk-mq.h b/include/linux/blk-mq.h
-index a0a9007cc1e3..0e4990af75c4 100644
+index 9ebb53f031cd..c739af74aa75 100644
 --- a/include/linux/blk-mq.h
 +++ b/include/linux/blk-mq.h
 @@ -431,9 +431,9 @@ struct blk_mq_hw_ctx {
@@ -17546,10 +17546,10 @@ index a0a9007cc1e3..0e4990af75c4 100644
  
  	/**
 diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 76f0a4e7c2e5..0d65cdb2f011 100644
+index 248416ecd01c..c81a861054d1 100644
 --- a/include/linux/blkdev.h
 +++ b/include/linux/blkdev.h
-@@ -598,9 +598,9 @@ struct request_queue {
+@@ -597,9 +597,9 @@ struct request_queue {
  	struct blk_mq_tag_set	*tag_set;
  	struct list_head	tag_set_list;
  
@@ -18170,10 +18170,10 @@ index 1a00be90d93a..a7298da00fa9 100644
  	/* objs pending delete, per node */
  	atomic_long_t *nr_deferred;
 diff --git a/include/linux/soundwire/sdw.h b/include/linux/soundwire/sdw.h
-index bd9836690da6..02245d23665a 100644
+index 2d6c30317792..5316c17734b0 100644
 --- a/include/linux/soundwire/sdw.h
 +++ b/include/linux/soundwire/sdw.h
-@@ -659,7 +659,7 @@ struct sdw_slave {
+@@ -664,7 +664,7 @@ struct sdw_slave {
  	struct sdw_bus *bus;
  	struct sdw_slave_prop prop;
  #ifdef CONFIG_DEBUG_FS
@@ -18182,15 +18182,6 @@ index bd9836690da6..02245d23665a 100644
  #endif
  	struct list_head node;
  	struct completion port_ready[SDW_MAX_PORTS];
-@@ -916,7 +916,7 @@ struct sdw_bus {
- 	struct irq_chip irq_chip;
- 	struct irq_domain *domain;
- #ifdef CONFIG_DEBUG_FS
--	struct dentry *debugfs;
-+	struct debugfs_node *debugfs;
- #endif
- 	bool multi_link;
- };
 diff --git a/include/linux/sunrpc/clnt.h b/include/linux/sunrpc/clnt.h
 index fec976e58174..e7c939c101f3 100644
 --- a/include/linux/sunrpc/clnt.h
@@ -18794,7 +18785,7 @@ index ec6d8e72d980..eb438eebc125 100644
  	struct irq_domain *d;
  
 diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 030569210670..48c1c7bdc303 100644
+index 88aeac84e4c0..2e6449890cc9 100644
 --- a/kernel/kprobes.c
 +++ b/kernel/kprobes.c
 @@ -2977,7 +2977,7 @@ static const struct file_operations fops_kp = {
@@ -18820,10 +18811,10 @@ index e68d82099558..829ecebc834a 100644
  
  	if (IS_ERR(d_counts))
 diff --git a/kernel/module/internal.h b/kernel/module/internal.h
-index b35c0ec54a89..fc58ae17c377 100644
+index d09b46ef032f..867ff26bbbfa 100644
 --- a/kernel/module/internal.h
 +++ b/kernel/module/internal.h
-@@ -191,7 +191,7 @@ enum fail_dup_mod_reason {
+@@ -193,7 +193,7 @@ enum fail_dup_mod_reason {
  };
  
  #ifdef CONFIG_MODULE_DEBUGFS
@@ -18833,10 +18824,10 @@ index b35c0ec54a89..fc58ae17c377 100644
  
  #ifdef CONFIG_MODULE_STATS
 diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 8808b6906d5a..d9e4bb18a701 100644
+index 1fb9ad289a6f..48b21444fa79 100644
 --- a/kernel/module/main.c
 +++ b/kernel/module/main.c
-@@ -3776,7 +3776,7 @@ void print_modules(void)
+@@ -3852,7 +3852,7 @@ void print_modules(void)
  }
  
  #ifdef CONFIG_MODULE_DEBUGFS

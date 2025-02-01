@@ -1,4 +1,4 @@
-From 2f6a13185dc5bf0f5d2f4d57a00a8db58ce0c6f1 Mon Sep 17 00:00:00 2001
+From 5caff39197815101cf2484a1a63c08b4daf36a3e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sat, 1 Feb 2025 06:45:03 -0800
 Subject: [RFC PATCH 4/4] relay: Use debugfs_node instead of raw dentry for

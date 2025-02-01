@@ -1,6 +1,6 @@
-From 2f6a13185dc5bf0f5d2f4d57a00a8db58ce0c6f1 Mon Sep 17 00:00:00 2001
+From 5caff39197815101cf2484a1a63c08b4daf36a3e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 06:58:49 -0800
+Date: Sat, 1 Feb 2025 07:02:09 -0800
 Subject: [RFC PATCH 0/4] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -187,6 +187,7 @@ David Reaver (4):
  drivers/devfreq/devfreq.c                     |   2 +-
  drivers/dma-buf/dma-buf.c                     |   4 +-
  drivers/dma-buf/sync_debug.c                  |   2 +-
+ drivers/dma/amd/ptdma/ptdma-debugfs.c         |   2 +-
  drivers/dma/bcm-sba-raid.c                    |   2 +-
  drivers/dma/dmaengine.c                       |   2 +-
  drivers/dma/dmaengine.h                       |   4 +-
@@ -195,7 +196,6 @@ David Reaver (4):
  drivers/dma/hisi_dma.c                        |   2 +-
  drivers/dma/idxd/debugfs.c                    |   2 +-
  drivers/dma/idxd/idxd.h                       |   4 +-
- drivers/dma/ptdma/ptdma-debugfs.c             |   2 +-
  drivers/dma/pxa_dma.c                         |  11 +-
  drivers/dma/qcom/hidma.h                      |   2 +-
  drivers/dma/qcom/hidma_dbg.c                  |   2 +-
@@ -1004,7 +1004,7 @@ David Reaver (4):
  include/linux/relay.h                         |  19 +-
  include/linux/remoteproc.h                    |   2 +-
  include/linux/shrinker.h                      |   2 +-
- include/linux/soundwire/sdw.h                 |   4 +-
+ include/linux/soundwire/sdw.h                 |   2 +-
  include/linux/sunrpc/clnt.h                   |   2 +-
  include/linux/sunrpc/xprt.h                   |   2 +-
  include/linux/swiotlb.h                       |   2 +-
@@ -1134,7 +1134,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1106 files changed, 2895 insertions(+), 2609 deletions(-)
+ 1106 files changed, 2894 insertions(+), 2608 deletions(-)
 
 
-base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5
+base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45

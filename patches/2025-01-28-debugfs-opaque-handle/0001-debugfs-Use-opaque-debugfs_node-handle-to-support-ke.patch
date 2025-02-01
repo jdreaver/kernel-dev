@@ -1,4 +1,4 @@
-From 1800ce76a168d9b29f244a9ecffe1e09ac4676fd Mon Sep 17 00:00:00 2001
+From c5f981a6e7cfb9a337cec06d8831595040338466 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 28 Jan 2025 13:53:41 -0800
 Subject: [RFC PATCH 1/4] debugfs: Use opaque debugfs_node handle to support

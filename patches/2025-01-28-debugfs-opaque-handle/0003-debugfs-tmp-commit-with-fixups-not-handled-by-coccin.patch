@@ -1,4 +1,4 @@
-From 0a2ab6ad67b49d4c19a706312ecb421683fe390f Mon Sep 17 00:00:00 2001
+From 2e7833edbe6490784063b06994cc1954b92c23d5 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: tmp commit with fixups not handled by
@@ -1396,7 +1396,7 @@ index 90b290f94c27..ee558d6254f5 100644
  
  	/* user configurable options */
 diff --git a/drivers/net/netdevsim/netdevsim.h b/drivers/net/netdevsim/netdevsim.h
-index cda34f3a0911..2b6b4594e610 100644
+index b0649881d946..a1b920eb6844 100644
 --- a/drivers/net/netdevsim/netdevsim.h
 +++ b/drivers/net/netdevsim/netdevsim.h
 @@ -51,7 +51,7 @@ struct nsim_sa {
@@ -1408,7 +1408,7 @@ index cda34f3a0911..2b6b4594e610 100644
  	u32 count;
  	u32 tx;
  	u32 ok;
-@@ -138,8 +138,8 @@ struct netdevsim {
+@@ -139,8 +139,8 @@ struct netdevsim {
  	} udp_ports;
  
  	struct page *page;
@@ -1419,7 +1419,7 @@ index cda34f3a0911..2b6b4594e610 100644
  
  	struct nsim_ethtool ethtool;
  	struct netdevsim __rcu *peer;
-@@ -236,7 +236,7 @@ struct nsim_dev_hwstats_netdev {
+@@ -237,7 +237,7 @@ struct nsim_dev_hwstats_netdev {
  
  struct nsim_dev_hwstats {
  	struct debugfs_node *ddir;
@@ -1428,7 +1428,7 @@ index cda34f3a0911..2b6b4594e610 100644
  
  	struct mutex hwsdev_list_lock; /* protects hwsdev list(s) */
  	struct list_head l3_list;
-@@ -276,7 +276,7 @@ struct nsim_dev_port {
+@@ -277,7 +277,7 @@ struct nsim_dev_port {
  	unsigned int port_index;
  	enum nsim_dev_port_type port_type;
  	struct debugfs_node *ddir;
@@ -1437,7 +1437,7 @@ index cda34f3a0911..2b6b4594e610 100644
  	char *parent_name;
  	struct netdevsim *ns;
  };
-@@ -299,9 +299,9 @@ struct nsim_dev {
+@@ -300,9 +300,9 @@ struct nsim_dev {
  	struct nsim_fib_data *fib_data;
  	struct nsim_trap_data *trap_data;
  	struct debugfs_node *ddir;
@@ -2596,10 +2596,10 @@ index 5cba6475f1d0..e34330c1fb7b 100644
  	struct debugfs_node *debugfs_mds_sessions;
  	struct debugfs_node *debugfs_metrics_dir;
 diff --git a/fs/ubifs/debug.c b/fs/ubifs/debug.c
-index 96ee65e312d8..c79a891f01c5 100644
+index a98784f4425d..08757c398ec1 100644
 --- a/fs/ubifs/debug.c
 +++ b/fs/ubifs/debug.c
-@@ -2705,23 +2705,24 @@ static ssize_t dfs_file_read(struct file *file, char __user *u, size_t count,
+@@ -2708,23 +2708,24 @@ static ssize_t dfs_file_read(struct file *file, char __user *u, size_t count,
  			     loff_t *ppos)
  {
  	struct dentry *dent = file->f_path.dentry;
@@ -2631,7 +2631,7 @@ index 96ee65e312d8..c79a891f01c5 100644
  		val = c->ro_error;
  	else
  		return -EINVAL;
-@@ -2761,17 +2762,18 @@ static ssize_t dfs_file_write(struct file *file, const char __user *u,
+@@ -2764,17 +2765,18 @@ static ssize_t dfs_file_write(struct file *file, const char __user *u,
  	struct ubifs_info *c = file->private_data;
  	struct ubifs_debug_info *d = c->dbg;
  	struct dentry *dent = file->f_path.dentry;
@@ -2653,7 +2653,7 @@ index 96ee65e312d8..c79a891f01c5 100644
  		mutex_lock(&c->tnc_mutex);
  		ubifs_dump_tnc(c);
  		mutex_unlock(&c->tnc_mutex);
-@@ -2782,19 +2784,19 @@ static ssize_t dfs_file_write(struct file *file, const char __user *u,
+@@ -2785,19 +2787,19 @@ static ssize_t dfs_file_write(struct file *file, const char __user *u,
  	if (val < 0)
  		return val;
  
@@ -2680,7 +2680,7 @@ index 96ee65e312d8..c79a891f01c5 100644
  		c->ro_error = !!val;
  	else
  		return -EINVAL;
-@@ -2899,19 +2901,20 @@ static ssize_t dfs_global_file_read(struct file *file, char __user *u,
+@@ -2902,19 +2904,20 @@ static ssize_t dfs_global_file_read(struct file *file, char __user *u,
  				    size_t count, loff_t *ppos)
  {
  	struct dentry *dent = file->f_path.dentry;
@@ -2707,7 +2707,7 @@ index 96ee65e312d8..c79a891f01c5 100644
  		val = ubifs_dbg.tst_rcvry;
  	else
  		return -EINVAL;
-@@ -2923,23 +2926,24 @@ static ssize_t dfs_global_file_write(struct file *file, const char __user *u,
+@@ -2926,23 +2929,24 @@ static ssize_t dfs_global_file_write(struct file *file, const char __user *u,
  				     size_t count, loff_t *ppos)
  {
  	struct dentry *dent = file->f_path.dentry;
