@@ -7,3 +7,4 @@ TODO (things to cover):
 - This patch will make any future internal migration much easier
   - Lots more to do before we could plug in kernfs. Biggest hurdle is refactoring file ops structs
 - One escape hatch to dentry was required for relay stuff. I noticed that kernfs also allows getting a kernfs_node's dentry. (One example is in blktrace.c)
+  - I'm not a fan of the escape hatch, but at least it is way easier to find when people are using it than raw dentry pointers floating around.

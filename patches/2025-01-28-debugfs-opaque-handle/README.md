@@ -25,6 +25,9 @@ git format-patch master...HEAD \
 
 # TODO
 
+- Split up coccinelle file, primarily for ease of understanding, but also some other benefits
+  - I think the rules are stepping on each other because if one rule proposes changes to a header file, and another proposes different changes, I think spatch doesn't like that
+  - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
 - spatch needing two runs to work
   - Ideas to fix
@@ -46,6 +49,9 @@ git format-patch master...HEAD \
     - `bnxt_re.h` has an event simpler one that wasn't caught
     - `drivers/net/netdevsim/netdevsim.h` was another
 
+- Consider a `->d_parent` -> new helper `debugfs_node_parent`
+- `->d_inode` -> `debugfs_node_inode` (just check arg type)
+
 - (might be done) Change `rchan_callbacks` users to convert to `dentry`
 
 - Consider removing the `all_function_calls` thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
@@ -53,9 +59,6 @@ git format-patch master...HEAD \
 - Sometimes `include/linux/debugfs.h` gets caught up in changes
   - I had it pulled in once when I just ran against `drivers/scsi/lpfc/`
   - I cannot for the life of me get this ignored
-
-- Split up coccinelle file, primarily for ease of understanding, but also some other benefits
-  - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
 - (is this still a problem?) not catching wrappers
   - Recreate the problem in my test file
