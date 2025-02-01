@@ -18,6 +18,7 @@ git format-patch master...HEAD \
       --cc 'Steven Rostedt <rostedt@goodmis.org>' \
       --cc 'Christian Brauner <brauner@kernel.org>' \
       --cc 'linux-fsdevel@vger.kernel.org' \
+      --cc 'cocci@inria.fr' \
       --cc 'linux-kernel@vger.kernel.org'
 ```
 
@@ -32,12 +33,13 @@ git format-patch master...HEAD \
   - Fill out cover letter
   - Decide on subject. Should we not mention kernfs in any of this?
 
+- Redo `git format-patch` with cocci email in there
 - Compile with debugfs disabled in kernel
 
 ## Non-coccinelle changes
 
 - Try removing a few `debugfs_node_dentry` calls. I think they are only used for `%pd2` printf'ing and fetching a parent.
-  - Consider a `->d_parent` -> new helper `debugfs_node_parent`
+  - Consider a `->d_parent` -> new helper `debugfs_node_parent` and add to Coccinelle as well
 
 ## Coccinelle
 
@@ -48,15 +50,17 @@ git format-patch master...HEAD \
   - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
 - spatch needing two runs to work, or just not working at top level and only when run on individual files/directories
+  - Inspect the `.rej` files that patch makes! I see some of them have more changes than the change that was accepted. I think coccinelle is clearly stepping on itself
   - Ideas to fix
-    - Run without caching headers (`--no-include-cache`)
-    - Run in two steps: one with `--all-includes` and one without. Maybe the problem is spatch runs a header in isolation and thinks nothing needs to change, but when it wants to change that same header when it reaches it from a C file it uses the cached no-change result.
+    - Just run it more than once?
+    - (just changed fewer files) Run in two steps: one with `--all-includes` and one without. Maybe the problem is spatch runs a header in isolation and thinks nothing needs to change, but when it wants to change that same header when it reaches it from a C file it uses the cached no-change result.
       - `--include-headers` only really makes sense for ones with C code in them and for the fuzzy-matching "this looks like a debugfs dentry" stuff. If we split that into another pass then maybe it will work?
       - Also try this in conjunction with `--no-include cache`?
     - Run with more verbose options
     - Try using `make coccicheck` or whatever method to generate patches to see if it fixes the problem where some files don't get processed
       - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
     - Need `--recursive-includes`?
+    - (didn't work) Run without caching headers (`--no-include-cache`)
     - (didn't work) Run without `--jobs` in case parallelism is the enemy
     - (didn't work) `--timeout=0` (drivers/scsi/lpfc is quite slow, for example)
       - When we hit the timeout, there is an error message like `EXN: Coccinelle_modules.Common.Timeout in ./security/selinux/selinuxfs.c`, so look for that
@@ -73,6 +77,15 @@ git format-patch master...HEAD \
     - `bnxt_re.h` has an event simpler one that wasn't caught
     - `drivers/net/netdevsim/netdevsim.h` was another
     - `drivers/crypto/intel/qat/qat_common/adf_cfg.c`
+
+- Test that this works with `&` and detects that the `i2c_bus` on `dev_entry` should be a `debugfs_node *`
+
+  ```
+  	debugfs_create_u8("i2c_bus",
+  				0644,
+  				root,
+  				&dev_entry->i2c_bus);
+  ```
 
 - Test more complex assignments like `hb->dbgfs.base_dir = debugfs_create_dir("heartbeat", accel_dev->debugfs_dir);` in test file
 - In `struct dentry *parent = ibd->hfi1_ibdev_dbg;` we know that `parent` is used as an arg to a debugfs_function, and `ibd->hfi1_ibdev_dbg` is debugfs_node, so we should have migrated parent. We should allow any expression on the RHS, not just function calls to debugfs functions.

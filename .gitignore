@@ -1,7 +1,6 @@
 /staging/
 /.ccls-cache/
 /images/
-/linux-docs-next/
-/linux/
+/linux*/
 /embedded/buildroot/
 /.direnv/
