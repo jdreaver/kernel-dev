@@ -1,6 +1,6 @@
-From 664c4108c5bcee6eb5b2b40aecc459fa2ca90ebb Mon Sep 17 00:00:00 2001
+From 0a2ab6ad67b49d4c19a706312ecb421683fe390f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Fri, 31 Jan 2025 20:50:53 -0800
+Date: Sat, 1 Feb 2025 05:23:06 -0800
 Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,

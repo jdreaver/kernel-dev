@@ -30,22 +30,29 @@ git format-patch master...HEAD \
   - Fill out cover letter
   - Decide on subject. Should we not mention kernfs in any of this?
 
+- Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
+
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
   - I think the rules are stepping on each other because if one rule proposes changes to a header file, and another proposes different changes, I think spatch doesn't like that
   - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
 - spatch needing two runs to work, or just not working at top level and only when run on individual files/directories
   - Ideas to fix
-    - Run spatch with `find ... -exec` (plus a script to apply the patch) on every C file instead of running it on the tree.
-      - We can use grep for `debugfs` to find files, maybe? Wouldn't work with helper functions. Maybe do this in addition to running over the tree.
-    - Run without `--jobs` in case parallelism is the enemy
+    - Run without caching headers (`--no-include-cache`)
+    - Run in two steps: one with `--all-includes` and one without. Maybe the problem is spatch runs a header in isolation and thinks nothing needs to change, but when it wants to change that same header when it reaches it from a C file it uses the cached no-change result.
+      - `--include-headers` only really makes sense for ones with C code in them and for the fuzzy-matching "this looks like a debugfs dentry" stuff. If we split that into another pass then maybe it will work?
+      - Also try this in conjunction with `--no-include cache`?
     - Run with more verbose options
     - Try using `make coccicheck` or whatever method to generate patches to see if it fixes the problem where some files don't get processed
       - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
     - Need `--recursive-includes`?
-    - Run without caching headers (`--no-include-cache`)
+    - (didn't work) Run without `--jobs` in case parallelism is the enemy
     - (didn't work) `--timeout=0` (drivers/scsi/lpfc is quite slow, for example)
       - When we hit the timeout, there is an error message like `EXN: Coccinelle_modules.Common.Timeout in ./security/selinux/selinuxfs.c`, so look for that
+  - Ideas for workarounds:
+    - Now that I have a complete patch set that compiles, I can inspect the files that are getting missed and see if I can find a command to get them run, either individually, or some subdirectories, etc.
+    - Run spatch with `find ... -exec` (plus a script to apply the patch) on every C file instead of running it on the tree.
+      - We can use grep for `debugfs` to find files, maybe? Wouldn't work with helper functions. Maybe do this in addition to running over the tree.
   - Examples:
     - `drivers/scsi/lpfc/`
       - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
