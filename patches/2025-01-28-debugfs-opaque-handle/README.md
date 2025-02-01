@@ -42,13 +42,22 @@ git format-patch master...HEAD \
 
 ## Coccinelle
 
+- Inversion idea from slide 195 here: <https://www.lrz.de/services/compute/courses/x_lecturenotes/hspc1w19.pdf>
+  1. Find all declarations of type `struct dentry *`, record their position (maybe record if they are a field or not?)
+  2. See if any of these are used in our debugfs-like functions (including wrappers)
+  3. Change the types of any of the declarations that matched in function usage. We use the identifier/position from the first rule, and we just "depend on" the second rule
+  4. We can also do our wrapper rewrites and stuff, easy peasy
+     - Ensure we don't overconstrain rewriting wrappers as depending on matching a dentry.
+
 - New bash script doing one by one
   - BUG: "wrapper" functions we find that are _not_ defined in the same file (example, `fault_create_debugfs_attr` used in blk-timeout.c and lib/fault-inject-usercopy.c) don't result in args or return values getting transformed.
     - I think we can split the rules up so we separate finding them and rewriting them.
     - We could always run spatch at the top-level, and _then_ one by one.
     - Maybe two passes will help: one to transform "obvious" wrapper stuff, and the next is entirely type-based on definitions.
     - Consider running a global spatch once or twice, and then the script.
-  - `sound/soc/soc-pcm.c` isn't working (only file I think). It interesting because there is no dentry declaration in the actual file (but there is debugfs usage)
+
+- `sound/soc/soc-pcm.c` isn't working (only file I think). It interesting because there is no dentry declaration in the actual file (but there is debugfs usage)
+  - (old TODO) `include/sound/soc.h` has a `struct dentry *debugfs_dpcm_root;` field that refuses to get matches. I think all the `#define`s in the file are screwing with Coccinelle, because it works when I move that struct to my test file.
 
 - Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
 
@@ -81,13 +90,6 @@ git format-patch master...HEAD \
   - Examples:
     - Easiest repro: `drivers/crypto/intel/qat/qat_common/adf_cfg.h`
       - Running against `drivers/crypto/intel/qat/qat_common/adf_cfg.c` (note the .c) works, but not `drivers/crypto/intel/qat/qat_common/`. wth
-    - `drivers/scsi/lpfc/`
-      - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
-      - I did see a "different modification result for ./drivers/scsi/lpfc/lpfc.h" in the logs. Maybe different paths to this file result in different results?
-    - `drivers/net/netdevsim/netdevsim.h`
-    - `include/linux/mlx5/driver.h`
-    - `bnxt_re.h` has an event simpler one that wasn't caught
-    - `drivers/net/netdevsim/netdevsim.h` was another
 
 - Test that this works with `&` and detects that the `i2c_bus` on `dev_entry` should be a `debugfs_node *`
 
@@ -132,13 +134,6 @@ git format-patch master...HEAD \
   - I had it pulled in once when I just ran against `drivers/scsi/lpfc/`
   - I cannot for the life of me get this ignored
 
-- (is this still a problem?) not catching wrappers
-  - Recreate the problem in my test file
-  - Missed `static void drbd_debugfs_remove(struct debugfs_node **dp)` in `drivers/block/drbd/drbd_debugfs.c` because of double pointer. Dumb.
-  - Might need two passes: one to transform wrappers, and then we can use the wrappers in the next pass
-
-- `include/sound/soc.h` has a `struct dentry *debugfs_dpcm_root;` field that refuses to get matches. I think all the `#define`s in the file are screwing with Coccinelle, because it works when I move that struct to my test file.
-
 - v2 cocci problems:
   - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
     - Similar with struct fields.
@@ -165,6 +160,11 @@ Good directories/files to test:
 - mtk-svs.c has a triple declaration of dentry (e.g. `struct dentry *a, *b, *c;`)
 - drivers/scsi/lpfc/ has many dentry struct fields in a row
 - `sound/soc/soc-pcm.c` is interesting because there is no dentry declaration in the actual file
+- Tripped up spatch when run against entire tree
+  - `drivers/net/netdevsim/netdevsim.h`
+  - `include/linux/mlx5/driver.h`
+  - `bnxt_re.h` has an even simpler one that wasn't caught
+  - `drivers/crypto/intel/qat/qat_common/adf_cfg.c` (and `.h`)
 
 Run patch script with (note that `--in-place` doesn't appear to work):
 

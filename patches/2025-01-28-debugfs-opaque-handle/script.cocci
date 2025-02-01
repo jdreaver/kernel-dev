@@ -117,12 +117,13 @@ f(..., e@var, ...)
 
 // find_decls and change_decl_types are separate so we properly handle static
 // declarations as well as multi-declarations (e.g. struct dentry *a, *b, *c;).
-// The "= NULL" and "= f(...)" cases get thrown off when we combine them into
-// one rule.
+// The "= NULL", "= f(...)", and "= E" cases get thrown off when we combine them
+// into one rule.
 @find_decls@
 identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
 identifier f = { find_dentry_return_vars.f, find_dentry_arg_vars.f };
 position p;
+idexpression struct debugfs_node *E;
 @@
 
 (
@@ -131,6 +132,8 @@ position p;
   struct dentry@p *var = NULL;
 |
   struct dentry@p *var = f(...);
+|
+  struct dentry@p *var = E;
 )
 
 @change_decls type@
@@ -180,6 +183,7 @@ identifier fields_need_rewrite.var;
 identifier struct_name;
 @@
 
+(
 struct struct_name {
     ...
 -   struct dentry *
@@ -187,6 +191,15 @@ struct struct_name {
     var;
     ...
 };
+|
+struct {
+    ...
+-   struct dentry *
++   struct debugfs_node *
+    var;
+    ...
+} struct_name;
+)
 
 //
 // Rewrite declarations and fields that are dentries with names that very
@@ -213,6 +226,7 @@ identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 identifier struct_name;
 @@
 
+(
 struct struct_name {
     ...
 -   struct dentry *
@@ -220,12 +234,22 @@ struct struct_name {
     var;
     ...
 };
+|
+struct {
+    ...
+-   struct dentry *
++   struct debugfs_node *
+    var;
+    ...
+} struct_name;
+)
 
 @obvious_debugfs_field_arrays depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 identifier struct_name;
 @@
 
+(
 struct struct_name {
     ...
 -   struct dentry *
@@ -233,14 +257,15 @@ struct struct_name {
     var [...];
     ...
 };
-
-// Replace d_inode with debugfs_node_inode
-@@
-idexpression struct debugfs_node *e;
-@@
-
--d_inode(e)
-+debugfs_node_inode(e)
+|
+struct struct_name {
+    ...
+-   struct dentry *
++   struct debugfs_node *
+    var [...];
+    ...
+} struct_name;
+)
 
 // Rewrite return types of helper functions that return a debugfs_node now.
 @@
@@ -256,14 +281,41 @@ idexpression struct debugfs_node *e;
     ...
   }
 
+//
 // Transform various helper functions
 //
-// TODO: This is way too wide, and depending on match_assign/match_usage is
-// buggy. Restrict this a ton.
-//
-// @transform_helpers depends on match_assign || match_usage@
-// identifier var, E;
-// @@
+@@
+idexpression struct debugfs_node *e;
+@@
+
+-d_inode(e)
++debugfs_node_inode(e)
+
+@@
+type T = { struct debugfs_node * };
+idexpression T e;
+@@
+
+-dput(e)
++debugfs_node_put(e)
+
+@@
+type T = { struct debugfs_node * };
+idexpression T e;
+@@
+
+-dget(e)
++debugfs_node_get(e)
+
+@@
+type T = { struct debugfs_node * };
+idexpression T e;
+@@
+
+- dentry_path_raw(e,
++ debugfs_node_path_raw(e,
+  ...);
+
 //
 // (
 // // Replace dput
