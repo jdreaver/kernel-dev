@@ -54,10 +54,7 @@ git format-patch master...HEAD \
     - Investigate ways to combine the divergent hunks. Maybe running patch with `-f` is not right. Maybe I should can manually combine them?
   - Ideas to fix
     - Just run it more than once and see if it converges.
-      - This seems to have worked? Two runs was sufficient.
-    - (just changed fewer files) Run in two steps: one with `--all-includes` and one without. Maybe the problem is spatch runs a header in isolation and thinks nothing needs to change, but when it wants to change that same header when it reaches it from a C file it uses the cached no-change result.
-      - `--include-headers` only really makes sense for ones with C code in them and for the fuzzy-matching "this looks like a debugfs dentry" stuff. If we split that into another pass then maybe it will work?
-      - Also try this in conjunction with `--no-include cache`?
+      - Running twice converged (a third time did nothing), but I'm still not seeing all the changes I should
     - Run with more verbose options
     - Try using `make coccicheck` or whatever method to generate patches to see if it fixes the problem where some files don't get processed
       - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
@@ -66,11 +63,17 @@ git format-patch master...HEAD \
     - (didn't work) Run without `--jobs` in case parallelism is the enemy
     - (didn't work) `--timeout=0` (drivers/scsi/lpfc is quite slow, for example)
       - When we hit the timeout, there is an error message like `EXN: Coccinelle_modules.Common.Timeout in ./security/selinux/selinuxfs.c`, so look for that
+    - (just changed fewer files) Run in two steps: one with `--all-includes` and one without. Maybe the problem is spatch runs a header in isolation and thinks nothing needs to change, but when it wants to change that same header when it reaches it from a C file it uses the cached no-change result.
+      - `--include-headers` only really makes sense for ones with C code in them and for the fuzzy-matching "this looks like a debugfs dentry" stuff. If we split that into another pass then maybe it will work?
+      - Also try this in conjunction with `--no-include cache`?
+
   - Ideas for workarounds:
     - Now that I have a complete patch set that compiles, I can inspect the files that are getting missed and see if I can find a command to get them run, either individually, or some subdirectories, etc.
     - Run spatch with `find ... -exec` (plus a script to apply the patch) on every C file instead of running it on the tree.
       - We can use grep for `debugfs` to find files, maybe? Wouldn't work with helper functions. Maybe do this in addition to running over the tree.
   - Examples:
+    - Easiest repro: `drivers/crypto/intel/qat/qat_common/adf_cfg.h`
+      - Running against `drivers/crypto/intel/qat/qat_common/adf_cfg.c` (note the .c) works, but not `drivers/crypto/intel/qat/qat_common/`. wth
     - `drivers/scsi/lpfc/`
       - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
       - I did see a "different modification result for ./drivers/scsi/lpfc/lpfc.h" in the logs. Maybe different paths to this file result in different results?
@@ -78,7 +81,6 @@ git format-patch master...HEAD \
     - `include/linux/mlx5/driver.h`
     - `bnxt_re.h` has an event simpler one that wasn't caught
     - `drivers/net/netdevsim/netdevsim.h` was another
-    - `drivers/crypto/intel/qat/qat_common/adf_cfg.c`
 
 - Test that this works with `&` and detects that the `i2c_bus` on `dev_entry` should be a `debugfs_node *`
 
