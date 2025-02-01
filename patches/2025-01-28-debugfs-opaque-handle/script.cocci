@@ -227,15 +227,6 @@ identifier f;
 idexpression struct debugfs_node *e;
 @@
 
-(
--static struct dentry *
-+static struct debugfs_node *
-  f(...) {
-    ...
-    return e;
-    ...
-  }
-|
 -struct dentry *
 +struct debugfs_node *
   f(...) {
@@ -243,7 +234,6 @@ idexpression struct debugfs_node *e;
     return e;
     ...
   }
-)
 
 // Transform various helper functions
 //
