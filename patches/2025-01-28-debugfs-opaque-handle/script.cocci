@@ -6,14 +6,32 @@ virtual patch
 //
 @wrapper_function_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier wfr =~ "debugfs|dbgfs";
+type T = { struct dentry *, struct debugfs_node * };
+idexpression T e;
+@@
+
+e = wfr(...)
+
+@wrapper_function_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier wfa =~ "debugfs|dbgfs";
+type T = { struct dentry *, struct debugfs_node * };
+T arg;
+@@
+
+wfa(..., arg, ...)
+
+// Rewrite rule is separate in case wrapper is not in the same file.
+@rewrite_wrapper_returns@
+identifier wrapper_function_returns.wfr;
 @@
 
 - struct dentry *
 + struct debugfs_node *
 wfr(...) { ... }
 
-@wrapper_function_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
-identifier wfa =~ "debugfs|dbgfs";
+// Rewrite rule is separate in case wrapper is not in the same file.
+@rewrite_wrapper_args@
+identifier wrapper_function_args.wfa;
 identifier arg;
 @@
 
@@ -26,6 +44,9 @@ wfa(...,
 
 // Collect all function calls
 @function_calls@
+// This hard-coded list is separate from the wrapper regexes above so we don't
+// go and mutate core debugfs functions on accident. Many of these purposely
+// have dentry types in them.
 identifier hf = {
   debugfs_change_name,
   debugfs_create_atomic_t,

@@ -33,7 +33,6 @@ git format-patch master...HEAD \
   - Fill out cover letter
   - Decide on subject. Should we not mention kernfs in any of this?
 
-- Redo `git format-patch` with cocci email in there
 - Compile with debugfs disabled in kernel
 
 ## Non-coccinelle changes
@@ -42,6 +41,14 @@ git format-patch master...HEAD \
   - Consider a `->d_parent` -> new helper `debugfs_node_parent` and add to Coccinelle as well
 
 ## Coccinelle
+
+- New bash script doing one by one
+  - BUG: "wrapper" functions we find that are _not_ defined in the same file (example, `fault_create_debugfs_attr` used in blk-timeout.c and lib/fault-inject-usercopy.c) don't result in args or return values getting transformed.
+    - I think we can split the rules up so we separate finding them and rewriting them.
+    - We could always run spatch at the top-level, and _then_ one by one.
+    - Maybe two passes will help: one to transform "obvious" wrapper stuff, and the next is entirely type-based on definitions.
+    - Consider running a global spatch once or twice, and then the script.
+  - `sound/soc/soc-pcm.c` isn't working (only file I think). It interesting because there is no dentry declaration in the actual file (but there is debugfs usage)
 
 - Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
 
@@ -157,6 +164,7 @@ Good directories/files to test:
 - mm/shrinker_debug.c has an initializer after a `dentry *` declaration
 - mtk-svs.c has a triple declaration of dentry (e.g. `struct dentry *a, *b, *c;`)
 - drivers/scsi/lpfc/ has many dentry struct fields in a row
+- `sound/soc/soc-pcm.c` is interesting because there is no dentry declaration in the actual file
 
 Run patch script with (note that `--in-place` doesn't appear to work):
 

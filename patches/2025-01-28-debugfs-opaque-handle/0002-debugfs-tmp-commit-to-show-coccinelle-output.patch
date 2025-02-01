@@ -1,6 +1,6 @@
-From 4d3be5a7ecbbcf2c5a2fb5f4fe508ed303cf72e4 Mon Sep 17 00:00:00 2001
+From f21e26f52c525719b915753901eeb82157af8e02 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 08:25:22 -0800
+Date: Sat, 1 Feb 2025 11:50:52 -0800
 Subject: [RFC PATCH 2/4] debugfs: tmp commit to show coccinelle output
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -149,7 +149,8 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/crypto/hisilicon/sec2/sec_main.c      |  4 +-
  drivers/crypto/hisilicon/zip/zip_main.c       |  6 +-
  drivers/crypto/intel/iaa/iaa_crypto_stats.c   |  2 +-
- .../intel/qat/qat_common/adf_accel_devices.h  |  4 +-
+ .../intel/qat/qat_common/adf_accel_devices.h  |  8 +-
+ drivers/crypto/intel/qat/qat_common/adf_cfg.h |  2 +-
  .../qat/qat_common/adf_heartbeat_dbgfs.c      |  2 +-
  .../intel/qat/qat_common/adf_telemetry.h      |  2 +-
  .../intel/qat/qat_common/adf_tl_debugfs.c     |  6 +-
@@ -447,6 +448,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/media/platform/nxp/dw100/dw100.c      |  2 +-
  drivers/media/platform/nxp/imx-mipi-csis.c    |  2 +-
  .../platform/nxp/imx8-isi/imx8-isi-core.h     |  2 +-
+ drivers/media/platform/qcom/venus/core.h      |  2 +-
  .../media/platform/raspberrypi/rp1-cfe/cfe.c  |  2 +-
  .../media/platform/raspberrypi/rp1-cfe/csi2.c |  2 +-
  .../platform/raspberrypi/rp1-cfe/pisp-fe.c    |  2 +-
@@ -523,6 +525,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../net/ethernet/intel/ixgbe/ixgbe_debugfs.c  |  2 +-
  drivers/net/ethernet/marvell/mvpp2/mvpp2.h    |  2 +-
  .../ethernet/marvell/mvpp2/mvpp2_debugfs.c    | 43 ++++++-----
+ .../net/ethernet/marvell/octeontx2/af/rvu.h   | 24 +++---
  drivers/net/ethernet/marvell/skge.c           |  2 +-
  drivers/net/ethernet/marvell/skge.h           |  2 +-
  drivers/net/ethernet/marvell/sky2.c           |  4 +-
@@ -570,7 +573,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/netdevsim/dev.c                   |  6 +-
  drivers/net/netdevsim/ethtool.c               |  2 +-
  drivers/net/netdevsim/fib.c                   |  2 +-
- drivers/net/netdevsim/netdevsim.h             | 10 +--
+ drivers/net/netdevsim/netdevsim.h             | 26 +++----
  drivers/net/netdevsim/psample.c               |  2 +-
  drivers/net/phy/sfp.c                         |  2 +-
  drivers/net/wireless/ath/ath10k/core.h        |  2 +-
@@ -653,8 +656,10 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/wireless/realtek/rtlwifi/wifi.h   |  2 +-
  drivers/net/wireless/realtek/rtw88/debug.c    | 11 ++-
  drivers/net/wireless/realtek/rtw89/debug.c    |  8 +-
+ drivers/net/wireless/rsi/rsi_debugfs.h        |  2 +-
  drivers/net/wireless/silabs/wfx/debug.c       |  2 +-
  drivers/net/wireless/st/cw1200/debug.h        |  2 +-
+ drivers/net/wireless/ti/wl1251/wl1251.h       |  4 +-
  drivers/net/wireless/ti/wl12xx/debugfs.c      |  4 +-
  drivers/net/wireless/ti/wl12xx/debugfs.h      |  2 +-
  drivers/net/wireless/ti/wl18xx/debugfs.c      |  4 +-
@@ -778,6 +783,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/scsi/qla2xxx/qla_def.h                | 18 ++---
  drivers/scsi/qla2xxx/qla_dfs.c                |  2 +-
  drivers/scsi/scsi_debug.c                     |  8 +-
+ drivers/scsi/snic/snic.h                      | 10 +--
  drivers/soc/amlogic/meson-clk-measure.c       |  2 +-
  drivers/soc/mediatek/mtk-svs.c                |  2 +-
  drivers/soc/qcom/qcom_aoss.c                  |  4 +-
@@ -804,7 +810,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/thermal/intel/intel_powerclamp.c      |  2 +-
  drivers/thermal/intel/x86_pkg_temp_thermal.c  |  2 +-
  drivers/thermal/mediatek/lvts_thermal.c       |  4 +-
- drivers/thermal/qcom/tsens.h                  |  2 +-
+ drivers/thermal/qcom/tsens.h                  |  4 +-
  drivers/thermal/tegra/soctherm.c              |  4 +-
  drivers/thermal/testing/command.c             |  2 +-
  drivers/thermal/testing/thermal_testing.h     |  2 +-
@@ -832,6 +838,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/usb/gadget/udc/renesas_usb3.c         |  2 +-
  drivers/usb/host/ehci-dbg.c                   |  2 +-
  drivers/usb/host/ehci.h                       |  2 +-
+ drivers/usb/host/fhci.h                       |  2 +-
  drivers/usb/host/ohci-dbg.c                   |  4 +-
  drivers/usb/host/ohci.h                       |  2 +-
  drivers/usb/host/uhci-debug.c                 |  2 +-
@@ -908,8 +915,8 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/fsl/ptp_qoriq.h                 |  2 +-
  include/linux/greybus.h                       |  2 +-
  include/linux/greybus/svc.h                   |  2 +-
- include/linux/hid.h                           |  2 +-
- include/linux/hisi_acc_qm.h                   |  2 +-
+ include/linux/hid.h                           |  6 +-
+ include/linux/hisi_acc_qm.h                   |  4 +-
  include/linux/hyperv.h                        |  2 +-
  include/linux/i2c.h                           |  4 +-
  include/linux/iio/iio-opaque.h                |  2 +-
@@ -918,6 +925,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/iommu.h                         |  2 +-
  include/linux/irqdesc.h                       |  2 +-
  include/linux/kvm_host.h                      |  5 +-
+ include/linux/mfd/aat2870.h                   |  2 +-
  include/linux/mhi.h                           |  2 +-
  include/linux/mlx5/driver.h                   | 24 +++---
  include/linux/mmc/card.h                      |  2 +-
@@ -930,6 +938,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/power/smartreflex.h             |  2 +-
  include/linux/regulator/driver.h              |  2 +-
  include/linux/remoteproc.h                    |  2 +-
+ include/linux/security.h                      |  6 +-
  include/linux/shrinker.h                      |  2 +-
  include/linux/soundwire/sdw.h                 |  4 +-
  include/linux/sunrpc/clnt.h                   |  2 +-
@@ -939,6 +948,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/usb.h                           |  2 +-
  include/linux/vfio.h                          |  2 +-
  include/linux/virtio.h                        |  2 +-
+ include/linux/wkup_m3_ipc.h                   |  2 +-
  include/linux/wwan.h                          |  8 +-
  include/media/v4l2-dev.h                      |  4 +-
  include/media/v4l2-dv-timings.h               |  8 +-
@@ -955,7 +965,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/sound/soc-component.h                 |  2 +-
  include/sound/soc-dapm.h                      |  2 +-
  include/sound/soc-dpcm.h                      |  2 +-
- include/sound/soc.h                           |  6 +-
+ include/sound/soc.h                           |  4 +-
  include/ufs/ufshcd.h                          |  2 +-
  kernel/dma/debug.c                            |  2 +-
  kernel/dma/map_benchmark.c                    |  4 +-
@@ -1056,7 +1066,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  2 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  6 +-
- 1043 files changed, 2072 insertions(+), 1936 deletions(-)
+ 1053 files changed, 2113 insertions(+), 1977 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -3423,7 +3433,7 @@ index f5cc3d29ca19..7a5273171990 100644
  void update_total_comp_calls(void)
  {
 diff --git a/drivers/crypto/intel/qat/qat_common/adf_accel_devices.h b/drivers/crypto/intel/qat/qat_common/adf_accel_devices.h
-index 7830ecb1a1f1..aa4088327f20 100644
+index 7830ecb1a1f1..5fba261fe709 100644
 --- a/drivers/crypto/intel/qat/qat_common/adf_accel_devices.h
 +++ b/drivers/crypto/intel/qat/qat_common/adf_accel_devices.h
 @@ -432,7 +432,7 @@ struct adf_dc_data {
@@ -3435,15 +3445,32 @@ index 7830ecb1a1f1..aa4088327f20 100644
  	bool present;
  	int idle_irq_counters;
  	int throttle_irq_counters;
-@@ -461,7 +461,7 @@ struct adf_accel_dev {
+@@ -461,9 +461,9 @@ struct adf_accel_dev {
  	struct list_head compression_list;
  	unsigned long status;
  	atomic_t ref_count;
 -	struct dentry *debugfs_dir;
+-	struct dentry *fw_cntr_dbgfile;
+-	struct dentry *cnv_dbgfile;
 +	struct debugfs_node *debugfs_dir;
- 	struct dentry *fw_cntr_dbgfile;
- 	struct dentry *cnv_dbgfile;
++	struct debugfs_node *fw_cntr_dbgfile;
++	struct debugfs_node *cnv_dbgfile;
  	struct list_head list;
+ 	struct module *owner;
+ 	struct adf_accel_pci accel_pci_dev;
+diff --git a/drivers/crypto/intel/qat/qat_common/adf_cfg.h b/drivers/crypto/intel/qat/qat_common/adf_cfg.h
+index 2afa6f0d15c5..c107a9d42794 100644
+--- a/drivers/crypto/intel/qat/qat_common/adf_cfg.h
++++ b/drivers/crypto/intel/qat/qat_common/adf_cfg.h
+@@ -25,7 +25,7 @@ struct adf_cfg_section {
+ 
+ struct adf_cfg_device_data {
+ 	struct list_head sec_list;
+-	struct dentry *debug;
++	struct debugfs_node *debug;
+ 	struct rw_semaphore lock;
+ };
+ 
 diff --git a/drivers/crypto/intel/qat/qat_common/adf_heartbeat_dbgfs.c b/drivers/crypto/intel/qat/qat_common/adf_heartbeat_dbgfs.c
 index cccdff24b48d..5599d333fb03 100644
 --- a/drivers/crypto/intel/qat/qat_common/adf_heartbeat_dbgfs.c
@@ -8737,6 +8764,19 @@ index 9c7fe9e5f941..d2049af310d4 100644
  };
  
  extern const struct mxc_gasket_ops mxc_imx8_gasket_ops;
+diff --git a/drivers/media/platform/qcom/venus/core.h b/drivers/media/platform/qcom/venus/core.h
+index abeeafa86697..ab49bc90545b 100644
+--- a/drivers/media/platform/qcom/venus/core.h
++++ b/drivers/media/platform/qcom/venus/core.h
+@@ -227,7 +227,7 @@ struct venus_core {
+ 	unsigned int codecs_count;
+ 	unsigned int core0_usage_count;
+ 	unsigned int core1_usage_count;
+-	struct dentry *root;
++	struct debugfs_node *root;
+ 	struct venus_img_version {
+ 		u32 major;
+ 		u32 minor;
 diff --git a/drivers/media/platform/raspberrypi/rp1-cfe/cfe.c b/drivers/media/platform/raspberrypi/rp1-cfe/cfe.c
 index 12660087b12f..7fc8caa77626 100644
 --- a/drivers/media/platform/raspberrypi/rp1-cfe/cfe.c
@@ -10248,6 +10288,41 @@ index 0f9bc4f8ec3b..ca227eb28628 100644
  	int ret, i;
  
  	if (!mvpp2_root)
+diff --git a/drivers/net/ethernet/marvell/octeontx2/af/rvu.h b/drivers/net/ethernet/marvell/octeontx2/af/rvu.h
+index a383b5ef5b2d..53f988c682c9 100644
+--- a/drivers/net/ethernet/marvell/octeontx2/af/rvu.h
++++ b/drivers/net/ethernet/marvell/octeontx2/af/rvu.h
+@@ -59,18 +59,18 @@ struct cpt_ctx {
+ };
+ 
+ struct rvu_debugfs {
+-	struct dentry *root;
+-	struct dentry *cgx_root;
+-	struct dentry *cgx;
+-	struct dentry *lmac;
+-	struct dentry *npa;
+-	struct dentry *nix;
+-	struct dentry *npc;
+-	struct dentry *cpt;
+-	struct dentry *mcs_root;
+-	struct dentry *mcs;
+-	struct dentry *mcs_rx;
+-	struct dentry *mcs_tx;
++	struct debugfs_node *root;
++	struct debugfs_node *cgx_root;
++	struct debugfs_node *cgx;
++	struct debugfs_node *lmac;
++	struct debugfs_node *npa;
++	struct debugfs_node *nix;
++	struct debugfs_node *npc;
++	struct debugfs_node *cpt;
++	struct debugfs_node *mcs_root;
++	struct debugfs_node *mcs;
++	struct debugfs_node *mcs_rx;
++	struct debugfs_node *mcs_tx;
+ 	struct dump_ctx npa_aura_ctx;
+ 	struct dump_ctx npa_pool_ctx;
+ 	struct dump_ctx nix_cq_ctx;
 diff --git a/drivers/net/ethernet/marvell/skge.c b/drivers/net/ethernet/marvell/skge.c
 index a1bada9eaaf6..b6e52a4e02ec 100644
 --- a/drivers/net/ethernet/marvell/skge.c
@@ -11085,9 +11160,29 @@ index 16c382c42227..c8d93b9bead7 100644
  	bool fail_res_nexthop_group_replace;
  	bool fail_nexthop_bucket_replace;
 diff --git a/drivers/net/netdevsim/netdevsim.h b/drivers/net/netdevsim/netdevsim.h
-index 96d54c08043d..b0649881d946 100644
+index 96d54c08043d..a1b920eb6844 100644
 --- a/drivers/net/netdevsim/netdevsim.h
 +++ b/drivers/net/netdevsim/netdevsim.h
+@@ -51,7 +51,7 @@ struct nsim_sa {
+ 
+ struct nsim_ipsec {
+ 	struct nsim_sa sa[NSIM_IPSEC_MAX_SA_COUNT];
+-	struct dentry *pfile;
++	struct debugfs_node *pfile;
+ 	u32 count;
+ 	u32 tx;
+ 	u32 ok;
+@@ -139,8 +139,8 @@ struct netdevsim {
+ 	} udp_ports;
+ 
+ 	struct page *page;
+-	struct dentry *pp_dfs;
+-	struct dentry *qr_dfs;
++	struct debugfs_node *pp_dfs;
++	struct debugfs_node *qr_dfs;
+ 
+ 	struct nsim_ethtool ethtool;
+ 	struct netdevsim __rcu *peer;
 @@ -218,7 +218,7 @@ enum nsim_resource_id {
  struct nsim_dev_health {
  	struct devlink_health_reporter *empty_reporter;
@@ -11097,33 +11192,43 @@ index 96d54c08043d..b0649881d946 100644
  	char *recovered_break_msg;
  	u32 binary_len;
  	bool fail_recover;
-@@ -236,7 +236,7 @@ struct nsim_dev_hwstats_netdev {
+@@ -236,8 +236,8 @@ struct nsim_dev_hwstats_netdev {
  };
  
  struct nsim_dev_hwstats {
 -	struct dentry *ddir;
+-	struct dentry *l3_ddir;
 +	struct debugfs_node *ddir;
- 	struct dentry *l3_ddir;
++	struct debugfs_node *l3_ddir;
  
  	struct mutex hwsdev_list_lock; /* protects hwsdev list(s) */
-@@ -276,7 +276,7 @@ struct nsim_dev_port {
+ 	struct list_head l3_list;
+@@ -276,8 +276,8 @@ struct nsim_dev_port {
  	struct devlink_port devlink_port;
  	unsigned int port_index;
  	enum nsim_dev_port_type port_type;
 -	struct dentry *ddir;
+-	struct dentry *rate_parent;
 +	struct debugfs_node *ddir;
- 	struct dentry *rate_parent;
++	struct debugfs_node *rate_parent;
  	char *parent_name;
  	struct netdevsim *ns;
-@@ -299,7 +299,7 @@ struct nsim_dev {
+ };
+@@ -299,10 +299,10 @@ struct nsim_dev {
  	struct nsim_bus_dev *nsim_bus_dev;
  	struct nsim_fib_data *fib_data;
  	struct nsim_trap_data *trap_data;
 -	struct dentry *ddir;
+-	struct dentry *ports_ddir;
+-	struct dentry *take_snapshot;
+-	struct dentry *nodes_ddir;
 +	struct debugfs_node *ddir;
- 	struct dentry *ports_ddir;
- 	struct dentry *take_snapshot;
- 	struct dentry *nodes_ddir;
++	struct debugfs_node *ports_ddir;
++	struct debugfs_node *take_snapshot;
++	struct debugfs_node *nodes_ddir;
+ 
+ 	struct nsim_vf_config *vfconfigs;
+ 
 @@ -310,7 +310,7 @@ struct nsim_dev {
  	bool bpf_bind_accept;
  	bool bpf_bind_verifier_accept;
@@ -12732,6 +12837,19 @@ index 09fa977a6e6d..81eb0ad651ff 100644
  
  	rtwdev->debugfs = kmemdup(&rtw89_debugfs_templ,
  				  sizeof(rtw89_debugfs_templ), GFP_KERNEL);
+diff --git a/drivers/net/wireless/rsi/rsi_debugfs.h b/drivers/net/wireless/rsi/rsi_debugfs.h
+index bbc1200dbb62..e24f0e6a22b0 100644
+--- a/drivers/net/wireless/rsi/rsi_debugfs.h
++++ b/drivers/net/wireless/rsi/rsi_debugfs.h
+@@ -38,7 +38,7 @@ struct rsi_dbg_files {
+ };
+ 
+ struct rsi_debugfs {
+-	struct dentry *subdir;
++	struct debugfs_node *subdir;
+ 	struct dentry *rsi_files[MAX_DEBUGFS_ENTRIES];
+ };
+ int rsi_init_dbgfs(struct rsi_hw *adapter);
 diff --git a/drivers/net/wireless/silabs/wfx/debug.c b/drivers/net/wireless/silabs/wfx/debug.c
 index e8265208f9a5..1bc7ef567fa8 100644
 --- a/drivers/net/wireless/silabs/wfx/debug.c
@@ -12758,6 +12876,21 @@ index 80bc1567533a..a24b015e7c36 100644
  	int tx;
  	int tx_agg;
  	int rx;
+diff --git a/drivers/net/wireless/ti/wl1251/wl1251.h b/drivers/net/wireless/ti/wl1251/wl1251.h
+index 83adbc3c25dc..7f108d6809ea 100644
+--- a/drivers/net/wireless/ti/wl1251/wl1251.h
++++ b/drivers/net/wireless/ti/wl1251/wl1251.h
+@@ -143,8 +143,8 @@ struct wl1251_stats {
+ };
+ 
+ struct wl1251_debugfs {
+-	struct dentry *rootdir;
+-	struct dentry *fw_statistics;
++	struct debugfs_node *rootdir;
++	struct debugfs_node *fw_statistics;
+ 
+ 	struct dentry *tx_internal_desc_overflow;
+ 
 diff --git a/drivers/net/wireless/ti/wl12xx/debugfs.c b/drivers/net/wireless/ti/wl12xx/debugfs.c
 index 7847463d4cf9..d20e928b42e3 100644
 --- a/drivers/net/wireless/ti/wl12xx/debugfs.c
@@ -15332,6 +15465,34 @@ index 5ceaa4665e5d..fc2dd4a0a2b4 100644
  
  	if (sdebug_verbose)
  		pr_info("sdev_configure <%u %u %u %llu>\n",
+diff --git a/drivers/scsi/snic/snic.h b/drivers/scsi/snic/snic.h
+index 32f5a34b6987..453e3e250a7e 100644
+--- a/drivers/scsi/snic/snic.h
++++ b/drivers/scsi/snic/snic.h
+@@ -318,9 +318,9 @@ struct snic {
+ 
+ 	/* platform specific */
+ #ifdef CONFIG_SCSI_SNIC_DEBUG_FS
+-	struct dentry *stats_host;	/* Per snic debugfs root */
+-	struct dentry *stats_file;	/* Per snic debugfs file */
+-	struct dentry *reset_stats_file;/* Per snic reset stats file */
++	struct debugfs_node *stats_host;	/* Per snic debugfs root */
++	struct debugfs_node *stats_file;	/* Per snic debugfs file */
++	struct debugfs_node *reset_stats_file;/* Per snic reset stats file */
+ #endif
+ 
+ 	/* completion queue cache line section */
+@@ -347,8 +347,8 @@ struct snic_global {
+ 
+ #ifdef CONFIG_SCSI_SNIC_DEBUG_FS
+ 	/* debugfs related global data */
+-	struct dentry *trc_root;
+-	struct dentry *stats_root;
++	struct debugfs_node *trc_root;
++	struct debugfs_node *stats_root;
+ 
+ 	struct snic_trc trc ____cacheline_aligned;
+ #endif
 diff --git a/drivers/soc/amlogic/meson-clk-measure.c b/drivers/soc/amlogic/meson-clk-measure.c
 index a6453ffeb753..91bd26dab4de 100644
 --- a/drivers/soc/amlogic/meson-clk-measure.c
@@ -15786,18 +15947,20 @@ index 07f7f3b7a2fb..8ceeaad8ea35 100644
  	int i;
  
 diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 7b36a0318fa6..d4e2555a3199 100644
+index 7b36a0318fa6..e2496ee8cdbf 100644
 --- a/drivers/thermal/qcom/tsens.h
 +++ b/drivers/thermal/qcom/tsens.h
-@@ -582,7 +582,7 @@ struct tsens_priv {
+@@ -582,8 +582,8 @@ struct tsens_priv {
  	const struct reg_field		*fields;
  	const struct tsens_ops		*ops;
  
 -	struct dentry			*debug_root;
+-	struct dentry			*debug;
 +	struct debugfs_node *debug_root;
- 	struct dentry			*debug;
++	struct debugfs_node *debug;
  
  	struct tsens_sensor		sensor[] __counted_by(num_sensors);
+ };
 diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
 index 2c5ddf0db40c..cbd3dcec64bf 100644
 --- a/drivers/thermal/tegra/soctherm.c
@@ -16354,6 +16517,19 @@ index d7a3c8d13f6b..314eac255906 100644
  #endif
  
  	/* bandwidth usage */
+diff --git a/drivers/usb/host/fhci.h b/drivers/usb/host/fhci.h
+index 1f57b0989485..95184564dc2f 100644
+--- a/drivers/usb/host/fhci.h
++++ b/drivers/usb/host/fhci.h
+@@ -261,7 +261,7 @@ struct fhci_hcd {
+ 
+ #ifdef CONFIG_FHCI_DEBUG
+ 	int usb_irq_stat[13];
+-	struct dentry *dfs_root;
++	struct debugfs_node *dfs_root;
+ #endif
+ };
+ 
 diff --git a/drivers/usb/host/ohci-dbg.c b/drivers/usb/host/ohci-dbg.c
 index 76bc8d56325d..651e669f4614 100644
 --- a/drivers/usb/host/ohci-dbg.c
@@ -17800,31 +17976,37 @@ index da547fb9071b..2e4ef728e960 100644
  };
  #define to_gb_svc(d) container_of(d, struct gb_svc, dev)
 diff --git a/include/linux/hid.h b/include/linux/hid.h
-index cdc0dc13c87f..d796ada2dde8 100644
+index cdc0dc13c87f..4321ae40c35b 100644
 --- a/include/linux/hid.h
 +++ b/include/linux/hid.h
-@@ -678,7 +678,7 @@ struct hid_device {
+@@ -678,9 +678,9 @@ struct hid_device {
  
  	/* debugging support via debugfs */
  	unsigned short debug;
 -	struct dentry *debug_dir;
+-	struct dentry *debug_rdesc;
+-	struct dentry *debug_events;
 +	struct debugfs_node *debug_dir;
- 	struct dentry *debug_rdesc;
- 	struct dentry *debug_events;
++	struct debugfs_node *debug_rdesc;
++	struct debugfs_node *debug_events;
  	struct list_head debug_list;
+ 	spinlock_t  debug_list_lock;
+ 	wait_queue_head_t debug_wait;
 diff --git a/include/linux/hisi_acc_qm.h b/include/linux/hisi_acc_qm.h
-index 99fcf65d575f..4a2757c4d1c4 100644
+index 99fcf65d575f..59ccda708923 100644
 --- a/include/linux/hisi_acc_qm.h
 +++ b/include/linux/hisi_acc_qm.h
-@@ -197,7 +197,7 @@ struct qm_debug {
+@@ -197,8 +197,8 @@ struct qm_debug {
  	u32 sqe_mask_offset;
  	u32 sqe_mask_len;
  	struct qm_dfx dfx;
 -	struct dentry *debug_root;
+-	struct dentry *qm_d;
 +	struct debugfs_node *debug_root;
- 	struct dentry *qm_d;
++	struct debugfs_node *qm_d;
  	struct debugfs_file files[DEBUG_FILE_NUM];
  	struct qm_dev_dfx dev_dfx;
+ 	unsigned int *qm_last_words;
 diff --git a/include/linux/hyperv.h b/include/linux/hyperv.h
 index 4179add2864b..a67e9b3007d0 100644
 --- a/include/linux/hyperv.h
@@ -17949,6 +18131,19 @@ index 3cb9a32a6330..565add411cbc 100644
  #else
  static inline void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu) {}
  #endif
+diff --git a/include/linux/mfd/aat2870.h b/include/linux/mfd/aat2870.h
+index 2445842d482d..e05e4427fdf1 100644
+--- a/include/linux/mfd/aat2870.h
++++ b/include/linux/mfd/aat2870.h
+@@ -135,7 +135,7 @@ struct aat2870_data {
+ 	int (*update)(struct aat2870_data *aat2870, u8 addr, u8 mask, u8 val);
+ 
+ 	/* for debugfs */
+-	struct dentry *dentry_root;
++	struct debugfs_node *dentry_root;
+ };
+ 
+ struct aat2870_subdev_info {
 diff --git a/include/linux/mhi.h b/include/linux/mhi.h
 index 059dc94d20bb..2d39ef47d153 100644
 --- a/include/linux/mhi.h
@@ -18164,6 +18359,36 @@ index b4795698d8c2..8ec44b500f86 100644
  	struct list_head traces;
  	int num_traces;
  	struct list_head carveouts;
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 980b6c207cad..9b1bd8a0fffb 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -2216,14 +2216,14 @@ extern void securityfs_recursive_remove(struct dentry *dentry);
+ #else /* CONFIG_SECURITYFS */
+ 
+ static inline struct dentry *securityfs_create_dir(const char *name,
+-						   struct dentry *parent)
++						   struct debugfs_node *parent)
+ {
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
+ static inline struct dentry *securityfs_create_file(const char *name,
+ 						    umode_t mode,
+-						    struct dentry *parent,
++						    struct debugfs_node *parent,
+ 						    void *data,
+ 						    const struct file_operations *fops)
+ {
+@@ -2231,7 +2231,7 @@ static inline struct dentry *securityfs_create_file(const char *name,
+ }
+ 
+ static inline struct dentry *securityfs_create_symlink(const char *name,
+-					struct dentry *parent,
++					struct debugfs_node *parent,
+ 					const char *target,
+ 					const struct inode_operations *iops)
+ {
 diff --git a/include/linux/shrinker.h b/include/linux/shrinker.h
 index 1a00be90d93a..a7298da00fa9 100644
 --- a/include/linux/shrinker.h
@@ -18290,6 +18515,19 @@ index 4d16c13d0df5..4282908c23ab 100644
  	u64 debugfs_filter_features;
  #endif
  };
+diff --git a/include/linux/wkup_m3_ipc.h b/include/linux/wkup_m3_ipc.h
+index 5e1b26f988e2..111956068f35 100644
+--- a/include/linux/wkup_m3_ipc.h
++++ b/include/linux/wkup_m3_ipc.h
+@@ -39,7 +39,7 @@ struct wkup_m3_ipc {
+ 
+ 	struct wkup_m3_ipc_ops *ops;
+ 	int is_rtc_only;
+-	struct dentry *dbg_path;
++	struct debugfs_node *dbg_path;
+ };
+ 
+ struct wkup_m3_wakeup_src {
 diff --git a/include/linux/wwan.h b/include/linux/wwan.h
 index a4d6cc0c9f68..b5ac78c37fbc 100644
 --- a/include/linux/wwan.h
@@ -18592,7 +18830,7 @@ index c6fb350b4b06..9d6845ad8c1b 100644
  };
  
 diff --git a/include/sound/soc.h b/include/sound/soc.h
-index fcdb5adfcd5e..c2fcc98fb1de 100644
+index fcdb5adfcd5e..03abd4d3f501 100644
 --- a/include/sound/soc.h
 +++ b/include/sound/soc.h
 @@ -1118,7 +1118,7 @@ struct snd_soc_card {
@@ -18604,15 +18842,6 @@ index fcdb5adfcd5e..c2fcc98fb1de 100644
  #endif
  #ifdef CONFIG_PM_SLEEP
  	struct work_struct deferred_resume_work;
-@@ -1202,7 +1202,7 @@ struct snd_soc_pcm_runtime {
- 	struct delayed_work delayed_work;
- 	void (*close_delayed_work_func)(struct snd_soc_pcm_runtime *rtd);
- #ifdef CONFIG_DEBUG_FS
--	struct dentry *debugfs_dpcm_root;
-+	struct debugfs_node *debugfs_dpcm_root;
- #endif
- 
- 	unsigned int id; /* 0-based and monotonic increasing */
 @@ -1489,7 +1489,7 @@ int snd_soc_fixup_dai_links_platform_name(struct snd_soc_card *card,
  }
  
