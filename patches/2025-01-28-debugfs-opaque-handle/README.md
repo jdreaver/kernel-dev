@@ -25,11 +25,34 @@ git format-patch master...HEAD \
 
 # TODO
 
+
+- spatch needing two runs to work
+  - Ideas to fix
+    - Run without `--jobs` in case parallelism is the enemy
+    - Run with more verbose options
+    - Try using `make coccicheck` or whatever method to generate patches to see if it fixes the problem where some files don't get processed
+      - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
+    - Run single-threaded (maybe overnight?)
+    - Need `--recursive-includes`?
+    - (didn't work) `--timeout=0` (drivers/scsi/lpfc is quite slow, for example)
+      - When we hit the timeout, there is an error message like `EXN: Coccinelle_modules.Common.Timeout in ./security/selinux/selinuxfs.c`, so look for that
+  - Check spatch exit code. Maybe it is alerting us to a problem.
+  - Examples:
+    - `drivers/scsi/lpfc/`
+      - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
+      - I did see a "different modification result for ./drivers/scsi/lpfc/lpfc.h" in the logs. Maybe different paths to this file result in different results?
+    - `drivers/net/netdevsim/netdevsim.h`
+    - `include/linux/mlx5/driver.h`
+    - `bnxt_re.h` has an event simpler one that wasn't caught
+    - `drivers/net/netdevsim/netdevsim.h` was another
+
 - (might be done) Change `rchan_callbacks` users to convert to `dentry`
 
-- Consider removing the "all_function_calls" thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
+- Consider removing the `all_function_calls` thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
 
 - Sometimes `include/linux/debugfs.h` gets caught up in changes
+  - I had it pulled in once when I just ran against `drivers/scsi/lpfc/`
+  - I cannot for the life of me get this ignored
 
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
   - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
@@ -40,21 +63,6 @@ git format-patch master...HEAD \
   - Might need two passes: one to transform wrappers, and then we can use the wrappers in the next pass
 
 - `include/sound/soc.h` has a `struct dentry *debugfs_dpcm_root;` field that refuses to get matches. I think all the `#define`s in the file are screwing with Coccinelle, because it works when I move that struct to my test file.
-
-- spatch needing two runs to work
-  - Check spatch exit code. Maybe it is alerting us to a problem.
-  - Is there a timeout? `drivers/scsi/lpfc/` takes a long time when I try to do it by itself.
-  - Issue with parallelism?
-  - (doubt it, default is 1) Need `--chunksize=1`?
-  - Need `--recursive-includes`?
-  - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
-  - Example now is `drivers/scsi/lpfc/`
-    - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
-  - Also `drivers/net/netdevsim/netdevsim.h`
-  - Also `include/linux/mlx5/driver.h`
-  - Am I using the regexes correctly? Do I need to replace `debugfs` with `.*debugfs.*`? Test just the single simple rule for catching dentrys with debug-looking names
-  - `bnxt_re.h` has an event simpler one that wasn't caught
-  - `drivers/net/netdevsim/netdevsim.h` was another
 
 - v2 cocci problems:
   - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
@@ -92,7 +100,7 @@ Good directories/files to test:
 Run patch script with (note that `--in-place` doesn't appear to work):
 
 ```
-$ spatch ../patches/2025-01-28-debugfs-opaque-handle/structured.cocci --all-includes --include-headers . --jobs $(nproc) > patch.patch
+$ time spatch ../patches/2025-01-28-debugfs-opaque-handle/script.cocci --all-includes --include-headers --jobs 14 . --timeout 0 --tmp-dir /tmp/cocci-run/ > patch.patch 2> spatch-stderr.log
 $ patch -p1 < patch.patch
 ```
 
