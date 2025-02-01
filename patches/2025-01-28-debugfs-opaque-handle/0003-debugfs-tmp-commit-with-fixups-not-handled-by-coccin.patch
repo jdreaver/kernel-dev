@@ -1,4 +1,4 @@
-From 2e7833edbe6490784063b06994cc1954b92c23d5 Mon Sep 17 00:00:00 2001
+From c214b8194c7806ed626c97e8c672f0dcff2e0de6 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: tmp commit with fixups not handled by
@@ -9,6 +9,7 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 Cc: Steven Rostedt <rostedt@goodmis.org>,
     Christian Brauner <brauner@kernel.org>,
     linux-fsdevel@vger.kernel.org,
+    cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
 Signed-off-by: David Reaver <me@davidreaver.com>
@@ -92,7 +93,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/wireless/intel/iwlwifi/mvm/ops.c  |   2 +-
  .../net/wireless/intel/iwlwifi/pcie/trans.c   |   2 +-
  drivers/net/wireless/marvell/libertas/dev.h   |   4 +-
- drivers/net/wireless/mediatek/mt76/mt76.h     |   2 +-
  .../wireless/mediatek/mt76/mt7915/debugfs.c   |  22 +-
  .../wireless/mediatek/mt76/mt7996/debugfs.c   |  22 +-
  drivers/net/wireless/realtek/rtlwifi/debug.c  |   2 +-
@@ -129,9 +129,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/hid.h                           |   4 +-
  include/linux/hisi_acc_qm.h                   |   2 +-
  include/linux/mfd/aat2870.h                   |   2 +-
- include/linux/mlx5/driver.h                   |   2 +-
  include/media/cec.h                           |   2 +-
- include/media/v4l2-dv-timings.h               |   2 +-
  include/net/mac80211.h                        |  12 +-
  include/soc/tegra/mc.h                        |   2 +-
  include/sound/soc-dapm.h                      |   3 +-
@@ -147,7 +145,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/wireless/debugfs.c                        |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   5 +-
- 134 files changed, 565 insertions(+), 482 deletions(-)
+ 131 files changed, 562 insertions(+), 479 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -1860,19 +1858,6 @@ index d5fd3068e128..37532824764f 100644
  	struct debugfs_node *debugfs_regs_files[6];
  
  	/* Hardware debugging */
-diff --git a/drivers/net/wireless/mediatek/mt76/mt76.h b/drivers/net/wireless/mediatek/mt76/mt76.h
-index b45b861fcb3f..3af9e4247b31 100644
---- a/drivers/net/wireless/mediatek/mt76/mt76.h
-+++ b/drivers/net/wireless/mediatek/mt76/mt76.h
-@@ -1225,7 +1225,7 @@ struct mt76_phy *mt76_alloc_phy(struct mt76_dev *dev, unsigned int size,
- int mt76_register_phy(struct mt76_phy *phy, bool vht,
- 		      struct ieee80211_rate *rates, int n_rates);
- 
--struct dentry *mt76_register_debugfs_fops(struct mt76_phy *phy,
-+struct debugfs_node *mt76_register_debugfs_fops(struct mt76_phy *phy,
- 					  const struct file_operations *ops);
- static inline struct debugfs_node *mt76_register_debugfs(struct mt76_dev *dev)
- {
 diff --git a/drivers/net/wireless/mediatek/mt76/mt7915/debugfs.c b/drivers/net/wireless/mediatek/mt76/mt7915/debugfs.c
 index 11db0d93e419..0f57f5baa4f2 100644
 --- a/drivers/net/wireless/mediatek/mt76/mt7915/debugfs.c
@@ -3054,19 +3039,6 @@ index 2445842d482d..e05e4427fdf1 100644
  };
  
  struct aat2870_subdev_info {
-diff --git a/include/linux/mlx5/driver.h b/include/linux/mlx5/driver.h
-index bb51a733b27e..19111ae8b566 100644
---- a/include/linux/mlx5/driver.h
-+++ b/include/linux/mlx5/driver.h
-@@ -537,7 +537,7 @@ struct mlx5_adev {
- };
- 
- struct mlx5_debugfs_entries {
--	struct dentry *dbg_root;
-+	struct debugfs_node *dbg_root;
- 	struct debugfs_node *qp_debugfs;
- 	struct debugfs_node *eq_debugfs;
- 	struct debugfs_node *cq_debugfs;
 diff --git a/include/media/cec.h b/include/media/cec.h
 index 0c8e86115b6f..0c172c059927 100644
 --- a/include/media/cec.h
@@ -3080,19 +3052,6 @@ index 0c8e86115b6f..0c172c059927 100644
  
  	u32 sequence;
  
-diff --git a/include/media/v4l2-dv-timings.h b/include/media/v4l2-dv-timings.h
-index 4a89b1262920..e08294607e5f 100644
---- a/include/media/v4l2-dv-timings.h
-+++ b/include/media/v4l2-dv-timings.h
-@@ -280,7 +280,7 @@ typedef ssize_t (*v4l2_debugfs_if_read_t)(u32 type, void *priv,
- 					  size_t count, loff_t *ppos);
- 
- struct v4l2_debugfs_if {
--	struct dentry *if_dir;
-+	struct debugfs_node *if_dir;
- 	void *priv;
- 
- 	v4l2_debugfs_if_read_t if_read;
 diff --git a/include/net/mac80211.h b/include/net/mac80211.h
 index 3443ac47384a..8896fdc00ecb 100644
 --- a/include/net/mac80211.h

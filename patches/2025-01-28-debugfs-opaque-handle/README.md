@@ -51,8 +51,10 @@ git format-patch master...HEAD \
 
 - spatch needing two runs to work, or just not working at top level and only when run on individual files/directories
   - Inspect the `.rej` files that patch makes! I see some of them have more changes than the change that was accepted. I think coccinelle is clearly stepping on itself
+    - Investigate ways to combine the divergent hunks. Maybe running patch with `-f` is not right. Maybe I should can manually combine them?
   - Ideas to fix
-    - Just run it more than once?
+    - Just run it more than once and see if it converges.
+      - This seems to have worked? Two runs was sufficient.
     - (just changed fewer files) Run in two steps: one with `--all-includes` and one without. Maybe the problem is spatch runs a header in isolation and thinks nothing needs to change, but when it wants to change that same header when it reaches it from a C file it uses the cached no-change result.
       - `--include-headers` only really makes sense for ones with C code in them and for the fuzzy-matching "this looks like a debugfs dentry" stuff. If we split that into another pass then maybe it will work?
       - Also try this in conjunction with `--no-include cache`?

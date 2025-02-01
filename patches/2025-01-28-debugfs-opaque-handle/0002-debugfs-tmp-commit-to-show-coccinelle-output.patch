@@ -1,6 +1,6 @@
-From 28faea1051c34443d8503226317bc3900ab88254 Mon Sep 17 00:00:00 2001
+From 4d3be5a7ecbbcf2c5a2fb5f4fe508ed303cf72e4 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 05:14:13 -0800
+Date: Sat, 1 Feb 2025 08:25:22 -0800
 Subject: [RFC PATCH 2/4] debugfs: tmp commit to show coccinelle output
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -8,6 +8,7 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 Cc: Steven Rostedt <rostedt@goodmis.org>,
     Christian Brauner <brauner@kernel.org>,
     linux-fsdevel@vger.kernel.org,
+    cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
 Signed-off-by: David Reaver <me@davidreaver.com>
@@ -632,7 +633,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../net/wireless/marvell/mwifiex/debugfs.c    |  2 +-
  drivers/net/wireless/marvell/mwifiex/main.h   |  2 +-
  drivers/net/wireless/mediatek/mt76/debugfs.c  |  4 +-
- drivers/net/wireless/mediatek/mt76/mt76.h     |  2 +-
+ drivers/net/wireless/mediatek/mt76/mt76.h     |  4 +-
  .../wireless/mediatek/mt76/mt7603/debugfs.c   |  2 +-
  .../wireless/mediatek/mt76/mt7615/debugfs.c   |  2 +-
  .../wireless/mediatek/mt76/mt76x02_debugfs.c  |  2 +-
@@ -744,7 +745,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/regulator/internal.h                  |  2 +-
  drivers/remoteproc/remoteproc_debugfs.c       |  4 +-
  drivers/s390/block/dasd.c                     | 22 +++---
- drivers/s390/block/dasd_int.h                 |  6 +-
+ drivers/s390/block/dasd_int.h                 |  8 +-
  drivers/s390/char/zcore.c                     |  6 +-
  drivers/s390/cio/cio_debug.h                  |  2 +-
  drivers/s390/cio/cio_debugfs.c                |  2 +-
@@ -918,7 +919,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/irqdesc.h                       |  2 +-
  include/linux/kvm_host.h                      |  5 +-
  include/linux/mhi.h                           |  2 +-
- include/linux/mlx5/driver.h                   | 22 +++---
+ include/linux/mlx5/driver.h                   | 24 +++---
  include/linux/mmc/card.h                      |  2 +-
  include/linux/mmc/host.h                      |  2 +-
  include/linux/moxtet.h                        |  2 +-
@@ -930,7 +931,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/regulator/driver.h              |  2 +-
  include/linux/remoteproc.h                    |  2 +-
  include/linux/shrinker.h                      |  2 +-
- include/linux/soundwire/sdw.h                 |  2 +-
+ include/linux/soundwire/sdw.h                 |  4 +-
  include/linux/sunrpc/clnt.h                   |  2 +-
  include/linux/sunrpc/xprt.h                   |  2 +-
  include/linux/swiotlb.h                       |  2 +-
@@ -940,7 +941,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/virtio.h                        |  2 +-
  include/linux/wwan.h                          |  8 +-
  include/media/v4l2-dev.h                      |  4 +-
- include/media/v4l2-dv-timings.h               |  6 +-
+ include/media/v4l2-dv-timings.h               |  8 +-
  include/net/6lowpan.h                         |  2 +-
  include/net/bluetooth/bluetooth.h             |  2 +-
  include/net/bluetooth/hci_core.h              |  4 +-
@@ -1055,7 +1056,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  2 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  6 +-
- 1043 files changed, 2067 insertions(+), 1931 deletions(-)
+ 1043 files changed, 2072 insertions(+), 1936 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -12309,12 +12310,15 @@ index b6a2746c187d..a6f7928adf07 100644
  	dir = debugfs_create_dir("mt76", phy->hw->wiphy->debugfsdir);
  
 diff --git a/drivers/net/wireless/mediatek/mt76/mt76.h b/drivers/net/wireless/mediatek/mt76/mt76.h
-index 132148f7b107..b45b861fcb3f 100644
+index 132148f7b107..3af9e4247b31 100644
 --- a/drivers/net/wireless/mediatek/mt76/mt76.h
 +++ b/drivers/net/wireless/mediatek/mt76/mt76.h
-@@ -1227,7 +1227,7 @@ int mt76_register_phy(struct mt76_phy *phy, bool vht,
+@@ -1225,9 +1225,9 @@ struct mt76_phy *mt76_alloc_phy(struct mt76_dev *dev, unsigned int size,
+ int mt76_register_phy(struct mt76_phy *phy, bool vht,
+ 		      struct ieee80211_rate *rates, int n_rates);
  
- struct dentry *mt76_register_debugfs_fops(struct mt76_phy *phy,
+-struct dentry *mt76_register_debugfs_fops(struct mt76_phy *phy,
++struct debugfs_node *mt76_register_debugfs_fops(struct mt76_phy *phy,
  					  const struct file_operations *ops);
 -static inline struct dentry *mt76_register_debugfs(struct mt76_dev *dev)
 +static inline struct debugfs_node *mt76_register_debugfs(struct mt76_dev *dev)
@@ -14632,7 +14636,7 @@ index 3ed642f4f00d..ddafbc489b72 100644
  
  	if (!base_dentry)
 diff --git a/drivers/s390/block/dasd_int.h b/drivers/s390/block/dasd_int.h
-index 81cfb5c89681..0bc40814736e 100644
+index 81cfb5c89681..cab0b1b03894 100644
 --- a/drivers/s390/block/dasd_int.h
 +++ b/drivers/s390/block/dasd_int.h
 @@ -533,7 +533,7 @@ struct dasd_profile_info {
@@ -14644,15 +14648,17 @@ index 81cfb5c89681..0bc40814736e 100644
  	struct dasd_profile_info *data;
  	spinlock_t lock;
  };
-@@ -604,7 +604,7 @@ struct dasd_device {
+@@ -604,8 +604,8 @@ struct dasd_device {
  	unsigned long path_thrhld;
  	unsigned long path_interval;
  
 -	struct dentry *debugfs_dentry;
+-	struct dentry *hosts_dentry;
 +	struct debugfs_node *debugfs_dentry;
- 	struct dentry *hosts_dentry;
++	struct debugfs_node *hosts_dentry;
  	struct dasd_profile profile;
  	struct dasd_format_entry format_entry;
+ 	struct kset *paths_info;
 @@ -634,7 +634,7 @@ struct dasd_block {
  	struct tasklet_struct tasklet;
  	struct timer_list timer;
@@ -17957,7 +17963,7 @@ index 059dc94d20bb..2d39ef47d153 100644
  	void __iomem *bhi;
  	void __iomem *bhie;
 diff --git a/include/linux/mlx5/driver.h b/include/linux/mlx5/driver.h
-index af86097641b0..bb51a733b27e 100644
+index af86097641b0..19111ae8b566 100644
 --- a/include/linux/mlx5/driver.h
 +++ b/include/linux/mlx5/driver.h
 @@ -219,7 +219,7 @@ struct mlx5_rsc_debug {
@@ -17987,16 +17993,18 @@ index af86097641b0..bb51a733b27e 100644
  	/* protect command average calculations */
  	spinlock_t	lock;
  };
-@@ -538,12 +538,12 @@ struct mlx5_adev {
+@@ -537,13 +537,13 @@ struct mlx5_adev {
+ };
  
  struct mlx5_debugfs_entries {
- 	struct dentry *dbg_root;
+-	struct dentry *dbg_root;
 -	struct dentry *qp_debugfs;
 -	struct dentry *eq_debugfs;
 -	struct dentry *cq_debugfs;
 -	struct dentry *cmdif_debugfs;
 -	struct dentry *pages_debugfs;
 -	struct dentry *lag_debugfs;
++	struct debugfs_node *dbg_root;
 +	struct debugfs_node *qp_debugfs;
 +	struct debugfs_node *eq_debugfs;
 +	struct debugfs_node *cq_debugfs;
@@ -18170,7 +18178,7 @@ index 1a00be90d93a..a7298da00fa9 100644
  	/* objs pending delete, per node */
  	atomic_long_t *nr_deferred;
 diff --git a/include/linux/soundwire/sdw.h b/include/linux/soundwire/sdw.h
-index 2d6c30317792..5316c17734b0 100644
+index 2d6c30317792..f92674ec7e31 100644
 --- a/include/linux/soundwire/sdw.h
 +++ b/include/linux/soundwire/sdw.h
 @@ -664,7 +664,7 @@ struct sdw_slave {
@@ -18182,6 +18190,15 @@ index 2d6c30317792..5316c17734b0 100644
  #endif
  	struct list_head node;
  	struct completion port_ready[SDW_MAX_PORTS];
+@@ -1011,7 +1011,7 @@ struct sdw_bus {
+ 	struct irq_chip irq_chip;
+ 	struct irq_domain *domain;
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry *debugfs;
++	struct debugfs_node *debugfs;
+ #endif
+ 	bool multi_link;
+ 	unsigned int lane_used_bandwidth[SDW_MAX_LANES];
 diff --git a/include/linux/sunrpc/clnt.h b/include/linux/sunrpc/clnt.h
 index fec976e58174..e7c939c101f3 100644
 --- a/include/linux/sunrpc/clnt.h
@@ -18313,10 +18330,18 @@ index 1b6222fab24e..9f452e90ced8 100644
  	return NULL;
  }
 diff --git a/include/media/v4l2-dv-timings.h b/include/media/v4l2-dv-timings.h
-index ff07dc6b103c..4a89b1262920 100644
+index ff07dc6b103c..e08294607e5f 100644
 --- a/include/media/v4l2-dv-timings.h
 +++ b/include/media/v4l2-dv-timings.h
-@@ -287,13 +287,15 @@ struct v4l2_debugfs_if {
+@@ -280,20 +280,22 @@ typedef ssize_t (*v4l2_debugfs_if_read_t)(u32 type, void *priv,
+ 					  size_t count, loff_t *ppos);
+ 
+ struct v4l2_debugfs_if {
+-	struct dentry *if_dir;
++	struct debugfs_node *if_dir;
+ 	void *priv;
+ 
+ 	v4l2_debugfs_if_read_t if_read;
  };
  
  #ifdef CONFIG_DEBUG_FS

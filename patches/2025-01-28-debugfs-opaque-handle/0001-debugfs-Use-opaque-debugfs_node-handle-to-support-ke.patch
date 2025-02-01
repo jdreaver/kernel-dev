@@ -9,6 +9,7 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 Cc: Steven Rostedt <rostedt@goodmis.org>,
     Christian Brauner <brauner@kernel.org>,
     linux-fsdevel@vger.kernel.org,
+    cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
 Signed-off-by: David Reaver <me@davidreaver.com>

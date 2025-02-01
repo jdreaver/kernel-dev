@@ -6,6 +6,7 @@ TODO (things to cover):
   - I purposely didn't try to cover every case in Coccinelle. I focused on the use case of a maintainer running the script if there is a merge conflict. Any advice is appreciated. I tried to do funny things to make it more terse but it just made it buggy.
   - Latter parts of coccinelle script can be manual fixups if necessary (only like 1-2 callers for each of those functions)
   - Having a ton of trouble with Coccinelle only working on some files when I run them individually, but not when I run it over the entire kernel tree.
+    - The patch that Coccinelle produces has conflicting diffs for the same header file. Presumably this is because it takes different "paths" to the header file. For example, in a struct with multiple dentry fields next to one another, a spatch run on one file might transform one of the fields, and a run on another C file might result in different fields being modified. spatch doesn't appear to combine these cases, and when the patch is applied one wins while the other gets a .rej file.
 - This patch will make any future internal migration much easier
   - Lots more to do before we could plug in kernfs. Biggest hurdle is refactoring file ops structs
 - The most non-obvious change was relay.c stuff and its users in a few drivers. The documentation used phrases like "e.g. debugfs" and the API passed around dentry pointers. All users used debugfs so I made this part of the API.
