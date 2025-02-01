@@ -1,4 +1,4 @@
-From 56dd253731f942650129bcc3a134826c66bc735f Mon Sep 17 00:00:00 2001
+From 664c4108c5bcee6eb5b2b40aecc459fa2ca90ebb Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -16,6 +16,9 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/accel/habanalabs/common/habanalabs.h  |   2 +-
  drivers/block/drbd/drbd_debugfs.c             |   2 +-
  drivers/crypto/caam/caamalg_qi2.h             |   2 +-
+ .../intel/qat/qat_common/adf_accel_devices.h  |   4 +-
+ drivers/crypto/intel/qat/qat_common/adf_cfg.h |   2 +-
+ .../intel/qat/qat_common/adf_heartbeat.h      |  12 +-
  drivers/cxl/cxlmem.h                          |   2 +-
  drivers/cxl/mem.c                             |  12 +-
  drivers/firmware/arm_scmi/raw_mode.h          |   2 +-
@@ -40,6 +43,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/gpu/host1x/dev.h                      |   2 +-
  drivers/hwmon/asus_atk0110.c                  |   2 +-
  drivers/infiniband/hw/bnxt_re/bnxt_re.h       |   4 +-
+ drivers/infiniband/hw/hfi1/fault.c            |   2 +-
  drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
  drivers/infiniband/hw/hns/hns_roce_debugfs.h  |   4 +-
  drivers/infiniband/hw/ocrdma/ocrdma.h         |   2 +-
@@ -51,6 +55,11 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../st/sti/c8sectpfe/c8sectpfe-core.h         |   2 +-
  .../media/test-drivers/visl/visl-debugfs.c    |  10 +-
  drivers/media/test-drivers/visl/visl.h        |   2 +-
+ drivers/memory/tegra/tegra124-emc.c           |   2 +-
+ drivers/memory/tegra/tegra186-emc.c           |   2 +-
+ drivers/memory/tegra/tegra20-emc.c            |   2 +-
+ drivers/memory/tegra/tegra210-emc.h           |   2 +-
+ drivers/memory/tegra/tegra30-emc.c            |   2 +-
  drivers/mtd/ubi/debug.c                       |  42 ++--
  .../ethernet/hisilicon/hibmcge/hbg_debugfs.c  |   2 +-
  drivers/net/ethernet/huawei/hinic/hinic_dev.h |   2 +-
@@ -64,6 +73,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../microchip/sparx5/sparx5_vcap_impl.c       |   2 +-
  drivers/net/ethernet/netronome/nfp/nfp_net.h  |   4 +-
  .../ethernet/netronome/nfp/nfp_net_debugfs.c  |   2 +-
+ drivers/net/ethernet/qualcomm/qca_spi.h       |   2 +-
  drivers/net/netdevsim/netdevsim.h             |   8 +-
  drivers/net/wireless/ath/ath10k/spectral.c    |  17 +-
  drivers/net/wireless/ath/ath11k/debugfs.c     |   2 +-
@@ -92,7 +102,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/wwan/iosm/iosm_ipc_trace.c        |  17 +-
  drivers/net/wwan/t7xx/t7xx_port_trace.c       |  20 +-
  drivers/remoteproc/remoteproc_debugfs.c       |   2 +-
- drivers/remoteproc/remoteproc_internal.h      |   7 +-
+ drivers/remoteproc/remoteproc_internal.h      |   9 +-
  drivers/scsi/bfa/bfad_drv.h                   |   2 +-
  drivers/scsi/lpfc/lpfc_debugfs.c              |  40 ++--
  drivers/scsi/megaraid/megaraid_sas.h          |   2 +-
@@ -122,6 +132,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/media/cec.h                           |   2 +-
  include/media/v4l2-dv-timings.h               |   2 +-
  include/net/mac80211.h                        |  12 +-
+ include/soc/tegra/mc.h                        |   2 +-
  include/sound/soc-dapm.h                      |   3 +-
  kernel/gcov/fs.c                              |   2 +-
  kernel/trace/blktrace.c                       |  23 ++-
@@ -135,7 +146,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/wireless/debugfs.c                        |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   5 +-
- 122 files changed, 541 insertions(+), 458 deletions(-)
+ 133 files changed, 559 insertions(+), 476 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -176,6 +187,58 @@ index 61d1219a202f..e4a9f4583a83 100644
  };
  
  /**
+diff --git a/drivers/crypto/intel/qat/qat_common/adf_accel_devices.h b/drivers/crypto/intel/qat/qat_common/adf_accel_devices.h
+index aa4088327f20..5fba261fe709 100644
+--- a/drivers/crypto/intel/qat/qat_common/adf_accel_devices.h
++++ b/drivers/crypto/intel/qat/qat_common/adf_accel_devices.h
+@@ -462,8 +462,8 @@ struct adf_accel_dev {
+ 	unsigned long status;
+ 	atomic_t ref_count;
+ 	struct debugfs_node *debugfs_dir;
+-	struct dentry *fw_cntr_dbgfile;
+-	struct dentry *cnv_dbgfile;
++	struct debugfs_node *fw_cntr_dbgfile;
++	struct debugfs_node *cnv_dbgfile;
+ 	struct list_head list;
+ 	struct module *owner;
+ 	struct adf_accel_pci accel_pci_dev;
+diff --git a/drivers/crypto/intel/qat/qat_common/adf_cfg.h b/drivers/crypto/intel/qat/qat_common/adf_cfg.h
+index 2afa6f0d15c5..c107a9d42794 100644
+--- a/drivers/crypto/intel/qat/qat_common/adf_cfg.h
++++ b/drivers/crypto/intel/qat/qat_common/adf_cfg.h
+@@ -25,7 +25,7 @@ struct adf_cfg_section {
+ 
+ struct adf_cfg_device_data {
+ 	struct list_head sec_list;
+-	struct dentry *debug;
++	struct debugfs_node *debug;
+ 	struct rw_semaphore lock;
+ };
+ 
+diff --git a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
+index 16fdfb48b196..4d27e120e918 100644
+--- a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
++++ b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
+@@ -39,13 +39,13 @@ struct adf_heartbeat {
+ 		void *virt_addr;
+ 	} dma;
+ 	struct {
+-		struct dentry *base_dir;
+-		struct dentry *status;
+-		struct dentry *cfg;
+-		struct dentry *sent;
+-		struct dentry *failed;
++		struct debugfs_node *base_dir;
++		struct debugfs_node *status;
++		struct debugfs_node *cfg;
++		struct debugfs_node *sent;
++		struct debugfs_node *failed;
+ #ifdef CONFIG_CRYPTO_DEV_QAT_ERROR_INJECTION
+-		struct dentry *inject_error;
++		struct debugfs_node *inject_error;
+ #endif
+ 	} dbgfs;
+ };
 diff --git a/drivers/cxl/cxlmem.h b/drivers/cxl/cxlmem.h
 index 2a25d1957ddb..9600f082e8e5 100644
 --- a/drivers/cxl/cxlmem.h
@@ -753,6 +816,19 @@ index 189315815643..fdc914a63c4e 100644
  	unsigned long			event_bitmap;
  	struct bnxt_qplib_cc_param	cc_param;
  	struct workqueue_struct		*dcb_wq;
+diff --git a/drivers/infiniband/hw/hfi1/fault.c b/drivers/infiniband/hw/hfi1/fault.c
+index 08c876828c72..7c05b5109d43 100644
+--- a/drivers/infiniband/hw/hfi1/fault.c
++++ b/drivers/infiniband/hw/hfi1/fault.c
+@@ -215,7 +215,7 @@ void hfi1_fault_exit_debugfs(struct hfi1_ibdev *ibd)
+ 
+ int hfi1_fault_init_debugfs(struct hfi1_ibdev *ibd)
+ {
+-	struct dentry *parent = ibd->hfi1_ibdev_dbg;
++	struct debugfs_node *parent = ibd->hfi1_ibdev_dbg;
+ 	struct debugfs_node *fault_dir;
+ 
+ 	ibd->fault = kzalloc(sizeof(*ibd->fault), GFP_KERNEL);
 diff --git a/drivers/infiniband/hw/hfi1/verbs.h b/drivers/infiniband/hw/hfi1/verbs.h
 index 070e4f0babe8..e8c0ff01353f 100644
 --- a/drivers/infiniband/hw/hfi1/verbs.h
@@ -925,6 +1001,71 @@ index 2cdba86e6ca2..816c6398d82b 100644
  	struct debugfs_blob_wrapper blob;
  };
  
+diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
+index 03f1daa2d132..aae54b819633 100644
+--- a/drivers/memory/tegra/tegra124-emc.c
++++ b/drivers/memory/tegra/tegra124-emc.c
+@@ -496,7 +496,7 @@ struct tegra_emc {
+ 	unsigned int num_timings;
+ 
+ 	struct {
+-		struct dentry *root;
++		struct debugfs_node *root;
+ 		unsigned long min_rate;
+ 		unsigned long max_rate;
+ 	} debugfs;
+diff --git a/drivers/memory/tegra/tegra186-emc.c b/drivers/memory/tegra/tegra186-emc.c
+index bc807d7fcd4e..693c7f9c8b84 100644
+--- a/drivers/memory/tegra/tegra186-emc.c
++++ b/drivers/memory/tegra/tegra186-emc.c
+@@ -27,7 +27,7 @@ struct tegra186_emc {
+ 	unsigned int num_dvfs;
+ 
+ 	struct {
+-		struct dentry *root;
++		struct debugfs_node *root;
+ 		unsigned long min_rate;
+ 		unsigned long max_rate;
+ 	} debugfs;
+diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
+index 9b7d30a21a5b..3647902658c5 100644
+--- a/drivers/memory/tegra/tegra20-emc.c
++++ b/drivers/memory/tegra/tegra20-emc.c
+@@ -207,7 +207,7 @@ struct tegra_emc {
+ 	unsigned int num_timings;
+ 
+ 	struct {
+-		struct dentry *root;
++		struct debugfs_node *root;
+ 		unsigned long min_rate;
+ 		unsigned long max_rate;
+ 	} debugfs;
+diff --git a/drivers/memory/tegra/tegra210-emc.h b/drivers/memory/tegra/tegra210-emc.h
+index 8988bcf15290..90b802142445 100644
+--- a/drivers/memory/tegra/tegra210-emc.h
++++ b/drivers/memory/tegra/tegra210-emc.h
+@@ -925,7 +925,7 @@ struct tegra210_emc {
+ 	unsigned long resume_rate;
+ 
+ 	struct {
+-		struct dentry *root;
++		struct debugfs_node *root;
+ 		unsigned long min_rate;
+ 		unsigned long max_rate;
+ 		unsigned int temperature;
+diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
+index 921dce1b8bc6..49b92e03c9d0 100644
+--- a/drivers/memory/tegra/tegra30-emc.c
++++ b/drivers/memory/tegra/tegra30-emc.c
+@@ -378,7 +378,7 @@ struct tegra_emc {
+ 	bool dll_on : 1;
+ 
+ 	struct {
+-		struct dentry *root;
++		struct debugfs_node *root;
+ 		unsigned long min_rate;
+ 		unsigned long max_rate;
+ 	} debugfs;
 diff --git a/drivers/mtd/ubi/debug.c b/drivers/mtd/ubi/debug.c
 index 885b311379d4..78cb7801818b 100644
 --- a/drivers/mtd/ubi/debug.c
@@ -1255,6 +1396,19 @@ index fb7df43f30cf..f2587bba7355 100644
  {
  	debugfs_remove_recursive(*dir);
  	*dir = NULL;
+diff --git a/drivers/net/ethernet/qualcomm/qca_spi.h b/drivers/net/ethernet/qualcomm/qca_spi.h
+index 90b290f94c27..ee558d6254f5 100644
+--- a/drivers/net/ethernet/qualcomm/qca_spi.h
++++ b/drivers/net/ethernet/qualcomm/qca_spi.h
+@@ -85,7 +85,7 @@ struct qcaspi {
+ 	u16 reset_count;
+ 
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry *device_root;
++	struct debugfs_node *device_root;
+ #endif
+ 
+ 	/* user configurable options */
 diff --git a/drivers/net/netdevsim/netdevsim.h b/drivers/net/netdevsim/netdevsim.h
 index 2475f5355e66..2b6b4594e610 100644
 --- a/drivers/net/netdevsim/netdevsim.h
@@ -2175,9 +2329,18 @@ index 1bebfc8f847a..a48b7f3d5380 100644
  {
  	return debugfs_create_file(name, 0400, rproc->dbg_dir, trace,
 diff --git a/drivers/remoteproc/remoteproc_internal.h b/drivers/remoteproc/remoteproc_internal.h
-index 0cd09e67ac14..5e7731319954 100644
+index 0cd09e67ac14..3229b8bca2a2 100644
 --- a/drivers/remoteproc/remoteproc_internal.h
 +++ b/drivers/remoteproc/remoteproc_internal.h
+@@ -19,7 +19,7 @@ struct rproc;
+ 
+ struct rproc_debug_trace {
+ 	struct rproc *rproc;
+-	struct dentry *tfile;
++	struct debugfs_node *tfile;
+ 	struct list_head node;
+ 	struct rproc_mem_entry trace_mem;
+ };
 @@ -63,9 +63,10 @@ int rproc_of_parse_firmware(struct device *dev, int index,
  irqreturn_t rproc_vq_interrupt(struct rproc *rproc, int vq_id);
  
@@ -2935,6 +3098,19 @@ index 3443ac47384a..8896fdc00ecb 100644
  
  	u32 (*get_expected_throughput)(void *priv_sta);
  };
+diff --git a/include/soc/tegra/mc.h b/include/soc/tegra/mc.h
+index 6ee4c59db620..64c440123757 100644
+--- a/include/soc/tegra/mc.h
++++ b/include/soc/tegra/mc.h
+@@ -223,7 +223,7 @@ struct tegra_mc {
+ 	spinlock_t lock;
+ 
+ 	struct {
+-		struct dentry *root;
++		struct debugfs_node *root;
+ 	} debugfs;
+ };
+ 
 diff --git a/include/sound/soc-dapm.h b/include/sound/soc-dapm.h
 index bb8445b7a384..cd876d2d3060 100644
 --- a/include/sound/soc-dapm.h

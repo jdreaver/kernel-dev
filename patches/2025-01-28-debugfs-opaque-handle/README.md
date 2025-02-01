@@ -21,15 +21,16 @@ git format-patch master...HEAD \
       --cc 'linux-kernel@vger.kernel.org'
 ```
 
-# TODOs pending testing
-
 # TODO
+
+- Get feedback on approach
+  - Is it normal to do [RFC] in fsdevel?
 
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
   - I think the rules are stepping on each other because if one rule proposes changes to a header file, and another proposes different changes, I think spatch doesn't like that
   - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
-- spatch needing two runs to work
+- spatch needing two runs to work, or just not working at top level and only when run on individual files/directories
   - Ideas to fix
     - Run without `--jobs` in case parallelism is the enemy
     - Run with more verbose options
@@ -40,7 +41,6 @@ git format-patch master...HEAD \
     - Run without caching headers (`--no-include-cache`)
     - (didn't work) `--timeout=0` (drivers/scsi/lpfc is quite slow, for example)
       - When we hit the timeout, there is an error message like `EXN: Coccinelle_modules.Common.Timeout in ./security/selinux/selinuxfs.c`, so look for that
-  - Check spatch exit code. Maybe it is alerting us to a problem.
   - Examples:
     - `drivers/scsi/lpfc/`
       - Actually this one doesn't even work when we run spatch twice at the top-level. Only works when running that dir directly. wtf
@@ -51,8 +51,25 @@ git format-patch master...HEAD \
     - `drivers/net/netdevsim/netdevsim.h` was another
     - `drivers/crypto/intel/qat/qat_common/adf_cfg.c`
 
+- Test more complex assignments like `hb->dbgfs.base_dir = debugfs_create_dir("heartbeat", accel_dev->debugfs_dir);` in test file
+- In `struct dentry *parent = ibd->hfi1_ibdev_dbg;` we know that `parent` is used as an arg to a debugfs_function, and `ibd->hfi1_ibdev_dbg` is debugfs_node, so we should have migrated parent. We should allow any expression on the RHS, not just function calls to debugfs functions.
 - Consider a `->d_parent` -> new helper `debugfs_node_parent`
 - `->d_inode` -> `debugfs_node_inode` (just check arg type)
+
+- Nested structs like
+
+  ```
+  struct tegra_emc {
+  	struct device *dev;
+          ...
+  	struct {
+  		struct debugfs_node *root;
+  		unsigned long min_rate;
+  		unsigned long max_rate;
+  	} debugfs;
+          ...
+  };
+  ```
 
 - static anonymous struct in `ie6xx_wdt.c` didn't have a field transformed. This is common in drivers because there is a global struct for debug stuff.
 
@@ -82,10 +99,6 @@ git format-patch master...HEAD \
   - Revert include/linux/fs.h changes (maybe we can exclude this file in the cocci script)
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
 
-- Get feedback on approach
-- If we eventually want to use `kernfs`, we need to consider `file_operations` as well. That would be a super hard thing to migrate across all of the kernel.
-  - Maybe not actually. There are lots of helper macros being used by debugfs users that will make this easier.
-
 Final checks:
 - Compile with debugfs disabled in kernel
 
@@ -111,14 +124,11 @@ $ time spatch ../patches/2025-01-28-debugfs-opaque-handle/script.cocci --all-inc
 $ patch -p1 < patch.patch
 ```
 
-Fixup one-liner for multi-declarations:
+(not needed anymore) Fixup one-liner for multi-declarations:
 
 ```
 $ find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i -E ':a;s/(struct debugfs_node \*[^;]+);struct debugfs_node \*/\1, */g;ta; s/struct \*debugfs_node /struct debugfs_node */g' {} +
 ```
-
-Ideas:
-- It is okay if this catches _too_ much. We can fix things up.
 
 ## Finding all usages
 
