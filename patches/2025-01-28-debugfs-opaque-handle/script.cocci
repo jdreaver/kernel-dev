@@ -4,7 +4,7 @@ virtual patch
 // Rewrite wrapper functions. These are functions that return a dentry or accept
 // a dentry as an argument and look like they are related to debugfs.
 //
-@wrapper_function_returns depends on !(file in "fs/debugfs")@
+@wrapper_function_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier wfr =~ "debugfs|dbgfs";
 @@
 
@@ -12,7 +12,7 @@ identifier wfr =~ "debugfs|dbgfs";
 + struct debugfs_node *
 wfr(...) { ... }
 
-@wrapper_function_args depends on !(file in "fs/debugfs")@
+@wrapper_function_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier wfa =~ "debugfs|dbgfs";
 identifier arg;
 @@
@@ -173,7 +173,7 @@ struct struct_name {
 // Coccinelle doesn't go into all headers/structs.
 //
 
-@obvious_debugfs_decls depends on !(file in "fs/debugfs")@
+@obvious_debugfs_decls depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 @@
 
@@ -187,7 +187,7 @@ identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
   var = NULL;
 )
 
-@obvious_debugfs_fields depends on !(file in "fs/debugfs")@
+@obvious_debugfs_fields depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 identifier struct_name;
 @@
@@ -200,7 +200,7 @@ struct struct_name {
     ...
 };
 
-@obvious_debugfs_field_arrays depends on !(file in "fs/debugfs")@
+@obvious_debugfs_field_arrays depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 identifier struct_name;
 @@

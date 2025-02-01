@@ -45,7 +45,7 @@ git format-patch master...HEAD \
   - Check spatch exit code. Maybe it is alerting us to a problem.
   - Is there a timeout? `drivers/scsi/lpfc/` takes a long time when I try to do it by itself.
   - Issue with parallelism?
-  - Need `--chunksize=1`?
+  - (doubt it, default is 1) Need `--chunksize=1`?
   - Need `--recursive-includes`?
   - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
   - Example now is `drivers/scsi/lpfc/`
