@@ -30,6 +30,18 @@ git format-patch master...HEAD \
   - Fill out cover letter
   - Decide on subject. Should we not mention kernfs in any of this?
 
+- Migrate `rchan_callbacks` and relay.c thing use debugfs_node `dentry`. All users use debugfs, and the docs say to use debugfs.
+  - Do this in a new commit, or call it out in the feedback
+- Inspect diff for all rchan_callbacks files to make sure I didn't do some trivial whitespace change
+  - drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
+  - drivers/net/wireless/ath/ath10k/spectral.c
+  - drivers/net/wireless/ath/ath11k/spectral.c
+  - drivers/net/wireless/ath/ath9k/common-spectral.c
+  - drivers/wireless/mediatek/mt76/mt7915/debugfs.c
+  - drivers/wireless/mediatek/mt76/mt7996/debugfs.c
+  - drivers/net/wwan/iosm/iosm_ipc_trace.c
+  - drivers/net/wwan/t7xx/t7xx_port_trace.c
+
 - Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
 
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
@@ -84,8 +96,6 @@ git format-patch master...HEAD \
   ```
 
 - static anonymous struct in `ie6xx_wdt.c` didn't have a field transformed. This is common in drivers because there is a global struct for debug stuff.
-
-- (might be done) Change `rchan_callbacks` users to convert to `dentry`
 
 - Consider removing the `all_function_calls` thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
 

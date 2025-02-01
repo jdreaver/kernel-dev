@@ -1,7 +1,7 @@
-From 0a2ab6ad67b49d4c19a706312ecb421683fe390f Mon Sep 17 00:00:00 2001
+From 3851fb3e426799c0e6977d720f548d0db1c9c50f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 05:23:06 -0800
-Subject: [RFC PATCH 0/3] debugfs: Use opaque debugfs_node handle to support
+Date: Sat, 1 Feb 2025 06:45:36 -0800
+Subject: [RFC PATCH 0/4] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -22,11 +22,13 @@ TODO (things to cover):
 - One escape hatch to dentry was required for relay stuff. I noticed that kernfs also allows getting a kernfs_node's dentry. (One example is in blktrace.c)
   - I'm not a fan of the escape hatch, but at least it is way easier to find when people are using it than raw dentry pointers floating around.
 
-David Reaver (3):
+David Reaver (4):
   debugfs: Use opaque debugfs_node handle to support kernfs migration
   debugfs: tmp commit to show coccinelle output
   debugfs: tmp commit with fixups not handled by coccinelle script
+  relay: Use debugfs_node instead of raw dentry for debugfs
 
+ Documentation/filesystems/relay.rst           |  32 ++-
  arch/arm/mach-omap1/pm.c                      |   2 +-
  arch/arm/mach-omap2/pm-debug.c                |   4 +-
  arch/loongarch/kernel/kdebugfs.c              |   2 +-
@@ -278,7 +280,7 @@ David Reaver (3):
  drivers/gpu/drm/i915/gt/uc/intel_guc.h        |   2 +-
  .../gpu/drm/i915/gt/uc/intel_guc_debugfs.c    |   3 +-
  .../gpu/drm/i915/gt/uc/intel_guc_debugfs.h    |   3 +-
- drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  18 +-
+ drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  21 +-
  .../drm/i915/gt/uc/intel_guc_log_debugfs.c    |   2 +-
  .../drm/i915/gt/uc/intel_guc_log_debugfs.h    |   2 +-
  .../gpu/drm/i915/gt/uc/intel_huc_debugfs.c    |   3 +-
@@ -622,13 +624,13 @@ David Reaver (3):
  drivers/net/wireless/ath/ath10k/core.h        |   2 +-
  drivers/net/wireless/ath/ath10k/debug.h       |   3 +-
  drivers/net/wireless/ath/ath10k/debugfs_sta.c |   3 +-
- drivers/net/wireless/ath/ath10k/spectral.c    |  13 +-
+ drivers/net/wireless/ath/ath10k/spectral.c    |  16 +-
  drivers/net/wireless/ath/ath11k/core.h        |   6 +-
  drivers/net/wireless/ath/ath11k/debugfs.c     |   8 +-
  drivers/net/wireless/ath/ath11k/debugfs.h     |   2 +-
  drivers/net/wireless/ath/ath11k/debugfs_sta.c |   3 +-
  drivers/net/wireless/ath/ath11k/debugfs_sta.h |   3 +-
- drivers/net/wireless/ath/ath11k/spectral.c    |  15 +-
+ drivers/net/wireless/ath/ath11k/spectral.c    |  20 +-
  drivers/net/wireless/ath/ath11k/spectral.h    |   6 +-
  drivers/net/wireless/ath/ath12k/core.h        |   6 +-
  drivers/net/wireless/ath/ath12k/debugfs.c     |   4 +-
@@ -636,7 +638,7 @@ David Reaver (3):
  drivers/net/wireless/ath/ath6kl/core.h        |   2 +-
  drivers/net/wireless/ath/ath9k/common-debug.c |   8 +-
  drivers/net/wireless/ath/ath9k/common-debug.h |  16 +-
- .../net/wireless/ath/ath9k/common-spectral.c  |  14 +-
+ .../net/wireless/ath/ath9k/common-spectral.c  |  18 +-
  .../net/wireless/ath/ath9k/common-spectral.h  |   5 +-
  drivers/net/wireless/ath/ath9k/debug.h        |   4 +-
  drivers/net/wireless/ath/ath9k/debug_sta.c    |   2 +-
@@ -690,11 +692,11 @@ David Reaver (3):
  .../wireless/mediatek/mt76/mt7603/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt7615/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt76x02_debugfs.c  |   2 +-
- .../wireless/mediatek/mt76/mt7915/debugfs.c   |  28 +--
+ .../wireless/mediatek/mt76/mt7915/debugfs.c   |  18 +-
  .../wireless/mediatek/mt76/mt7915/mt7915.h    |   5 +-
  .../wireless/mediatek/mt76/mt7921/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt7925/debugfs.c   |   2 +-
- .../wireless/mediatek/mt76/mt7996/debugfs.c   |  28 +--
+ .../wireless/mediatek/mt76/mt7996/debugfs.c   |  18 +-
  .../wireless/mediatek/mt76/mt7996/mt7996.h    |   5 +-
  .../net/wireless/mediatek/mt7601u/debugfs.c   |   2 +-
  drivers/net/wireless/quantenna/qtnfmac/bus.h  |   2 +-
@@ -719,10 +721,10 @@ David Reaver (3):
  drivers/net/wireless/ti/wlcore/wlcore.h       |   2 +-
  drivers/net/wireless/virtual/mac80211_hwsim.c |   4 +-
  drivers/net/wwan/iosm/iosm_ipc_imem.h         |   4 +-
- drivers/net/wwan/iosm/iosm_ipc_trace.c        |  13 +-
+ drivers/net/wwan/iosm/iosm_ipc_trace.c        |  14 +-
  drivers/net/wwan/iosm/iosm_ipc_trace.h        |   2 +-
  drivers/net/wwan/t7xx/t7xx_pci.h              |   2 +-
- drivers/net/wwan/t7xx/t7xx_port_trace.c       |  22 +-
+ drivers/net/wwan/t7xx/t7xx_port_trace.c       |  32 +--
  drivers/net/wwan/wwan_core.c                  |  10 +-
  drivers/net/wwan/wwan_hwsim.c                 |  10 +-
  drivers/net/xen-netback/common.h              |   4 +-
@@ -999,6 +1001,7 @@ David Reaver (3):
  include/linux/pktcdvd.h                       |   4 +-
  include/linux/power/smartreflex.h             |   2 +-
  include/linux/regulator/driver.h              |   2 +-
+ include/linux/relay.h                         |  19 +-
  include/linux/remoteproc.h                    |   2 +-
  include/linux/shrinker.h                      |   2 +-
  include/linux/soundwire/sdw.h                 |   4 +-
@@ -1045,8 +1048,9 @@ David Reaver (3):
  kernel/module/tracking.c                      |   2 +-
  kernel/power/energy_model.c                   |   8 +-
  kernel/printk/index.c                         |   4 +-
+ kernel/relay.c                                |  89 ++++----
  kernel/sched/debug.c                          |  16 +-
- kernel/trace/blktrace.c                       |  21 +-
+ kernel/trace/blktrace.c                       |  19 +-
  kernel/trace/trace.h                          |   2 +-
  lib/842/842_debugfs.h                         |   2 +-
  lib/debugobjects.c                            |   2 +-
@@ -1130,7 +1134,7 @@ David Reaver (3):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1103 files changed, 2852 insertions(+), 2529 deletions(-)
+ 1106 files changed, 2910 insertions(+), 2615 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5
