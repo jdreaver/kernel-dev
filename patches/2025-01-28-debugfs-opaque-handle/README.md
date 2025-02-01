@@ -30,19 +30,8 @@ git format-patch master...HEAD \
   - Fill out cover letter
   - Decide on subject. Should we not mention kernfs in any of this?
 
-- Migrate `rchan_callbacks` and relay.c thing use debugfs_node `dentry`. All users use debugfs, and the docs say to use debugfs.
-  - Do this in a new commit, or call it out in the feedback
-- Inspect diff for all rchan_callbacks files to make sure I didn't do some trivial whitespace change
-  - drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
-  - drivers/net/wireless/ath/ath10k/spectral.c
-  - drivers/net/wireless/ath/ath11k/spectral.c
-  - drivers/net/wireless/ath/ath9k/common-spectral.c
-  - drivers/wireless/mediatek/mt76/mt7915/debugfs.c
-  - drivers/wireless/mediatek/mt76/mt7996/debugfs.c
-  - drivers/net/wwan/iosm/iosm_ipc_trace.c
-  - drivers/net/wwan/t7xx/t7xx_port_trace.c
-
 - Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
+- Try removing a few `debugfs_node_dentry` calls. I think they are only used for `%pd2` printf'ing and fetching a parent.
 
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
   - I think the rules are stepping on each other because if one rule proposes changes to a header file, and another proposes different changes, I think spatch doesn't like that
@@ -79,6 +68,13 @@ git format-patch master...HEAD \
 - In `struct dentry *parent = ibd->hfi1_ibdev_dbg;` we know that `parent` is used as an arg to a debugfs_function, and `ibd->hfi1_ibdev_dbg` is debugfs_node, so we should have migrated parent. We should allow any expression on the RHS, not just function calls to debugfs functions.
 - Consider a `->d_parent` -> new helper `debugfs_node_parent`
 - `->d_inode` -> `debugfs_node_inode` (just check arg type)
+
+- Use this style for putting type on different line from function def (not pointer `*` position):
+
+  ```
+  static struct debugfs_node *
+  create_buf_file_callback(const char *filename, ...
+  ```
 
 - Nested structs like
 

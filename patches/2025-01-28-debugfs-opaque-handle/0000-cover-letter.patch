@@ -1,6 +1,6 @@
-From 3851fb3e426799c0e6977d720f548d0db1c9c50f Mon Sep 17 00:00:00 2001
+From 2f6a13185dc5bf0f5d2f4d57a00a8db58ce0c6f1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 06:45:36 -0800
+Date: Sat, 1 Feb 2025 06:58:49 -0800
 Subject: [RFC PATCH 0/4] debugfs: Use opaque debugfs_node handle to support
  kernfs migration
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -19,8 +19,8 @@ TODO (things to cover):
   - Having a ton of trouble with Coccinelle only working on some files when I run them individually, but not when I run it over the entire kernel tree.
 - This patch will make any future internal migration much easier
   - Lots more to do before we could plug in kernfs. Biggest hurdle is refactoring file ops structs
-- One escape hatch to dentry was required for relay stuff. I noticed that kernfs also allows getting a kernfs_node's dentry. (One example is in blktrace.c)
-  - I'm not a fan of the escape hatch, but at least it is way easier to find when people are using it than raw dentry pointers floating around.
+- The most non-obvious change was relay.c stuff and its users in a few drivers. The documentation used phrases like "e.g. debugfs" and the API passed around dentry pointers. All users used debugfs so I made this part of the API.
+- I'm not a fan of the debugfs_node_dentry escape hatch, but at least it is way easier to find when people are using it than raw dentry pointers floating around.
 
 David Reaver (4):
   debugfs: Use opaque debugfs_node handle to support kernfs migration
@@ -280,7 +280,7 @@ David Reaver (4):
  drivers/gpu/drm/i915/gt/uc/intel_guc.h        |   2 +-
  .../gpu/drm/i915/gt/uc/intel_guc_debugfs.c    |   3 +-
  .../gpu/drm/i915/gt/uc/intel_guc_debugfs.h    |   3 +-
- drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  21 +-
+ drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  17 +-
  .../drm/i915/gt/uc/intel_guc_log_debugfs.c    |   2 +-
  .../drm/i915/gt/uc/intel_guc_log_debugfs.h    |   2 +-
  .../gpu/drm/i915/gt/uc/intel_huc_debugfs.c    |   3 +-
@@ -630,7 +630,7 @@ David Reaver (4):
  drivers/net/wireless/ath/ath11k/debugfs.h     |   2 +-
  drivers/net/wireless/ath/ath11k/debugfs_sta.c |   3 +-
  drivers/net/wireless/ath/ath11k/debugfs_sta.h |   3 +-
- drivers/net/wireless/ath/ath11k/spectral.c    |  20 +-
+ drivers/net/wireless/ath/ath11k/spectral.c    |  18 +-
  drivers/net/wireless/ath/ath11k/spectral.h    |   6 +-
  drivers/net/wireless/ath/ath12k/core.h        |   6 +-
  drivers/net/wireless/ath/ath12k/debugfs.c     |   4 +-
@@ -721,10 +721,10 @@ David Reaver (4):
  drivers/net/wireless/ti/wlcore/wlcore.h       |   2 +-
  drivers/net/wireless/virtual/mac80211_hwsim.c |   4 +-
  drivers/net/wwan/iosm/iosm_ipc_imem.h         |   4 +-
- drivers/net/wwan/iosm/iosm_ipc_trace.c        |  14 +-
+ drivers/net/wwan/iosm/iosm_ipc_trace.c        |   9 +-
  drivers/net/wwan/iosm/iosm_ipc_trace.h        |   2 +-
  drivers/net/wwan/t7xx/t7xx_pci.h              |   2 +-
- drivers/net/wwan/t7xx/t7xx_port_trace.c       |  32 +--
+ drivers/net/wwan/t7xx/t7xx_port_trace.c       |  22 +-
  drivers/net/wwan/wwan_core.c                  |  10 +-
  drivers/net/wwan/wwan_hwsim.c                 |  10 +-
  drivers/net/xen-netback/common.h              |   4 +-
@@ -1134,7 +1134,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1106 files changed, 2910 insertions(+), 2615 deletions(-)
+ 1106 files changed, 2895 insertions(+), 2609 deletions(-)
 
 
 base-commit: 05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5

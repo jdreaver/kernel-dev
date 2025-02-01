@@ -1,4 +1,4 @@
-From 3851fb3e426799c0e6977d720f548d0db1c9c50f Mon Sep 17 00:00:00 2001
+From 2f6a13185dc5bf0f5d2f4d57a00a8db58ce0c6f1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sat, 1 Feb 2025 06:45:03 -0800
 Subject: [RFC PATCH 4/4] relay: Use debugfs_node instead of raw dentry for
@@ -11,21 +11,25 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     linux-fsdevel@vger.kernel.org,
     linux-kernel@vger.kernel.org
 
+This is a more invasive change that I thought would be more illustrative as
+its own commit. The actual diff for these files once these are squashed is
+much smaller.
+
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
  Documentation/filesystems/relay.rst           | 32 ++++---
- drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    | 27 +++---
+ drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    | 29 +++---
  drivers/net/wireless/ath/ath10k/spectral.c    | 23 +++--
- drivers/net/wireless/ath/ath11k/spectral.c    | 23 +++--
+ drivers/net/wireless/ath/ath11k/spectral.c    | 25 +++---
  .../net/wireless/ath/ath9k/common-spectral.c  | 22 +++--
  .../wireless/mediatek/mt76/mt7915/debugfs.c   | 22 +++--
  .../wireless/mediatek/mt76/mt7996/debugfs.c   | 22 +++--
- drivers/net/wwan/iosm/iosm_ipc_trace.c        | 17 ++--
- drivers/net/wwan/t7xx/t7xx_port_trace.c       | 24 +++--
+ drivers/net/wwan/iosm/iosm_ipc_trace.c        | 18 ++--
+ drivers/net/wwan/t7xx/t7xx_port_trace.c       | 28 +++---
  include/linux/relay.h                         | 19 ++--
  kernel/relay.c                                | 89 ++++++++++---------
  kernel/trace/blktrace.c                       | 20 ++---
- 12 files changed, 156 insertions(+), 184 deletions(-)
+ 12 files changed, 156 insertions(+), 193 deletions(-)
 
 diff --git a/Documentation/filesystems/relay.rst b/Documentation/filesystems/relay.rst
 index 04ad083cfe62..b0ee7dcab8e7 100644
@@ -108,7 +112,7 @@ index 04ad083cfe62..b0ee7dcab8e7 100644
  	    return 0;
      }
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c b/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
-index b3798a9d8ad4..67cdb377f46c 100644
+index b3798a9d8ad4..c830b3c3b7d9 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
 +++ b/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
 @@ -242,15 +242,14 @@ static int subbuf_start_callback(struct rchan_buf *buf,
@@ -120,12 +124,12 @@ index b3798a9d8ad4..67cdb377f46c 100644
 -					       umode_t mode,
 -					       struct rchan_buf *buf,
 -					       int *is_global)
-+static struct debugfs_node
-+*create_buf_file_callback(const char *filename,
-+			  struct debugfs_node *parent,
-+			  umode_t mode,
-+			  struct rchan_buf *buf,
-+			  int *is_global)
++static struct debugfs_node *
++create_buf_file_callback(const char *filename,
++			 struct debugfs_node *parent,
++			 umode_t mode,
++			 struct rchan_buf *buf,
++			 int *is_global)
  {
 -	struct debugfs_node *parent_node = debugfs_node_from_dentry(parent);
  	struct debugfs_node *buf_file;
@@ -138,8 +142,9 @@ index b3798a9d8ad4..67cdb377f46c 100644
  		return NULL;
  
 -	buf_file = debugfs_create_file(filename, mode, parent_node,
-+	buf_file = debugfs_create_file(filename, mode, parent,
- 				       buf, &relay_file_operations);
+-				       buf, &relay_file_operations);
++	buf_file = debugfs_create_file(filename, mode,
++				       parent, buf, &relay_file_operations);
  	if (IS_ERR(buf_file))
  		return NULL;
  
@@ -236,10 +241,10 @@ index f0009d2e759c..5914c24231ec 100644
  						     &rfs_spec_scan_cb, NULL);
  	debugfs_create_file("spectral_scan_ctl",
 diff --git a/drivers/net/wireless/ath/ath11k/spectral.c b/drivers/net/wireless/ath/ath11k/spectral.c
-index b1625d1147ce..d29284b921de 100644
+index b1625d1147ce..5bb8cb80f7c4 100644
 --- a/drivers/net/wireless/ath/ath11k/spectral.c
 +++ b/drivers/net/wireless/ath/ath11k/spectral.c
-@@ -127,27 +127,27 @@ struct ath11k_spectral_search_report {
+@@ -127,27 +127,25 @@ struct ath11k_spectral_search_report {
  	u8 rel_pwr_db;
  };
  
@@ -261,8 +266,8 @@ index b1625d1147ce..d29284b921de 100644
 -	buf_file = debugfs_create_file(filename, mode, parent_node, buf,
 +	buf_file = debugfs_create_file(filename, mode, parent, buf,
  				       &relay_file_operations);
- 	if (IS_ERR(buf_file))
- 		return NULL;
+-	if (IS_ERR(buf_file))
+-		return NULL;
  
  	*is_global = 1;
 -	return debugfs_node_dentry(buf_file);
@@ -277,7 +282,7 @@ index b1625d1147ce..d29284b921de 100644
  
  	return 0;
  }
-@@ -930,10 +930,9 @@ void ath11k_spectral_deinit(struct ath11k_base *ab)
+@@ -930,10 +928,9 @@ void ath11k_spectral_deinit(struct ath11k_base *ab)
  static inline int ath11k_spectral_debug_register(struct ath11k *ar)
  {
  	int ret;
@@ -450,10 +455,10 @@ index 63a2d4c3dc64..de7c93894f6e 100644
  	if (!dev->relay_fwlog)
  		return -ENOMEM;
 diff --git a/drivers/net/wwan/iosm/iosm_ipc_trace.c b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-index 9417a15b66f4..4a6db231b12b 100644
+index 9417a15b66f4..a9d5214f90c8 100644
 --- a/drivers/net/wwan/iosm/iosm_ipc_trace.c
 +++ b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-@@ -31,27 +31,26 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
+@@ -31,27 +31,23 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
  }
  
  /* Creates relay file in debugfs. */
@@ -467,15 +472,14 @@ index 9417a15b66f4..4a6db231b12b 100644
  				  int *is_global)
  {
 -	struct debugfs_node *parent_node = debugfs_node_from_dentry(parent);
- 	struct debugfs_node *node;
- 
+-	struct debugfs_node *node;
+-
  	*is_global = 1;
 -	node = debugfs_create_file(filename, mode, parent_node, buf,
-+	node = debugfs_create_file(filename, mode, parent, buf,
++	return debugfs_create_file(filename, mode, parent, buf,
  				   &relay_file_operations);
  
 -	return debugfs_node_dentry(node);
-+	return node;
  }
  
  /* Removes relay file from debugfs. */
@@ -487,7 +491,7 @@ index 9417a15b66f4..4a6db231b12b 100644
  	return 0;
  }
  
-@@ -141,7 +140,6 @@ struct iosm_trace *ipc_trace_init(struct iosm_imem *ipc_imem)
+@@ -141,7 +137,6 @@ struct iosm_trace *ipc_trace_init(struct iosm_imem *ipc_imem)
  {
  	struct ipc_chnl_cfg chnl_cfg = { 0 };
  	struct iosm_trace *ipc_trace;
@@ -495,7 +499,7 @@ index 9417a15b66f4..4a6db231b12b 100644
  
  	ipc_chnl_cfg_get(&chnl_cfg, IPC_MEM_CTRL_CHL_ID_3);
  	ipc_imem_channel_init(ipc_imem, IPC_CTYPE_CTRL, chnl_cfg,
-@@ -163,9 +161,8 @@ struct iosm_trace *ipc_trace_init(struct iosm_imem *ipc_imem)
+@@ -163,9 +158,8 @@ struct iosm_trace *ipc_trace_init(struct iosm_imem *ipc_imem)
  						   ipc_imem->debugfs_dir,
  						   ipc_trace, &ipc_trace_fops);
  
@@ -507,10 +511,10 @@ index 9417a15b66f4..4a6db231b12b 100644
  					  IOSM_TRC_N_SUB_BUFF,
  					  &relay_callbacks, NULL);
 diff --git a/drivers/net/wwan/t7xx/t7xx_port_trace.c b/drivers/net/wwan/t7xx/t7xx_port_trace.c
-index 3647c98bc797..300bec8a364f 100644
+index 3647c98bc797..f76f2800405b 100644
 --- a/drivers/net/wwan/t7xx/t7xx_port_trace.c
 +++ b/drivers/net/wwan/t7xx/t7xx_port_trace.c
-@@ -15,25 +15,25 @@
+@@ -15,25 +15,22 @@
  #define T7XX_TRC_SUB_BUFF_SIZE		131072
  #define T7XX_TRC_N_SUB_BUFF		32
  
@@ -519,23 +523,22 @@ index 3647c98bc797..300bec8a364f 100644
 -							 umode_t mode,
 -							 struct rchan_buf *buf,
 -							 int *is_global)
-+static struct debugfs_node
-+*t7xx_trace_create_buf_file_handler(const char *filename,
-+				    struct debugfs_node *parent,
-+				    umode_t mode,
-+				    struct rchan_buf *buf,
-+				    int *is_global)
++static struct debugfs_node *
++t7xx_trace_create_buf_file_handler(const char *filename,
++				   struct debugfs_node *parent,
++				   umode_t mode,
++				   struct rchan_buf *buf,
++				   int *is_global)
  {
 -	struct debugfs_node *parent_node = debugfs_node_from_dentry(parent);
- 	struct debugfs_node *node;
- 
+-	struct debugfs_node *node;
+-
  	*is_global = 1;
 -	node = debugfs_create_file(filename, mode, parent_node, buf,
-+	node = debugfs_create_file(filename, mode, parent, buf,
++	return debugfs_create_file(filename, mode, parent, buf,
  				   &relay_file_operations);
  
 -	return debugfs_node_dentry(node);
-+	return node;
  }
  
 -static int t7xx_trace_remove_buf_file_handler(struct dentry *dentry)
@@ -546,7 +549,7 @@ index 3647c98bc797..300bec8a364f 100644
  	return 0;
  }
  
-@@ -84,7 +84,6 @@ static void t7xx_port_trace_md_state_notify(struct t7xx_port *port, unsigned int
+@@ -84,7 +81,6 @@ static void t7xx_port_trace_md_state_notify(struct t7xx_port *port, unsigned int
  	struct rchan *relaych = port->log.relaych;
  	struct debugfs_node *debugfs_wwan_dir;
  	struct debugfs_node *debugfs_dir;
@@ -554,16 +557,19 @@ index 3647c98bc797..300bec8a364f 100644
  
  	if (state != MD_STATE_READY || relaych)
  		return;
-@@ -100,8 +99,7 @@ static void t7xx_port_trace_md_state_notify(struct t7xx_port *port, unsigned int
+@@ -100,10 +96,8 @@ static void t7xx_port_trace_md_state_notify(struct t7xx_port *port, unsigned int
  		return;
  	}
  
 -	debugfs_dir_dentry = debugfs_node_dentry(debugfs_dir);
 -	relaych = relay_open("relay_ch", debugfs_dir_dentry,
-+	relaych = relay_open("relay_ch", debugfs_dir,
- 			     T7XX_TRC_SUB_BUFF_SIZE, T7XX_TRC_N_SUB_BUFF,
- 			     &relay_callbacks, NULL);
+-			     T7XX_TRC_SUB_BUFF_SIZE, T7XX_TRC_N_SUB_BUFF,
+-			     &relay_callbacks, NULL);
++	relaych = relay_open("relay_ch", debugfs_dir, T7XX_TRC_SUB_BUFF_SIZE,
++			     T7XX_TRC_N_SUB_BUFF, &relay_callbacks, NULL);
  	if (!relaych)
+ 		goto err_rm_debugfs_dir;
+ 
 diff --git a/include/linux/relay.h b/include/linux/relay.h
 index 72b876dd5cb8..914bd3f8b214 100644
 --- a/include/linux/relay.h
