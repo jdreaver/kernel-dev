@@ -1,4 +1,4 @@
-From 602f44da4fd3d5decab2393887f19d2056c5d947 Mon Sep 17 00:00:00 2001
+From 99b706f7a86f64de03ff22b0a02dfc48bab6ee41 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/3] debugfs: tmp commit with fixups not handled by
@@ -22,7 +22,10 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../amd/display/amdgpu_dm/amdgpu_dm_debugfs.c |  2 +-
  drivers/gpu/drm/drm_debugfs.c                 |  4 +-
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    | 22 ++++---
+ drivers/gpu/drm/loongson/lsdc_ttm.c           |  2 +-
+ drivers/gpu/drm/msm/dp/dp_debug.h             |  2 +-
  .../gpu/drm/nouveau/include/nvkm/subdev/gsp.h | 10 +--
+ drivers/gpu/drm/nouveau/nouveau_debugfs.c     |  2 +-
  .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    | 18 +++---
  drivers/gpu/drm/omapdrm/dss/dss.h             |  2 +-
  drivers/gpu/drm/vmwgfx/vmwgfx_drv.c           |  2 +-
@@ -34,18 +37,49 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/gpu/drm/xe/xe_huc_debugfs.h           |  2 +-
  drivers/gpu/host1x/dev.h                      |  2 +-
  drivers/hwmon/asus_atk0110.c                  |  2 +-
+ .../platform/chips-media/coda/coda-common.c   |  3 +-
+ .../media/platform/chips-media/coda/coda.h    |  3 +-
+ drivers/media/platform/qcom/venus/core.h      |  2 +-
+ .../media/platform/raspberrypi/rp1-cfe/csi2.h |  2 +-
+ .../platform/raspberrypi/rp1-cfe/pisp-fe.h    |  2 +-
+ .../st/sti/c8sectpfe/c8sectpfe-core.h         |  2 +-
+ .../media/test-drivers/visl/visl-debugfs.c    | 10 +--
+ drivers/media/test-drivers/visl/visl.h        |  2 +-
  drivers/mtd/ubi/debug.c                       | 42 +++++++------
  .../ethernet/hisilicon/hibmcge/hbg_debugfs.c  |  2 +-
  drivers/net/ethernet/huawei/hinic/hinic_dev.h |  2 +-
  drivers/net/ethernet/intel/ice/ice.h          |  2 +-
  drivers/net/ethernet/intel/ice/ice_debugfs.c  |  5 +-
  .../net/ethernet/marvell/octeontx2/af/rvu.h   | 24 +++----
+ .../net/ethernet/mellanox/mlx5/core/debugfs.c |  2 +-
+ .../net/ethernet/mellanox/mlx5/core/en/fs.h   |  5 +-
+ drivers/net/wireless/ath/ath10k/spectral.c    | 17 ++---
+ drivers/net/wireless/ath/ath11k/debugfs.c     |  2 +-
+ drivers/net/wireless/ath/ath11k/spectral.c    | 19 +++---
+ drivers/net/wireless/ath/ath11k/spectral.h    |  6 +-
+ drivers/net/wireless/ath/ath12k/debugfs.c     |  2 +-
+ drivers/net/wireless/ath/ath9k/common-debug.h | 16 ++---
+ .../net/wireless/ath/ath9k/common-spectral.c  | 16 ++---
+ .../net/wireless/ath/ath9k/common-spectral.h  |  5 +-
+ drivers/net/wireless/ath/ath9k/debug.h        |  2 +-
+ drivers/net/wireless/ath/wcn36xx/debug.c      |  4 +-
+ drivers/net/wireless/ath/wcn36xx/debug.h      |  2 +-
+ .../net/wireless/intel/iwlwifi/dvm/debugfs.c  |  5 +-
+ .../net/wireless/intel/iwlwifi/fw/runtime.h   |  2 +-
+ .../net/wireless/intel/iwlwifi/iwl-op-mode.h  |  2 +-
+ drivers/net/wireless/intel/iwlwifi/mvm/ops.c  |  2 +-
+ .../net/wireless/intel/iwlwifi/pcie/trans.c   |  2 +-
+ drivers/net/wireless/marvell/libertas/dev.h   |  4 +-
+ drivers/net/wwan/iosm/iosm_ipc_trace.c        | 17 +++--
+ drivers/net/wwan/t7xx/t7xx_port_trace.c       | 20 ++++--
  drivers/scsi/bfa/bfad_drv.h                   |  2 +-
  drivers/scsi/lpfc/lpfc_debugfs.c              | 40 ++++++------
  drivers/scsi/megaraid/megaraid_sas.h          |  2 +-
  drivers/scsi/mpt3sas/mpt3sas_base.h           |  2 +-
  drivers/scsi/snic/snic.h                      | 10 +--
  drivers/soc/qcom/qcom_aoss.c                  |  4 +-
+ drivers/thermal/qcom/tsens.h                  |  4 +-
+ drivers/watchdog/ie6xx_wdt.c                  |  2 +-
  fs/bcachefs/bcachefs.h                        |  4 +-
  fs/ceph/super.h                               |  4 +-
  fs/ubifs/debug.c                              | 62 ++++++++++---------
@@ -59,9 +93,12 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/drm/drm_encoder.h                     |  2 +-
  include/drm/drm_panel.h                       |  3 +-
  include/linux/clk-provider.h                  |  3 +-
+ include/linux/closure.h                       |  2 +-
  include/linux/fault-inject.h                  |  3 +-
  include/linux/fs.h                            |  8 +--
  include/linux/mfd/aat2870.h                   |  2 +-
+ include/media/cec.h                           |  2 +-
+ include/media/v4l2-dv-timings.h               |  2 +-
  include/net/mac80211.h                        | 12 ++--
  include/sound/soc-dapm.h                      |  3 +-
  kernel/gcov/fs.c                              |  2 +-
@@ -76,7 +113,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/wireless/debugfs.c                        |  2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |  2 +-
  virt/kvm/kvm_main.c                           |  5 +-
- 63 files changed, 276 insertions(+), 227 deletions(-)
+ 100 files changed, 388 insertions(+), 311 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -295,6 +332,32 @@ index 84f8f4b3a14c..b3798a9d8ad4 100644
  					subbuf_size, n_subbufs,
  					&relay_callbacks, i915);
  	if (!guc_log_relay_chan) {
+diff --git a/drivers/gpu/drm/loongson/lsdc_ttm.c b/drivers/gpu/drm/loongson/lsdc_ttm.c
+index 2e42c6970c9f..64f130c2dfec 100644
+--- a/drivers/gpu/drm/loongson/lsdc_ttm.c
++++ b/drivers/gpu/drm/loongson/lsdc_ttm.c
+@@ -575,7 +575,7 @@ void lsdc_ttm_debugfs_init(struct lsdc_device *ldev)
+ 	struct ttm_device *bdev = &ldev->bdev;
+ 	struct drm_device *ddev = &ldev->base;
+ 	struct drm_minor *minor = ddev->primary;
+-	struct dentry *root = minor->debugfs_root;
++	struct debugfs_node *root = minor->debugfs_root;
+ 	struct ttm_resource_manager *vram_man;
+ 	struct ttm_resource_manager *gtt_man;
+ 
+diff --git a/drivers/gpu/drm/msm/dp/dp_debug.h b/drivers/gpu/drm/msm/dp/dp_debug.h
+index 8a69b3891d5e..ccbc6476d9a7 100644
+--- a/drivers/gpu/drm/msm/dp/dp_debug.h
++++ b/drivers/gpu/drm/msm/dp/dp_debug.h
+@@ -28,7 +28,7 @@
+ int msm_dp_debug_init(struct device *dev, struct msm_dp_panel *panel,
+ 		  struct msm_dp_link *link,
+ 		  struct drm_connector *connector,
+-		  struct dentry *root,
++		  struct debugfs_node *root,
+ 		  bool is_edp);
+ 
+ #else
 diff --git a/drivers/gpu/drm/nouveau/include/nvkm/subdev/gsp.h b/drivers/gpu/drm/nouveau/include/nvkm/subdev/gsp.h
 index 5c5f4607fcc9..c5c205f65875 100644
 --- a/drivers/gpu/drm/nouveau/include/nvkm/subdev/gsp.h
@@ -316,6 +379,19 @@ index 5c5f4607fcc9..c5c205f65875 100644
  	} debugfs;
  	struct debugfs_blob_wrapper blob_init;
  	struct debugfs_blob_wrapper blob_intr;
+diff --git a/drivers/gpu/drm/nouveau/nouveau_debugfs.c b/drivers/gpu/drm/nouveau/nouveau_debugfs.c
+index a2bc28cdc9e5..02c1465cb5bb 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_debugfs.c
++++ b/drivers/gpu/drm/nouveau/nouveau_debugfs.c
+@@ -289,7 +289,7 @@ nouveau_drm_debugfs_init(struct drm_minor *minor)
+ 		return;
+ 
+ 	debugfs_node_inode(dentry)->i_size = drm->vbios.length;
+-	dput(dentry);
++	debugfs_node_put(dentry);
+ }
+ 
+ int
 diff --git a/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c b/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c
 index 73fa8a5b9e46..6eaabfb239ea 100644
 --- a/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c
@@ -614,6 +690,129 @@ index f1862b8c37c8..57db75aa8a11 100644
  		u32 id;
  	} debugfs;
  };
+diff --git a/drivers/media/platform/chips-media/coda/coda-common.c b/drivers/media/platform/chips-media/coda/coda-common.c
+index 289a076c3bcc..2c5eb21ca62c 100644
+--- a/drivers/media/platform/chips-media/coda/coda-common.c
++++ b/drivers/media/platform/chips-media/coda/coda-common.c
+@@ -1929,7 +1929,8 @@ static void coda_buf_queue(struct vb2_buffer *vb)
+ }
+ 
+ int coda_alloc_aux_buf(struct coda_dev *dev, struct coda_aux_buf *buf,
+-		       size_t size, const char *name, struct dentry *parent)
++		       size_t size, const char *name,
++		       struct debugfs_node *parent)
+ {
+ 	buf->vaddr = dma_alloc_coherent(dev->dev, size, &buf->paddr,
+ 					GFP_KERNEL);
+diff --git a/drivers/media/platform/chips-media/coda/coda.h b/drivers/media/platform/chips-media/coda/coda.h
+index 06b992fa36ea..ca29a43d0747 100644
+--- a/drivers/media/platform/chips-media/coda/coda.h
++++ b/drivers/media/platform/chips-media/coda/coda.h
+@@ -308,7 +308,8 @@ void coda_write_base(struct coda_ctx *ctx, struct coda_q_data *q_data,
+ 		     struct vb2_v4l2_buffer *buf, unsigned int reg_y);
+ 
+ int coda_alloc_aux_buf(struct coda_dev *dev, struct coda_aux_buf *buf,
+-		       size_t size, const char *name, struct dentry *parent);
++		       size_t size, const char *name,
++		       struct debugfs_node *parent);
+ void coda_free_aux_buf(struct coda_dev *dev, struct coda_aux_buf *buf);
+ 
+ int coda_encoder_queue_init(void *priv, struct vb2_queue *src_vq,
+diff --git a/drivers/media/platform/qcom/venus/core.h b/drivers/media/platform/qcom/venus/core.h
+index abeeafa86697..ab49bc90545b 100644
+--- a/drivers/media/platform/qcom/venus/core.h
++++ b/drivers/media/platform/qcom/venus/core.h
+@@ -227,7 +227,7 @@ struct venus_core {
+ 	unsigned int codecs_count;
+ 	unsigned int core0_usage_count;
+ 	unsigned int core1_usage_count;
+-	struct dentry *root;
++	struct debugfs_node *root;
+ 	struct venus_img_version {
+ 		u32 major;
+ 		u32 minor;
+diff --git a/drivers/media/platform/raspberrypi/rp1-cfe/csi2.h b/drivers/media/platform/raspberrypi/rp1-cfe/csi2.h
+index a8ee5de565fb..4c8379233bb0 100644
+--- a/drivers/media/platform/raspberrypi/rp1-cfe/csi2.h
++++ b/drivers/media/platform/raspberrypi/rp1-cfe/csi2.h
+@@ -83,7 +83,7 @@ void csi2_start_channel(struct csi2_device *csi2, unsigned int channel,
+ void csi2_stop_channel(struct csi2_device *csi2, unsigned int channel);
+ void csi2_open_rx(struct csi2_device *csi2);
+ void csi2_close_rx(struct csi2_device *csi2);
+-int csi2_init(struct csi2_device *csi2, struct dentry *debugfs);
++int csi2_init(struct csi2_device *csi2, struct debugfs_node *debugfs);
+ void csi2_uninit(struct csi2_device *csi2);
+ 
+ #endif
+diff --git a/drivers/media/platform/raspberrypi/rp1-cfe/pisp-fe.h b/drivers/media/platform/raspberrypi/rp1-cfe/pisp-fe.h
+index 54d506e19cf2..e8d654abd5e0 100644
+--- a/drivers/media/platform/raspberrypi/rp1-cfe/pisp-fe.h
++++ b/drivers/media/platform/raspberrypi/rp1-cfe/pisp-fe.h
+@@ -47,7 +47,7 @@ void pisp_fe_submit_job(struct pisp_fe_device *fe, struct vb2_buffer **vb2_bufs,
+ 			struct pisp_fe_config *cfg);
+ void pisp_fe_start(struct pisp_fe_device *fe);
+ void pisp_fe_stop(struct pisp_fe_device *fe);
+-int pisp_fe_init(struct pisp_fe_device *fe, struct dentry *debugfs);
++int pisp_fe_init(struct pisp_fe_device *fe, struct debugfs_node *debugfs);
+ void pisp_fe_uninit(struct pisp_fe_device *fe);
+ 
+ #endif
+diff --git a/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.h b/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.h
+index c1b124c6ef12..333fcf792297 100644
+--- a/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.h
++++ b/drivers/media/platform/st/sti/c8sectpfe/c8sectpfe-core.h
+@@ -73,7 +73,7 @@ struct c8sectpfei {
+ 	struct device *dev;
+ 	struct pinctrl *pinctrl;
+ 
+-	struct dentry *root;
++	struct debugfs_node *root;
+ 	struct debugfs_regset32	*regset;
+ 	struct completion fw_ack;
+ 	atomic_t fw_loaded;
+diff --git a/drivers/media/test-drivers/visl/visl-debugfs.c b/drivers/media/test-drivers/visl/visl-debugfs.c
+index 45f2a8268014..a78021640796 100644
+--- a/drivers/media/test-drivers/visl/visl-debugfs.c
++++ b/drivers/media/test-drivers/visl/visl-debugfs.c
+@@ -42,7 +42,7 @@ void visl_trace_bitstream(struct visl_ctx *ctx, struct visl_run *run)
+ 	u8 *vaddr = vb2_plane_vaddr(&run->src->vb2_buf, 0);
+ 	struct visl_blob *blob;
+ 	size_t data_sz = vb2_get_plane_payload(&run->src->vb2_buf, 0);
+-	struct dentry *dentry;
++	struct debugfs_node *node;
+ 	char name[32];
+ 
+ 	blob  = kzalloc(sizeof(*blob), GFP_KERNEL);
+@@ -58,12 +58,12 @@ void visl_trace_bitstream(struct visl_ctx *ctx, struct visl_run *run)
+ 
+ 	memcpy(blob->blob.data, vaddr, data_sz);
+ 
+-	dentry = debugfs_create_blob(name, 0444, ctx->dev->bitstream_debugfs,
+-				     &blob->blob);
+-	if (IS_ERR(dentry))
++	node = debugfs_create_blob(name, 0444, ctx->dev->bitstream_debugfs,
++				   &blob->blob);
++	if (IS_ERR(node))
+ 		goto err_debugfs;
+ 
+-	blob->dentry = dentry;
++	blob->dentry = node;
+ 
+ 	mutex_lock(&ctx->dev->bitstream_lock);
+ 	list_add_tail(&blob->list, &ctx->dev->bitstream_blobs);
+diff --git a/drivers/media/test-drivers/visl/visl.h b/drivers/media/test-drivers/visl/visl.h
+index 2cdba86e6ca2..816c6398d82b 100644
+--- a/drivers/media/test-drivers/visl/visl.h
++++ b/drivers/media/test-drivers/visl/visl.h
+@@ -133,7 +133,7 @@ enum visl_codec {
+ 
+ struct visl_blob {
+ 	struct list_head list;
+-	struct dentry *dentry;
++	struct debugfs_node *dentry;
+ 	struct debugfs_blob_wrapper blob;
+ };
+ 
 diff --git a/drivers/mtd/ubi/debug.c b/drivers/mtd/ubi/debug.c
 index 885b311379d4..78cb7801818b 100644
 --- a/drivers/mtd/ubi/debug.c
@@ -828,6 +1027,548 @@ index a383b5ef5b2d..53f988c682c9 100644
  	struct dump_ctx npa_aura_ctx;
  	struct dump_ctx npa_pool_ctx;
  	struct dump_ctx nix_cq_ctx;
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/debugfs.c b/drivers/net/ethernet/mellanox/mlx5/core/debugfs.c
+index 92d36a7f03f8..353c1019c84c 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/debugfs.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/debugfs.c
+@@ -219,7 +219,7 @@ mlx5_cmdif_alloc_stats(struct xarray *stats_xa, int opcode)
+ void mlx5_cmdif_debugfs_init(struct mlx5_core_dev *dev)
+ {
+ 	struct mlx5_cmd_stats *stats;
+-	struct dentry **cmd;
++	struct debugfs_node **cmd;
+ 	const char *namep;
+ 	int i;
+ 
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/fs.h b/drivers/net/ethernet/mellanox/mlx5/core/en/fs.h
+index 1e8b7d330701..1d145fec7762 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/fs.h
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/fs.h
+@@ -147,7 +147,7 @@ void mlx5e_destroy_flow_steering(struct mlx5e_flow_steering *fs, bool ntuple,
+ struct mlx5e_flow_steering *mlx5e_fs_init(const struct mlx5e_profile *profile,
+ 					  struct mlx5_core_dev *mdev,
+ 					  bool state_destroy,
+-					  struct dentry *dfs_root);
++					  struct debugfs_node *dfs_root);
+ void mlx5e_fs_cleanup(struct mlx5e_flow_steering *fs);
+ struct mlx5e_vlan_table *mlx5e_fs_get_vlan(struct mlx5e_flow_steering *fs);
+ struct mlx5e_tc_table *mlx5e_fs_get_tc(struct mlx5e_flow_steering *fs);
+@@ -203,7 +203,7 @@ int mlx5e_fs_vlan_rx_kill_vid(struct mlx5e_flow_steering *fs,
+ 			      __be16 proto, u16 vid);
+ void mlx5e_fs_init_l2_addr(struct mlx5e_flow_steering *fs, struct net_device *netdev);
+ 
+-struct dentry *mlx5e_fs_get_debugfs_root(struct mlx5e_flow_steering *fs);
++struct debugfs_node *mlx5e_fs_get_debugfs_root(struct mlx5e_flow_steering *fs);
+ 
+ #define fs_err(fs, fmt, ...) \
+ 	mlx5_core_err(mlx5e_fs_get_mdev(fs), fmt, ##__VA_ARGS__)
+@@ -218,4 +218,3 @@ struct dentry *mlx5e_fs_get_debugfs_root(struct mlx5e_flow_steering *fs);
+ 	mlx5_core_warn_once(mlx5e_fs_get_mdev(fs), fmt, ##__VA_ARGS__)
+ 
+ #endif /* __MLX5E_FLOW_STEER_H__ */
+-
+diff --git a/drivers/net/wireless/ath/ath10k/spectral.c b/drivers/net/wireless/ath/ath10k/spectral.c
+index 82e4a530a605..f0009d2e759c 100644
+--- a/drivers/net/wireless/ath/ath10k/spectral.c
++++ b/drivers/net/wireless/ath/ath10k/spectral.c
+@@ -463,26 +463,27 @@ static const struct file_operations fops_spectral_bins = {
+ 	.llseek = default_llseek,
+ };
+ 
+-static struct debugfs_node *create_buf_file_handler(const char *filename,
+-					      struct debugfs_node *parent,
++static struct dentry *create_buf_file_handler(const char *filename,
++					      struct dentry *parent,
+ 					      umode_t mode,
+ 					      struct rchan_buf *buf,
+ 					      int *is_global)
+ {
++	struct debugfs_node *parent_node = debugfs_node_from_dentry(parent);
+ 	struct debugfs_node *buf_file;
+ 
+-	buf_file = debugfs_create_file(filename, mode, parent, buf,
++	buf_file = debugfs_create_file(filename, mode, parent_node, buf,
+ 				       &relay_file_operations);
+ 	if (IS_ERR(buf_file))
+ 		return NULL;
+ 
+ 	*is_global = 1;
+-	return buf_file;
++	return debugfs_node_dentry(buf_file);
+ }
+ 
+-static int remove_buf_file_handler(struct debugfs_node *dentry)
++static int remove_buf_file_handler(struct dentry *dentry)
+ {
+-	debugfs_remove(dentry);
++	debugfs_remove(debugfs_node_from_dentry(dentry));
+ 
+ 	return 0;
+ }
+@@ -518,11 +519,13 @@ int ath10k_spectral_vif_stop(struct ath10k_vif *arvif)
+ 
+ int ath10k_spectral_create(struct ath10k *ar)
+ {
++	struct dentry *dbg_dent = debugfs_node_dentry(ar->debug.debugfs_phy);
++
+ 	/* The buffer size covers whole channels in dual bands up to 128 bins.
+ 	 * Scan with bigger than 128 bins needs to be run on single band each.
+ 	 */
+ 	ar->spectral.rfs_chan_spec_scan = relay_open("spectral_scan",
+-						     ar->debug.debugfs_phy,
++						     dbg_dent,
+ 						     1140, 2500,
+ 						     &rfs_spec_scan_cb, NULL);
+ 	debugfs_create_file("spectral_scan_ctl",
+diff --git a/drivers/net/wireless/ath/ath11k/debugfs.c b/drivers/net/wireless/ath/ath11k/debugfs.c
+index 9a537a6ec5e7..8fac2a1d8d12 100644
+--- a/drivers/net/wireless/ath/ath11k/debugfs.c
++++ b/drivers/net/wireless/ath/ath11k/debugfs.c
+@@ -1028,7 +1028,7 @@ int ath11k_debugfs_soc_create(struct ath11k_base *ab)
+ 
+ out:
+ 	if (dput_needed)
+-		dput(root);
++		debugfs_node_put(root);
+ 
+ 	return ret;
+ }
+diff --git a/drivers/net/wireless/ath/ath11k/spectral.c b/drivers/net/wireless/ath/ath11k/spectral.c
+index 91776ee8492e..b1625d1147ce 100644
+--- a/drivers/net/wireless/ath/ath11k/spectral.c
++++ b/drivers/net/wireless/ath/ath11k/spectral.c
+@@ -127,23 +127,27 @@ struct ath11k_spectral_search_report {
+ 	u8 rel_pwr_db;
+ };
+ 
+-static struct debugfs_node *create_buf_file_handler(const char *filename,
+-					      struct debugfs_node *parent,
++static struct dentry *create_buf_file_handler(const char *filename,
++					      struct dentry *parent,
+ 					      umode_t mode,
+ 					      struct rchan_buf *buf,
+ 					      int *is_global)
+ {
++	struct debugfs_node *parent_node = debugfs_node_from_dentry(parent);
+ 	struct debugfs_node *buf_file;
+ 
+-	buf_file = debugfs_create_file(filename, mode, parent, buf,
++	buf_file = debugfs_create_file(filename, mode, parent_node, buf,
+ 				       &relay_file_operations);
++	if (IS_ERR(buf_file))
++		return NULL;
++
+ 	*is_global = 1;
+-	return buf_file;
++	return debugfs_node_dentry(buf_file);
+ }
+ 
+-static int remove_buf_file_handler(struct debugfs_node *dentry)
++static int remove_buf_file_handler(struct dentry *dentry)
+ {
+-	debugfs_remove(dentry);
++	debugfs_remove(debugfs_node_from_dentry(dentry));
+ 
+ 	return 0;
+ }
+@@ -926,9 +930,10 @@ void ath11k_spectral_deinit(struct ath11k_base *ab)
+ static inline int ath11k_spectral_debug_register(struct ath11k *ar)
+ {
+ 	int ret;
++	struct dentry *dbg_dent = debugfs_node_dentry(ar->debug.debugfs_pdev);
+ 
+ 	ar->spectral.rfs_scan = relay_open("spectral_scan",
+-					   ar->debug.debugfs_pdev,
++					   dbg_dent,
+ 					   ATH11K_SPECTRAL_SUB_BUFF_SIZE(ar->ab),
+ 					   ATH11K_SPECTRAL_NUM_SUB_BUF,
+ 					   &rfs_scan_cb, NULL);
+diff --git a/drivers/net/wireless/ath/ath11k/spectral.h b/drivers/net/wireless/ath/ath11k/spectral.h
+index 789cff7c64a7..2598a47c67fe 100644
+--- a/drivers/net/wireless/ath/ath11k/spectral.h
++++ b/drivers/net/wireless/ath/ath11k/spectral.h
+@@ -29,9 +29,9 @@ struct ath11k_spectral {
+ 	/* Protects enabled */
+ 	spinlock_t lock;
+ 	struct rchan *rfs_scan;	/* relay(fs) channel for spectral scan */
+-	struct dentry *scan_ctl;
+-	struct dentry *scan_count;
+-	struct dentry *scan_bins;
++	struct debugfs_node *scan_ctl;
++	struct debugfs_node *scan_count;
++	struct debugfs_node *scan_bins;
+ 	enum ath11k_spectral_mode mode;
+ 	u16 count;
+ 	u8 fft_size;
+diff --git a/drivers/net/wireless/ath/ath12k/debugfs.c b/drivers/net/wireless/ath/ath12k/debugfs.c
+index dfa153ddc3e0..910c5bc079ea 100644
+--- a/drivers/net/wireless/ath/ath12k/debugfs.c
++++ b/drivers/net/wireless/ath/ath12k/debugfs.c
+@@ -54,7 +54,7 @@ void ath12k_debugfs_soc_create(struct ath12k_base *ab)
+ 	ab->debugfs_soc = debugfs_create_dir(soc_name, debugfs_ath12k);
+ 
+ 	if (dput_needed)
+-		dput(debugfs_ath12k);
++		debugfs_node_put(debugfs_ath12k);
+ }
+ 
+ void ath12k_debugfs_soc_destroy(struct ath12k_base *ab)
+diff --git a/drivers/net/wireless/ath/ath9k/common-debug.h b/drivers/net/wireless/ath/ath9k/common-debug.h
+index 2938b5b96b07..76dd1a875758 100644
+--- a/drivers/net/wireless/ath/ath9k/common-debug.h
++++ b/drivers/net/wireless/ath/ath9k/common-debug.h
+@@ -65,23 +65,23 @@ struct ath_rx_stats {
+ };
+ 
+ #ifdef CONFIG_ATH9K_COMMON_DEBUG
+-void ath9k_cmn_debug_modal_eeprom(struct dentry *debugfs_phy,
++void ath9k_cmn_debug_modal_eeprom(struct debugfs_node *debugfs_phy,
+ 				  struct ath_hw *ah);
+-void ath9k_cmn_debug_base_eeprom(struct dentry *debugfs_phy,
++void ath9k_cmn_debug_base_eeprom(struct debugfs_node *debugfs_phy,
+ 				 struct ath_hw *ah);
+ void ath9k_cmn_debug_stat_rx(struct ath_rx_stats *rxstats,
+ 			     struct ath_rx_status *rs);
+-void ath9k_cmn_debug_recv(struct dentry *debugfs_phy,
++void ath9k_cmn_debug_recv(struct debugfs_node *debugfs_phy,
+ 			  struct ath_rx_stats *rxstats);
+-void ath9k_cmn_debug_phy_err(struct dentry *debugfs_phy,
++void ath9k_cmn_debug_phy_err(struct debugfs_node *debugfs_phy,
+ 			     struct ath_rx_stats *rxstats);
+ #else
+-static inline void ath9k_cmn_debug_modal_eeprom(struct dentry *debugfs_phy,
++static inline void ath9k_cmn_debug_modal_eeprom(struct debugfs_node *debugfs_phy,
+ 						struct ath_hw *ah)
+ {
+ }
+ 
+-static inline void ath9k_cmn_debug_base_eeprom(struct dentry *debugfs_phy,
++static inline void ath9k_cmn_debug_base_eeprom(struct debugfs_node *debugfs_phy,
+ 					       struct ath_hw *ah)
+ {
+ }
+@@ -91,12 +91,12 @@ static inline void ath9k_cmn_debug_stat_rx(struct ath_rx_stats *rxstats,
+ {
+ }
+ 
+-static inline void ath9k_cmn_debug_recv(struct dentry *debugfs_phy,
++static inline void ath9k_cmn_debug_recv(struct debugfs_node *debugfs_phy,
+ 					struct ath_rx_stats *rxstats)
+ {
+ }
+ 
+-static inline void ath9k_cmn_debug_phy_err(struct dentry *debugfs_phy,
++static inline void ath9k_cmn_debug_phy_err(struct debugfs_node *debugfs_phy,
+ 					   struct ath_rx_stats *rxstats)
+ {
+ }
+diff --git a/drivers/net/wireless/ath/ath9k/common-spectral.c b/drivers/net/wireless/ath/ath9k/common-spectral.c
+index 75d964813869..cf8a25c630c4 100644
+--- a/drivers/net/wireless/ath/ath9k/common-spectral.c
++++ b/drivers/net/wireless/ath/ath9k/common-spectral.c
+@@ -1008,26 +1008,27 @@ static const struct file_operations fops_spectral_fft_period = {
+ /* Relay interface */
+ /*******************/
+ 
+-static struct debugfs_node *create_buf_file_handler(const char *filename,
+-					      struct debugfs_node *parent,
++static struct dentry *create_buf_file_handler(const char *filename,
++					      struct dentry *parent,
+ 					      umode_t mode,
+ 					      struct rchan_buf *buf,
+ 					      int *is_global)
+ {
++	struct debugfs_node *parent_node = debugfs_node_from_dentry(parent);
+ 	struct debugfs_node *buf_file;
+ 
+-	buf_file = debugfs_create_file(filename, mode, parent, buf,
++	buf_file = debugfs_create_file(filename, mode, parent_node, buf,
+ 				       &relay_file_operations);
+ 	if (IS_ERR(buf_file))
+ 		return NULL;
+ 
+ 	*is_global = 1;
+-	return buf_file;
++	return debugfs_node_dentry(buf_file);
+ }
+ 
+-static int remove_buf_file_handler(struct debugfs_node *dentry)
++static int remove_buf_file_handler(struct dentry *dentry)
+ {
+-	debugfs_remove(dentry);
++	debugfs_remove(debugfs_node_from_dentry(dentry));
+ 
+ 	return 0;
+ }
+@@ -1053,8 +1054,9 @@ EXPORT_SYMBOL(ath9k_cmn_spectral_deinit_debug);
+ void ath9k_cmn_spectral_init_debug(struct ath_spec_scan_priv *spec_priv,
+ 				   struct debugfs_node *debugfs_phy)
+ {
++	struct dentry *debugfs_phy_dent = debugfs_node_dentry(debugfs_phy);
+ 	spec_priv->rfs_chan_spec_scan = relay_open("spectral_scan",
+-					    debugfs_phy,
++					    debugfs_phy_dent,
+ 					    1024, 256, &rfs_spec_scan_cb,
+ 					    NULL);
+ 	if (!spec_priv->rfs_chan_spec_scan)
+diff --git a/drivers/net/wireless/ath/ath9k/common-spectral.h b/drivers/net/wireless/ath/ath9k/common-spectral.h
+index 011d8ab8b974..d7990a899b6b 100644
+--- a/drivers/net/wireless/ath/ath9k/common-spectral.h
++++ b/drivers/net/wireless/ath/ath9k/common-spectral.h
+@@ -169,7 +169,8 @@ static inline u8 spectral_bitmap_weight(u8 *bins)
+ }
+ 
+ #ifdef CONFIG_ATH9K_COMMON_SPECTRAL
+-void ath9k_cmn_spectral_init_debug(struct ath_spec_scan_priv *spec_priv, struct dentry *debugfs_phy);
++void ath9k_cmn_spectral_init_debug(struct ath_spec_scan_priv *spec_priv,
++				   struct debugfs_node *debugfs_phy);
+ void ath9k_cmn_spectral_deinit_debug(struct ath_spec_scan_priv *spec_priv);
+ 
+ void ath9k_cmn_spectral_scan_trigger(struct ath_common *common,
+@@ -181,7 +182,7 @@ int ath_cmn_process_fft(struct ath_spec_scan_priv *spec_priv, struct ieee80211_h
+ 		    struct ath_rx_status *rs, u64 tsf);
+ #else
+ static inline void ath9k_cmn_spectral_init_debug(struct ath_spec_scan_priv *spec_priv,
+-						 struct dentry *debugfs_phy)
++						 struct debugfs_node *debugfs_phy)
+ {
+ }
+ 
+diff --git a/drivers/net/wireless/ath/ath9k/debug.h b/drivers/net/wireless/ath/ath9k/debug.h
+index 932001c8ec14..a679b8366d9a 100644
+--- a/drivers/net/wireless/ath/ath9k/debug.h
++++ b/drivers/net/wireless/ath/ath9k/debug.h
+@@ -272,7 +272,7 @@ void ath9k_get_et_strings(struct ieee80211_hw *hw,
+ void ath9k_sta_add_debugfs(struct ieee80211_hw *hw,
+ 			   struct ieee80211_vif *vif,
+ 			   struct ieee80211_sta *sta,
+-			   struct dentry *dir);
++			   struct debugfs_node *dir);
+ void ath9k_debug_stat_ant(struct ath_softc *sc,
+ 			  struct ath_hw_antcomb_conf *div_ant_conf,
+ 			  int main_rssi_avg, int alt_rssi_avg);
+diff --git a/drivers/net/wireless/ath/wcn36xx/debug.c b/drivers/net/wireless/ath/wcn36xx/debug.c
+index 07520cd4f28e..d71dd9f76467 100644
+--- a/drivers/net/wireless/ath/wcn36xx/debug.c
++++ b/drivers/net/wireless/ath/wcn36xx/debug.c
+@@ -179,10 +179,10 @@ static const struct file_operations fops_wcn36xx_firmware_feat_caps = {
+ 		d = debugfs_create_file(__stringify(name),	\
+ 					mode, dfs->rootdir,	\
+ 					priv_data, fop);	\
+-		dfs->file_##name.dentry = d;			\
++		dfs->file_##name.node = d;			\
+ 		if (IS_ERR(d)) {				\
+ 			wcn36xx_warn("Create the debugfs entry failed");\
+-			dfs->file_##name.dentry = NULL;		\
++			dfs->file_##name.node = NULL;		\
+ 		}						\
+ 	} while (0)
+ 
+diff --git a/drivers/net/wireless/ath/wcn36xx/debug.h b/drivers/net/wireless/ath/wcn36xx/debug.h
+index fe3d7f29168a..d53897a4a6b8 100644
+--- a/drivers/net/wireless/ath/wcn36xx/debug.h
++++ b/drivers/net/wireless/ath/wcn36xx/debug.h
+@@ -23,7 +23,7 @@
+ 
+ #ifdef CONFIG_WCN36XX_DEBUGFS
+ struct wcn36xx_dfs_file {
+-	struct dentry *dentry;
++	struct debugfs_node *node;
+ 	u32 value;
+ };
+ 
+diff --git a/drivers/net/wireless/intel/iwlwifi/dvm/debugfs.c b/drivers/net/wireless/intel/iwlwifi/dvm/debugfs.c
+index 523d27589024..be142518d55d 100644
+--- a/drivers/net/wireless/intel/iwlwifi/dvm/debugfs.c
++++ b/drivers/net/wireless/intel/iwlwifi/dvm/debugfs.c
+@@ -2369,9 +2369,10 @@ void iwl_dbgfs_register(struct iwl_priv *priv, struct debugfs_node *dbgfs_dir)
+ 	 */
+ 	if (priv->mac80211_registered) {
+ 		char buf[100];
+-		struct debugfs_node *mac80211_dir, *dev_dir;
++		struct dentry *dev_dir;
++		struct debugfs_node *mac80211_dir;
+ 
+-		dev_dir = dbgfs_dir->d_parent;
++		dev_dir = debugfs_node_dentry(dbgfs_dir)->d_parent;
+ 		mac80211_dir = priv->hw->wiphy->debugfsdir;
+ 
+ 		snprintf(buf, 100, "../../%pd2", dev_dir);
+diff --git a/drivers/net/wireless/intel/iwlwifi/fw/runtime.h b/drivers/net/wireless/intel/iwlwifi/fw/runtime.h
+index 048877fa7c71..b55ceebdd0c8 100644
+--- a/drivers/net/wireless/intel/iwlwifi/fw/runtime.h
++++ b/drivers/net/wireless/intel/iwlwifi/fw/runtime.h
+@@ -189,7 +189,7 @@ void iwl_fw_runtime_init(struct iwl_fw_runtime *fwrt, struct iwl_trans *trans,
+ 			const struct iwl_fw_runtime_ops *ops, void *ops_ctx,
+ 			const struct iwl_dump_sanitize_ops *sanitize_ops,
+ 			void *sanitize_ctx,
+-			struct dentry *dbgfs_dir);
++			struct debugfs_node *dbgfs_dir);
+ 
+ static inline void iwl_fw_runtime_free(struct iwl_fw_runtime *fwrt)
+ {
+diff --git a/drivers/net/wireless/intel/iwlwifi/iwl-op-mode.h b/drivers/net/wireless/intel/iwlwifi/iwl-op-mode.h
+index 34eca1a568ea..1a209ee6eedf 100644
+--- a/drivers/net/wireless/intel/iwlwifi/iwl-op-mode.h
++++ b/drivers/net/wireless/intel/iwlwifi/iwl-op-mode.h
+@@ -144,7 +144,7 @@ struct iwl_op_mode_ops {
+ 	struct iwl_op_mode *(*start)(struct iwl_trans *trans,
+ 				     const struct iwl_cfg *cfg,
+ 				     const struct iwl_fw *fw,
+-				     struct dentry *dbgfs_dir);
++				     struct debugfs_node *dbgfs_dir);
+ 	void (*stop)(struct iwl_op_mode *op_mode);
+ 	void (*rx)(struct iwl_op_mode *op_mode, struct napi_struct *napi,
+ 		   struct iwl_rx_cmd_buffer *rxb);
+diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/ops.c b/drivers/net/wireless/intel/iwlwifi/mvm/ops.c
+index 984f407f7027..9478d4564bcd 100644
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/ops.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/ops.c
+@@ -1273,7 +1273,7 @@ static void iwl_mvm_trig_link_selection(struct wiphy *wiphy,
+ 
+ static struct iwl_op_mode *
+ iwl_op_mode_mvm_start(struct iwl_trans *trans, const struct iwl_cfg *cfg,
+-		      const struct iwl_fw *fw, struct dentry *dbgfs_dir)
++		      const struct iwl_fw *fw, struct debugfs_node *dbgfs_dir)
+ {
+ 	struct ieee80211_hw *hw;
+ 	struct iwl_op_mode *op_mode;
+diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
+index c917ed4c19bc..1c2fc2fb2699 100644
+--- a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
++++ b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
+@@ -3311,7 +3311,7 @@ static const struct file_operations iwl_dbgfs_monitor_data_ops = {
+ /* Create the debugfs files and directories */
+ void iwl_trans_pcie_dbgfs_register(struct iwl_trans *trans)
+ {
+-	struct dentry *dir = trans->dbgfs_dir;
++	struct debugfs_node *dir = trans->dbgfs_dir;
+ 
+ 	DEBUGFS_ADD_FILE(rx_queue, dir, 0400);
+ 	DEBUGFS_ADD_FILE(tx_queue, dir, 0400);
+diff --git a/drivers/net/wireless/marvell/libertas/dev.h b/drivers/net/wireless/marvell/libertas/dev.h
+index d5fd3068e128..37532824764f 100644
+--- a/drivers/net/wireless/marvell/libertas/dev.h
++++ b/drivers/net/wireless/marvell/libertas/dev.h
+@@ -65,9 +65,9 @@ struct lbs_private {
+ 	struct debugfs_node *debugfs_dir;
+ 	struct debugfs_node *debugfs_debug;
+ 	struct debugfs_node *debugfs_files[6];
+-	struct dentry *events_dir;
++	struct debugfs_node *events_dir;
+ 	struct debugfs_node *debugfs_events_files[6];
+-	struct dentry *regs_dir;
++	struct debugfs_node *regs_dir;
+ 	struct debugfs_node *debugfs_regs_files[6];
+ 
+ 	/* Hardware debugging */
+diff --git a/drivers/net/wwan/iosm/iosm_ipc_trace.c b/drivers/net/wwan/iosm/iosm_ipc_trace.c
+index 1070689b32cf..9417a15b66f4 100644
+--- a/drivers/net/wwan/iosm/iosm_ipc_trace.c
++++ b/drivers/net/wwan/iosm/iosm_ipc_trace.c
+@@ -33,20 +33,25 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
+ /* Creates relay file in debugfs. */
+ static struct dentry *
+ ipc_trace_create_buf_file_handler(const char *filename,
+-				  struct debugfs_node *parent,
++				  struct dentry *parent,
+ 				  umode_t mode,
+ 				  struct rchan_buf *buf,
+ 				  int *is_global)
+ {
++	struct debugfs_node *parent_node = debugfs_node_from_dentry(parent);
++	struct debugfs_node *node;
++
+ 	*is_global = 1;
+-	return debugfs_create_file(filename, mode, parent, buf,
++	node = debugfs_create_file(filename, mode, parent_node, buf,
+ 				   &relay_file_operations);
++
++	return debugfs_node_dentry(node);
+ }
+ 
+ /* Removes relay file from debugfs. */
+-static int ipc_trace_remove_buf_file_handler(struct debugfs_node *dentry)
++static int ipc_trace_remove_buf_file_handler(struct dentry *dentry)
+ {
+-	debugfs_remove(dentry);
++	debugfs_remove(debugfs_node_from_dentry(dentry));
+ 	return 0;
+ }
+ 
+@@ -136,6 +141,7 @@ struct iosm_trace *ipc_trace_init(struct iosm_imem *ipc_imem)
+ {
+ 	struct ipc_chnl_cfg chnl_cfg = { 0 };
+ 	struct iosm_trace *ipc_trace;
++	struct dentry *debugfs_dir;
+ 
+ 	ipc_chnl_cfg_get(&chnl_cfg, IPC_MEM_CTRL_CHL_ID_3);
+ 	ipc_imem_channel_init(ipc_imem, IPC_CTYPE_CTRL, chnl_cfg,
+@@ -157,8 +163,9 @@ struct iosm_trace *ipc_trace_init(struct iosm_imem *ipc_imem)
+ 						   ipc_imem->debugfs_dir,
+ 						   ipc_trace, &ipc_trace_fops);
+ 
++	debugfs_dir = debugfs_node_dentry(ipc_imem->debugfs_dir);
+ 	ipc_trace->ipc_rchan = relay_open(IOSM_TRC_DEBUGFS_TRACE,
+-					  ipc_imem->debugfs_dir,
++					  debugfs_dir,
+ 					  IOSM_TRC_SUB_BUFF_SIZE,
+ 					  IOSM_TRC_N_SUB_BUFF,
+ 					  &relay_callbacks, NULL);
+diff --git a/drivers/net/wwan/t7xx/t7xx_port_trace.c b/drivers/net/wwan/t7xx/t7xx_port_trace.c
+index 6e219ea7d530..3647c98bc797 100644
+--- a/drivers/net/wwan/t7xx/t7xx_port_trace.c
++++ b/drivers/net/wwan/t7xx/t7xx_port_trace.c
+@@ -16,19 +16,24 @@
+ #define T7XX_TRC_N_SUB_BUFF		32
+ 
+ static struct dentry *t7xx_trace_create_buf_file_handler(const char *filename,
+-							 struct debugfs_node *parent,
++							 struct dentry *parent,
+ 							 umode_t mode,
+ 							 struct rchan_buf *buf,
+ 							 int *is_global)
+ {
++	struct debugfs_node *parent_node = debugfs_node_from_dentry(parent);
++	struct debugfs_node *node;
++
+ 	*is_global = 1;
+-	return debugfs_create_file(filename, mode, parent, buf,
++	node = debugfs_create_file(filename, mode, parent_node, buf,
+ 				   &relay_file_operations);
++
++	return debugfs_node_dentry(node);
+ }
+ 
+-static int t7xx_trace_remove_buf_file_handler(struct debugfs_node *dentry)
++static int t7xx_trace_remove_buf_file_handler(struct dentry *dentry)
+ {
+-	debugfs_remove(dentry);
++	debugfs_remove(debugfs_node_from_dentry(dentry));
+ 	return 0;
+ }
+ 
+@@ -79,6 +84,7 @@ static void t7xx_port_trace_md_state_notify(struct t7xx_port *port, unsigned int
+ 	struct rchan *relaych = port->log.relaych;
+ 	struct debugfs_node *debugfs_wwan_dir;
+ 	struct debugfs_node *debugfs_dir;
++	struct dentry *debugfs_dir_dentry;
+ 
+ 	if (state != MD_STATE_READY || relaych)
+ 		return;
+@@ -94,8 +100,10 @@ static void t7xx_port_trace_md_state_notify(struct t7xx_port *port, unsigned int
+ 		return;
+ 	}
+ 
+-	relaych = relay_open("relay_ch", debugfs_dir, T7XX_TRC_SUB_BUFF_SIZE,
+-			     T7XX_TRC_N_SUB_BUFF, &relay_callbacks, NULL);
++	debugfs_dir_dentry = debugfs_node_dentry(debugfs_dir);
++	relaych = relay_open("relay_ch", debugfs_dir_dentry,
++			     T7XX_TRC_SUB_BUFF_SIZE, T7XX_TRC_N_SUB_BUFF,
++			     &relay_callbacks, NULL);
+ 	if (!relaych)
+ 		goto err_rm_debugfs_dir;
+ 
 diff --git a/drivers/scsi/bfa/bfad_drv.h b/drivers/scsi/bfa/bfad_drv.h
 index 542dcf9663a5..02ee1e500301 100644
 --- a/drivers/scsi/bfa/bfad_drv.h
@@ -1013,6 +1754,34 @@ index c745cd9830f1..c0735ecae4a7 100644
  			entry = &qmp_debugfs_entries[i];
  			break;
  		}
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index d4e2555a3199..b662d3af4852 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -582,8 +582,8 @@ struct tsens_priv {
+ 	const struct reg_field		*fields;
+ 	const struct tsens_ops		*ops;
+ 
+-	struct debugfs_node *debug_root;
+-	struct dentry			*debug;
++	struct debugfs_node	 	*debug_root;
++	struct debugfs_node		*debug;
+ 
+ 	struct tsens_sensor		sensor[] __counted_by(num_sensors);
+ };
+diff --git a/drivers/watchdog/ie6xx_wdt.c b/drivers/watchdog/ie6xx_wdt.c
+index 5a7bb7e84653..04f146953f29 100644
+--- a/drivers/watchdog/ie6xx_wdt.c
++++ b/drivers/watchdog/ie6xx_wdt.c
+@@ -68,7 +68,7 @@ static struct {
+ 	unsigned short sch_wdtba;
+ 	spinlock_t unlock_sequence;
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry *debugfs;
++	struct debugfs_node *debugfs;
+ #endif
+ } ie6xx_wdt_data;
+ 
 diff --git a/fs/bcachefs/bcachefs.h b/fs/bcachefs/bcachefs.h
 index 161cf2f05d2a..52978e5fd439 100644
 --- a/fs/bcachefs/bcachefs.h
@@ -1379,6 +2148,19 @@ index 2e6e603b7493..768938c6ae5f 100644
  };
  
  /**
+diff --git a/include/linux/closure.h b/include/linux/closure.h
+index 880fe85e35e9..b98b6067368a 100644
+--- a/include/linux/closure.h
++++ b/include/linux/closure.h
+@@ -105,7 +105,7 @@
+ struct closure;
+ struct closure_syncer;
+ typedef void (closure_fn) (struct work_struct *);
+-extern struct dentry *bcache_debug;
++extern struct debugfs_node *bcache_debug;
+ 
+ struct closure_waitlist {
+ 	struct llist_head	list;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
 index e5bfc36b35e2..f7e5d2463713 100644
 --- a/include/linux/fault-inject.h
@@ -1441,6 +2223,32 @@ index 2445842d482d..e05e4427fdf1 100644
  };
  
  struct aat2870_subdev_info {
+diff --git a/include/media/cec.h b/include/media/cec.h
+index 0c8e86115b6f..0c172c059927 100644
+--- a/include/media/cec.h
++++ b/include/media/cec.h
+@@ -290,7 +290,7 @@ struct cec_adapter {
+ 	struct cec_pin *pin;
+ #endif
+ 
+-	struct dentry *cec_dir;
++	struct debugfs_node *cec_dir;
+ 
+ 	u32 sequence;
+ 
+diff --git a/include/media/v4l2-dv-timings.h b/include/media/v4l2-dv-timings.h
+index 4a89b1262920..e08294607e5f 100644
+--- a/include/media/v4l2-dv-timings.h
++++ b/include/media/v4l2-dv-timings.h
+@@ -280,7 +280,7 @@ typedef ssize_t (*v4l2_debugfs_if_read_t)(u32 type, void *priv,
+ 					  size_t count, loff_t *ppos);
+ 
+ struct v4l2_debugfs_if {
+-	struct dentry *if_dir;
++	struct debugfs_node *if_dir;
+ 	void *priv;
+ 
+ 	v4l2_debugfs_if_read_t if_read;
 diff --git a/include/net/mac80211.h b/include/net/mac80211.h
 index 3443ac47384a..8896fdc00ecb 100644
 --- a/include/net/mac80211.h

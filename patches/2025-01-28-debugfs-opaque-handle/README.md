@@ -52,6 +52,8 @@ git format-patch master...HEAD \
 - Consider a `->d_parent` -> new helper `debugfs_node_parent`
 - `->d_inode` -> `debugfs_node_inode` (just check arg type)
 
+- static anonymous struct in `ie6xx_wdt.c` didn't have a field transformed. This is common in drivers because there is a global struct for debug stuff.
+
 - (might be done) Change `rchan_callbacks` users to convert to `dentry`
 
 - Consider removing the `all_function_calls` thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
