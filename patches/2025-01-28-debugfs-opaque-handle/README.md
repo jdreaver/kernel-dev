@@ -53,6 +53,8 @@ git format-patch master...HEAD \
      - Could do multiple passes. I think rewriting wrappers in the first pass
      - I think we can rewrite return values with a dedicated rule, and function args can be handled like other declarations. Then we don't need to specially rewrite wrappers
 
+- don't allow `debugfs_file_get` to infect dentry to debugfs_node. Example: `drivers/gpu/drm/xlnx/zynqmp_dp.o`
+
 - `sound/soc/soc-pcm.c` isn't working (only file I think). It interesting because there is no dentry declaration in the actual file (but there is debugfs usage)
   - (old TODO) `include/sound/soc.h` has a `struct dentry *debugfs_dpcm_root;` field that refuses to get matches. I think all the `#define`s in the file are screwing with Coccinelle, because it works when I move that struct to my test file.
 

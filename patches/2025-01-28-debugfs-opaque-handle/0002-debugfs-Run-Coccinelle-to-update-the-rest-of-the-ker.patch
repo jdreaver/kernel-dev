@@ -1,7 +1,8 @@
-From 0069189bdac9889d8c025d7c9309dd0ad1e116d9 Mon Sep 17 00:00:00 2001
+From 896a88a3892290e12e88a6396ac5b584da6127e6 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sat, 1 Feb 2025 19:26:07 -0800
-Subject: [RFC PATCH 2/4] debugfs: tmp commit to show coccinelle output
+Subject: [RFC PATCH 2/4] debugfs: Run Coccinelle to update the rest of the
+ kernel
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>

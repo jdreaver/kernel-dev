@@ -1,8 +1,7 @@
-From 12f29a4521a48c24a7af6b9439c5e2b6be98ab55 Mon Sep 17 00:00:00 2001
+From 032884492e747c0e16027bce31dd5e766b4f8dc8 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sat, 1 Feb 2025 06:45:03 -0800
-Subject: [RFC PATCH 4/4] relay: Use debugfs_node instead of raw dentry for
- debugfs
+Subject: [RFC PATCH 4/4] relay: Use debugfs_node instead of dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>

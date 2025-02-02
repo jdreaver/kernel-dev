@@ -1,6 +1,6 @@
-From 12f29a4521a48c24a7af6b9439c5e2b6be98ab55 Mon Sep 17 00:00:00 2001
+From 032884492e747c0e16027bce31dd5e766b4f8dc8 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 20:19:38 -0800
+Date: Sat, 1 Feb 2025 20:56:54 -0800
 Subject: [RFC PATCH 0/4] debugfs: Use opaque handle for debugfs nodes instead
  of dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -109,9 +109,9 @@ Link: https://lore.kernel.org/all/20250128102744.1b94a789@gandalf.local.home/ [3
 
 David Reaver (4):
   debugfs: Use opaque debugfs_node handle to support kernfs migration
-  debugfs: tmp commit to show coccinelle output
-  debugfs: tmp commit with fixups not handled by coccinelle script
-  relay: Use debugfs_node instead of raw dentry for debugfs
+  debugfs: Run Coccinelle to update the rest of the kernel
+  debugfs: Manual fixes for cases Coccinelle missed
+  relay: Use debugfs_node instead of dentry
 
  Documentation/filesystems/relay.rst           |  32 ++-
  arch/arm/mach-omap1/pm.c                      |   2 +-
@@ -445,7 +445,7 @@ David Reaver (4):
  drivers/gpu/drm/xe/xe_huc_debugfs.h           |   4 +-
  drivers/gpu/drm/xe/xe_uc_debugfs.c            |   4 +-
  drivers/gpu/drm/xe/xe_uc_debugfs.h            |   2 +-
- drivers/gpu/drm/xlnx/zynqmp_dp.c              |  12 +-
+ drivers/gpu/drm/xlnx/zynqmp_dp.c              |   4 +-
  drivers/gpu/host1x/debug.c                    |   2 +-
  drivers/gpu/host1x/dev.h                      |   7 +-
  drivers/gpu/vga/vga_switcheroo.c              |   2 +-
@@ -1222,7 +1222,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2904 insertions(+), 2620 deletions(-)
+ 1109 files changed, 2900 insertions(+), 2616 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45
