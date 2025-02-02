@@ -1,4 +1,4 @@
-From a482e7b7861f71f16f7b36474814d3d4da03d31c Mon Sep 17 00:00:00 2001
+From e26fcd757b7024a4c621aa08244c65d538959902 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: tmp commit with fixups not handled by
@@ -2768,7 +2768,7 @@ index 9c21ba45b7af..62c4decfa9ee 100644
  	struct dentry		*percpu_dir;
  	struct eventfs_inode	*event_dir;
 diff --git a/lib/notifier-error-inject.h b/lib/notifier-error-inject.h
-index a08c4d14a26f..d840a0ef33e1 100644
+index a08c4d14a26f..4b66b0667c79 100644
 --- a/lib/notifier-error-inject.h
 +++ b/lib/notifier-error-inject.h
 @@ -20,6 +20,7 @@ struct notifier_err_inject {
@@ -2778,10 +2778,10 @@ index a08c4d14a26f..d840a0ef33e1 100644
 -extern struct debugfs_node *notifier_err_inject_init(const char *name,
 -		struct dentry *parent, struct notifier_err_inject *err_inject,
 -		int priority);
-+extern struct debugfs_node
-+*notifier_err_inject_init(const char *name, struct debugfs_node *parent,
-+			  struct notifier_err_inject *err_inject,
-+			  int priority);
++extern struct debugfs_node *
++notifier_err_inject_init(const char *name, struct debugfs_node *parent,
++			 struct notifier_err_inject *err_inject,
++			 int priority);
 diff --git a/net/mac80211/debugfs_netdev.c b/net/mac80211/debugfs_netdev.c
 index 5bb5792982e3..81937c2d4ffa 100644
 --- a/net/mac80211/debugfs_netdev.c
