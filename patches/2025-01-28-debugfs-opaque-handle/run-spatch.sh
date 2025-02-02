@@ -11,7 +11,7 @@ mkdir -p "$log_dir"
 
 # Use ripgrep to find any files that contain debugfs-looking code
 # This is a simple heuristic to avoid running spatch on files that don't contain debugfs code
-files=$(rg --files-with-matches 'debugfs|dentry' -g '*.{c,h}' -g '!fs/debugfs' -g '!linux/include/debugfs.h' -g '!linux/include/fs.h' | sort)
+files=$(rg --files-with-matches 'debugfs|dentry' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h' -g '!include/linux/fs.h' | sort)
 
 counter=1
 total_files=$(echo "$files" | wc -l)
@@ -21,7 +21,8 @@ for file in $files; do
 
     time spatch "$script_dir/script.cocci" \
       --all-includes --include-headers --patch . \
-      --ignore linux/include/fs.h \
+      --ignore include/linux/fs.h \
+      --ignore include/linux/debugfs.h \
       --ignore fs/debugfs \
       --in-place "$file" 2>&1 \
       | tee "$log_dir/$(echo "$file" | tr '/' '--').log"

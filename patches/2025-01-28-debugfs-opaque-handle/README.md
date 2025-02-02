@@ -43,8 +43,8 @@ git format-patch master...HEAD \
 - Inspect output of these
 
   ```
-  $ rg 'struct dentry \*.*(debug|dbg).*' -g '*.{c,h}' -g '!fs/debugfs' -g '!linux/include/debugfs.h'
-  $ rg '(debug|dbg).*struct dentry \*' -g '*.{c,h}' -g '!fs/debugfs' -g '!linux/include/debugfs.h'
+  $ rg 'struct dentry \*.*(debug|dbg).*' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
+  $ rg '(debug|dbg).*struct dentry \*' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
   ```
 
 ## Non-coccinelle changes
