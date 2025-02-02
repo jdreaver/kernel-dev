@@ -123,6 +123,8 @@ f(..., e@var, ...)
 identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
 identifier f = { find_dentry_return_vars.f, find_dentry_arg_vars.f };
 position p;
+// TODO: idexpression is more restrictive than what we might want. It only
+// matches ids, not full expressions.
 idexpression struct debugfs_node *E;
 @@
 

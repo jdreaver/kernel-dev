@@ -1,4 +1,4 @@
-From eb0d46c3e44ef3e7510f133e99982207ff821f5a Mon Sep 17 00:00:00 2001
+From a482e7b7861f71f16f7b36474814d3d4da03d31c Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: tmp commit with fixups not handled by
@@ -23,16 +23,12 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/firmware/arm_scmi/raw_mode.h          |   2 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c   |   7 +-
  .../gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c    |   9 +-
- .../amd/display/amdgpu_dm/amdgpu_dm_debugfs.c |   2 +-
  drivers/gpu/drm/drm_debugfs.c                 |   4 +-
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  22 +-
- drivers/gpu/drm/loongson/lsdc_ttm.c           |   2 +-
  drivers/gpu/drm/msm/dp/dp_debug.h             |   2 +-
  .../gpu/drm/nouveau/include/nvkm/subdev/gsp.h |  10 +-
- drivers/gpu/drm/nouveau/nouveau_debugfs.c     |   2 +-
- .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |  18 +-
+ .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |   8 +-
  drivers/gpu/drm/omapdrm/dss/dss.h             |   2 +-
- drivers/gpu/drm/vmwgfx/vmwgfx_drv.c           |   2 +-
  drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   2 +
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   4 +-
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  29 +--
@@ -41,16 +37,14 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/gpu/drm/xe/xe_huc_debugfs.h           |   2 +-
  drivers/gpu/host1x/dev.h                      |   2 +-
  drivers/hwmon/asus_atk0110.c                  |   2 +-
- drivers/infiniband/hw/hfi1/fault.c            |   2 +-
  drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
  drivers/infiniband/hw/hns/hns_roce_debugfs.h  |   4 +-
  drivers/infiniband/hw/ocrdma/ocrdma.h         |   2 +-
- .../platform/chips-media/coda/coda-common.c   |   3 +-
  .../media/platform/chips-media/coda/coda.h    |   3 +-
  .../media/platform/raspberrypi/rp1-cfe/csi2.h |   2 +-
  .../platform/raspberrypi/rp1-cfe/pisp-fe.h    |   2 +-
  .../st/sti/c8sectpfe/c8sectpfe-core.h         |   2 +-
- .../media/test-drivers/visl/visl-debugfs.c    |  10 +-
+ .../media/test-drivers/visl/visl-debugfs.c    |   2 +-
  drivers/media/test-drivers/visl/visl.h        |   2 +-
  drivers/memory/tegra/tegra124-emc.c           |   2 +-
  drivers/memory/tegra/tegra186-emc.c           |   2 +-
@@ -65,16 +59,12 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../net/ethernet/mellanox/mlx5/core/debugfs.c |   2 +-
  .../net/ethernet/mellanox/mlx5/core/en/fs.h   |   5 +-
  .../mellanox/mlx5/core/en_accel/ktls.h        |   4 +-
- .../microchip/lan966x/lan966x_vcap_impl.c     |   2 +-
- .../microchip/sparx5/sparx5_vcap_impl.c       |   2 +-
  drivers/net/ethernet/netronome/nfp/nfp_net.h  |   4 +-
  .../ethernet/netronome/nfp/nfp_net_debugfs.c  |   2 +-
  drivers/net/ethernet/qualcomm/qca_spi.h       |   2 +-
  drivers/net/wireless/ath/ath10k/spectral.c    |  17 +-
- drivers/net/wireless/ath/ath11k/debugfs.c     |   2 +-
  drivers/net/wireless/ath/ath11k/spectral.c    |  19 +-
  drivers/net/wireless/ath/ath11k/spectral.h    |   6 +-
- drivers/net/wireless/ath/ath12k/debugfs.c     |   2 +-
  drivers/net/wireless/ath/ath9k/common-debug.h |  16 +-
  .../net/wireless/ath/ath9k/common-spectral.c  |  16 +-
  .../net/wireless/ath/ath9k/common-spectral.h  |   5 +-
@@ -101,12 +91,10 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/scsi/bfa/bfad_drv.h                   |   2 +-
  drivers/scsi/lpfc/lpfc_debugfs.c              |  40 ++--
  drivers/soc/qcom/qcom_aoss.c                  |   4 +-
- drivers/watchdog/ie6xx_wdt.c                  |   2 +-
  fs/bcachefs/bcachefs.h                        |   4 +-
  fs/ceph/super.h                               |   4 +-
  fs/ubifs/debug.c                              |  62 +++---
  fs/ubifs/debug.h                              |  22 +-
- fs/xfs/scrub/stats.c                          |   4 +-
  fs/xfs/scrub/stats.h                          |   6 +-
  fs/xfs/xfs_mount.h                            |   2 +-
  fs/xfs/xfs_super.h                            |   3 +-
@@ -127,7 +115,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  kernel/gcov/fs.c                              |   2 +-
  kernel/trace/blktrace.c                       |  23 ++-
  kernel/trace/trace.h                          |   2 +-
- lib/fault-inject.c                            |   2 +-
  lib/notifier-error-inject.h                   |   7 +-
  net/mac80211/debugfs_netdev.c                 |  10 +-
  net/mac80211/ieee80211_i.h                    |  14 +-
@@ -135,8 +122,8 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/sunrpc/debugfs.c                          |   5 +-
  net/wireless/debugfs.c                        |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
- virt/kvm/kvm_main.c                           |   5 +-
- 122 files changed, 524 insertions(+), 441 deletions(-)
+ virt/kvm/kvm_main.c                           |   3 +-
+ 109 files changed, 499 insertions(+), 417 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -307,19 +294,6 @@ index 52c16bfeccaa..a0791a9276b9 100644
  }
  
  static ssize_t amdgpu_ras_debugfs_table_read(struct file *f, char __user *buf,
-diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_debugfs.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_debugfs.c
-index ee69e92cd94f..2e49b5e93a23 100644
---- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_debugfs.c
-+++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_debugfs.c
-@@ -3739,7 +3739,7 @@ void crtc_debugfs_init(struct drm_crtc *crtc)
- 				   &crc_win_y_end_fops);
- 	debugfs_create_file_unsafe("crc_win_update", 0644, dir, crtc,
- 				   &crc_win_update_fops);
--	dput(dir);
-+	debugfs_node_put(dir);
- #endif
- 	debugfs_create_file("amdgpu_current_bpc", 0644, crtc->debugfs_entry,
- 			    crtc, &amdgpu_current_bpc_fops);
 diff --git a/drivers/gpu/drm/drm_debugfs.c b/drivers/gpu/drm/drm_debugfs.c
 index a5ee622f90d7..aa87239d2cc6 100644
 --- a/drivers/gpu/drm/drm_debugfs.c
@@ -405,19 +379,6 @@ index 84f8f4b3a14c..b3798a9d8ad4 100644
  					subbuf_size, n_subbufs,
  					&relay_callbacks, i915);
  	if (!guc_log_relay_chan) {
-diff --git a/drivers/gpu/drm/loongson/lsdc_ttm.c b/drivers/gpu/drm/loongson/lsdc_ttm.c
-index 2e42c6970c9f..64f130c2dfec 100644
---- a/drivers/gpu/drm/loongson/lsdc_ttm.c
-+++ b/drivers/gpu/drm/loongson/lsdc_ttm.c
-@@ -575,7 +575,7 @@ void lsdc_ttm_debugfs_init(struct lsdc_device *ldev)
- 	struct ttm_device *bdev = &ldev->bdev;
- 	struct drm_device *ddev = &ldev->base;
- 	struct drm_minor *minor = ddev->primary;
--	struct dentry *root = minor->debugfs_root;
-+	struct debugfs_node *root = minor->debugfs_root;
- 	struct ttm_resource_manager *vram_man;
- 	struct ttm_resource_manager *gtt_man;
- 
 diff --git a/drivers/gpu/drm/msm/dp/dp_debug.h b/drivers/gpu/drm/msm/dp/dp_debug.h
 index 8a69b3891d5e..ccbc6476d9a7 100644
 --- a/drivers/gpu/drm/msm/dp/dp_debug.h
@@ -452,41 +413,10 @@ index 5c5f4607fcc9..c5c205f65875 100644
  	} debugfs;
  	struct debugfs_blob_wrapper blob_init;
  	struct debugfs_blob_wrapper blob_intr;
-diff --git a/drivers/gpu/drm/nouveau/nouveau_debugfs.c b/drivers/gpu/drm/nouveau/nouveau_debugfs.c
-index a2bc28cdc9e5..02c1465cb5bb 100644
---- a/drivers/gpu/drm/nouveau/nouveau_debugfs.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_debugfs.c
-@@ -289,7 +289,7 @@ nouveau_drm_debugfs_init(struct drm_minor *minor)
- 		return;
- 
- 	debugfs_node_inode(dentry)->i_size = drm->vbios.length;
--	dput(dentry);
-+	debugfs_node_put(dentry);
- }
- 
- int
 diff --git a/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c b/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c
-index 73fa8a5b9e46..6eaabfb239ea 100644
+index 9155c5d25c64..6eaabfb239ea 100644
 --- a/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c
 +++ b/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c
-@@ -2172,7 +2172,7 @@ r535_gsp_msg_libos_print(void *priv, u32 fn, void *repv, u32 repc)
- static struct debugfs_node *create_debugfs(struct nvkm_gsp *gsp, const char *name,
- 				     struct debugfs_blob_wrapper *blob)
- {
--	struct dentry *dent;
-+	struct debugfs_node *dent;
- 
- 	dent = debugfs_create_blob(name, 0444, gsp->debugfs.parent, blob);
- 	if (IS_ERR(dent)) {
-@@ -2187,7 +2187,7 @@ static struct debugfs_node *create_debugfs(struct nvkm_gsp *gsp, const char *nam
- 	 *
- 	 * [1] https://lore.kernel.org/r/linux-fsdevel/20240207200619.3354549-1-ttabi@nvidia.com/
- 	 */
--	i_size_write(d_inode(dent), blob->size);
-+	i_size_write(debugfs_node_inode(dent), blob->size);
- 
- 	return dent;
- }
 @@ -2264,10 +2264,10 @@ r535_gsp_libos_debugfs_init(struct nvkm_gsp *gsp)
  		goto error;
  	}
@@ -502,30 +432,6 @@ index 73fa8a5b9e46..6eaabfb239ea 100644
  
  	r535_gsp_msg_ntfy_add(gsp, NV_VGPU_MSG_EVENT_UCODE_LIBOS_PRINT,
  			      r535_gsp_msg_libos_print, gsp);
-@@ -2793,12 +2793,12 @@ static bool is_empty(const struct debugfs_blob_wrapper *b)
-  * To preserve the logging buffers, the buffers need to be copied, but only
-  * if they actually have data.
-  */
--static int r535_gsp_copy_log(struct dentry *parent,
-+static int r535_gsp_copy_log(struct debugfs_node *parent,
- 			     const char *name,
- 			     const struct debugfs_blob_wrapper *s,
- 			     struct debugfs_blob_wrapper *t)
- {
--	struct dentry *dent;
-+	struct debugfs_node *dent;
- 	void *p;
- 
- 	if (is_empty(s))
-@@ -2819,7 +2819,7 @@ static int r535_gsp_copy_log(struct dentry *parent,
- 		return PTR_ERR(dent);
- 	}
- 
--	i_size_write(d_inode(dent), t->size);
-+	i_size_write(debugfs_node_inode(dent), t->size);
- 
- 	return 0;
- }
 diff --git a/drivers/gpu/drm/omapdrm/dss/dss.h b/drivers/gpu/drm/omapdrm/dss/dss.h
 index a8b231ed4f4b..d524ed1990fd 100644
 --- a/drivers/gpu/drm/omapdrm/dss/dss.h
@@ -539,19 +445,6 @@ index a8b231ed4f4b..d524ed1990fd 100644
  		struct dss_debugfs_entry *clk;
  		struct dss_debugfs_entry *dss;
  	} debugfs;
-diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-index 0f32471c8533..b296296f566d 100644
---- a/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-+++ b/drivers/gpu/drm/vmwgfx/vmwgfx_drv.c
-@@ -1434,7 +1434,7 @@ static void vmw_remove(struct pci_dev *pdev)
- static void vmw_debugfs_resource_managers_init(struct vmw_private *vmw)
- {
- 	struct drm_minor *minor = vmw->drm.primary;
--	struct dentry *root = minor->debugfs_root;
-+	struct debugfs_node *root = minor->debugfs_root;
- 
- 	ttm_resource_manager_create_debugfs(ttm_manager_type(&vmw->bdev, TTM_PL_SYSTEM),
- 					    root, "system_ttm");
 diff --git a/drivers/gpu/drm/xe/xe_gsc_debugfs.h b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
 index 9099da88b398..48658b1af61b 100644
 --- a/drivers/gpu/drm/xe/xe_gsc_debugfs.h
@@ -763,19 +656,6 @@ index f1862b8c37c8..57db75aa8a11 100644
  		u32 id;
  	} debugfs;
  };
-diff --git a/drivers/infiniband/hw/hfi1/fault.c b/drivers/infiniband/hw/hfi1/fault.c
-index 08c876828c72..7c05b5109d43 100644
---- a/drivers/infiniband/hw/hfi1/fault.c
-+++ b/drivers/infiniband/hw/hfi1/fault.c
-@@ -215,7 +215,7 @@ void hfi1_fault_exit_debugfs(struct hfi1_ibdev *ibd)
- 
- int hfi1_fault_init_debugfs(struct hfi1_ibdev *ibd)
- {
--	struct dentry *parent = ibd->hfi1_ibdev_dbg;
-+	struct debugfs_node *parent = ibd->hfi1_ibdev_dbg;
- 	struct debugfs_node *fault_dir;
- 
- 	ibd->fault = kzalloc(sizeof(*ibd->fault), GFP_KERNEL);
 diff --git a/drivers/infiniband/hw/hfi1/verbs.h b/drivers/infiniband/hw/hfi1/verbs.h
 index 070e4f0babe8..e8c0ff01353f 100644
 --- a/drivers/infiniband/hw/hfi1/verbs.h
@@ -825,20 +705,6 @@ index 5eb61c110090..ed144844276a 100644
  	atomic_t async_err_stats[OCRDMA_MAX_ASYNC_ERRORS];
  	atomic_t cqe_err_stats[OCRDMA_MAX_CQE_ERR];
  	struct ocrdma_pd_resource_mgr *pd_mgr;
-diff --git a/drivers/media/platform/chips-media/coda/coda-common.c b/drivers/media/platform/chips-media/coda/coda-common.c
-index 289a076c3bcc..2c5eb21ca62c 100644
---- a/drivers/media/platform/chips-media/coda/coda-common.c
-+++ b/drivers/media/platform/chips-media/coda/coda-common.c
-@@ -1929,7 +1929,8 @@ static void coda_buf_queue(struct vb2_buffer *vb)
- }
- 
- int coda_alloc_aux_buf(struct coda_dev *dev, struct coda_aux_buf *buf,
--		       size_t size, const char *name, struct dentry *parent)
-+		       size_t size, const char *name,
-+		       struct debugfs_node *parent)
- {
- 	buf->vaddr = dma_alloc_coherent(dev->dev, size, &buf->paddr,
- 					GFP_KERNEL);
 diff --git a/drivers/media/platform/chips-media/coda/coda.h b/drivers/media/platform/chips-media/coda/coda.h
 index 06b992fa36ea..ca29a43d0747 100644
 --- a/drivers/media/platform/chips-media/coda/coda.h
@@ -893,35 +759,18 @@ index c1b124c6ef12..333fcf792297 100644
  	struct completion fw_ack;
  	atomic_t fw_loaded;
 diff --git a/drivers/media/test-drivers/visl/visl-debugfs.c b/drivers/media/test-drivers/visl/visl-debugfs.c
-index 45f2a8268014..a78021640796 100644
+index b332614a1325..fb9164029cf4 100644
 --- a/drivers/media/test-drivers/visl/visl-debugfs.c
 +++ b/drivers/media/test-drivers/visl/visl-debugfs.c
-@@ -42,7 +42,7 @@ void visl_trace_bitstream(struct visl_ctx *ctx, struct visl_run *run)
- 	u8 *vaddr = vb2_plane_vaddr(&run->src->vb2_buf, 0);
- 	struct visl_blob *blob;
- 	size_t data_sz = vb2_get_plane_payload(&run->src->vb2_buf, 0);
--	struct dentry *dentry;
-+	struct debugfs_node *node;
- 	char name[32];
- 
- 	blob  = kzalloc(sizeof(*blob), GFP_KERNEL);
-@@ -58,12 +58,12 @@ void visl_trace_bitstream(struct visl_ctx *ctx, struct visl_run *run)
- 
+@@ -59,7 +59,7 @@ void visl_trace_bitstream(struct visl_ctx *ctx, struct visl_run *run)
  	memcpy(blob->blob.data, vaddr, data_sz);
  
--	dentry = debugfs_create_blob(name, 0444, ctx->dev->bitstream_debugfs,
+ 	dentry = debugfs_create_blob(name, 0444, ctx->dev->bitstream_debugfs,
 -				     &blob->blob);
--	if (IS_ERR(dentry))
-+	node = debugfs_create_blob(name, 0444, ctx->dev->bitstream_debugfs,
 +				   &blob->blob);
-+	if (IS_ERR(node))
+ 	if (IS_ERR(dentry))
  		goto err_debugfs;
  
--	blob->dentry = dentry;
-+	blob->dentry = node;
- 
- 	mutex_lock(&ctx->dev->bitstream_lock);
- 	list_add_tail(&blob->list, &ctx->dev->bitstream_blobs);
 diff --git a/drivers/media/test-drivers/visl/visl.h b/drivers/media/test-drivers/visl/visl.h
 index 2cdba86e6ca2..816c6398d82b 100644
 --- a/drivers/media/test-drivers/visl/visl.h
@@ -1234,32 +1083,6 @@ index 07a04a142a2e..a51cb06183cb 100644
  };
  
  struct mlx5e_tls {
-diff --git a/drivers/net/ethernet/microchip/lan966x/lan966x_vcap_impl.c b/drivers/net/ethernet/microchip/lan966x/lan966x_vcap_impl.c
-index a1471e38d118..d80892576b84 100644
---- a/drivers/net/ethernet/microchip/lan966x/lan966x_vcap_impl.c
-+++ b/drivers/net/ethernet/microchip/lan966x/lan966x_vcap_impl.c
-@@ -710,7 +710,7 @@ int lan966x_vcap_init(struct lan966x *lan966x)
- 	struct lan966x_vcap_inst *cfg;
- 	struct vcap_control *ctrl;
- 	struct vcap_admin *admin;
--	struct dentry *dir;
-+	struct debugfs_node *dir;
- 
- 	ctrl = kzalloc(sizeof(*ctrl), GFP_KERNEL);
- 	if (!ctrl)
-diff --git a/drivers/net/ethernet/microchip/sparx5/sparx5_vcap_impl.c b/drivers/net/ethernet/microchip/sparx5/sparx5_vcap_impl.c
-index 25066ddb8d4d..c6b50931917a 100644
---- a/drivers/net/ethernet/microchip/sparx5/sparx5_vcap_impl.c
-+++ b/drivers/net/ethernet/microchip/sparx5/sparx5_vcap_impl.c
-@@ -2035,7 +2035,7 @@ int sparx5_vcap_init(struct sparx5 *sparx5)
- 	const struct sparx5_vcap_inst *cfg;
- 	struct vcap_control *ctrl;
- 	struct vcap_admin *admin;
--	struct dentry *dir;
-+	struct debugfs_node *dir;
- 	int err = 0, idx;
- 
- 	/* Create a VCAP control instance that owns the platform specific VCAP
 diff --git a/drivers/net/ethernet/netronome/nfp/nfp_net.h b/drivers/net/ethernet/netronome/nfp/nfp_net.h
 index 19e25380273e..7d8d250aadb9 100644
 --- a/drivers/net/ethernet/netronome/nfp/nfp_net.h
@@ -1361,19 +1184,6 @@ index 82e4a530a605..f0009d2e759c 100644
  						     1140, 2500,
  						     &rfs_spec_scan_cb, NULL);
  	debugfs_create_file("spectral_scan_ctl",
-diff --git a/drivers/net/wireless/ath/ath11k/debugfs.c b/drivers/net/wireless/ath/ath11k/debugfs.c
-index 9a537a6ec5e7..8fac2a1d8d12 100644
---- a/drivers/net/wireless/ath/ath11k/debugfs.c
-+++ b/drivers/net/wireless/ath/ath11k/debugfs.c
-@@ -1028,7 +1028,7 @@ int ath11k_debugfs_soc_create(struct ath11k_base *ab)
- 
- out:
- 	if (dput_needed)
--		dput(root);
-+		debugfs_node_put(root);
- 
- 	return ret;
- }
 diff --git a/drivers/net/wireless/ath/ath11k/spectral.c b/drivers/net/wireless/ath/ath11k/spectral.c
 index 91776ee8492e..b1625d1147ce 100644
 --- a/drivers/net/wireless/ath/ath11k/spectral.c
@@ -1441,19 +1251,6 @@ index 789cff7c64a7..2598a47c67fe 100644
  	enum ath11k_spectral_mode mode;
  	u16 count;
  	u8 fft_size;
-diff --git a/drivers/net/wireless/ath/ath12k/debugfs.c b/drivers/net/wireless/ath/ath12k/debugfs.c
-index dfa153ddc3e0..910c5bc079ea 100644
---- a/drivers/net/wireless/ath/ath12k/debugfs.c
-+++ b/drivers/net/wireless/ath/ath12k/debugfs.c
-@@ -54,7 +54,7 @@ void ath12k_debugfs_soc_create(struct ath12k_base *ab)
- 	ab->debugfs_soc = debugfs_create_dir(soc_name, debugfs_ath12k);
- 
- 	if (dput_needed)
--		dput(debugfs_ath12k);
-+		debugfs_node_put(debugfs_ath12k);
- }
- 
- void ath12k_debugfs_soc_destroy(struct ath12k_base *ab)
 diff --git a/drivers/net/wireless/ath/ath9k/common-debug.h b/drivers/net/wireless/ath/ath9k/common-debug.h
 index 2938b5b96b07..76dd1a875758 100644
 --- a/drivers/net/wireless/ath/ath9k/common-debug.h
@@ -2344,19 +2141,6 @@ index c745cd9830f1..c0735ecae4a7 100644
  			entry = &qmp_debugfs_entries[i];
  			break;
  		}
-diff --git a/drivers/watchdog/ie6xx_wdt.c b/drivers/watchdog/ie6xx_wdt.c
-index 5a7bb7e84653..04f146953f29 100644
---- a/drivers/watchdog/ie6xx_wdt.c
-+++ b/drivers/watchdog/ie6xx_wdt.c
-@@ -68,7 +68,7 @@ static struct {
- 	unsigned short sch_wdtba;
- 	spinlock_t unlock_sequence;
- #ifdef CONFIG_DEBUG_FS
--	struct dentry *debugfs;
-+	struct debugfs_node *debugfs;
- #endif
- } ie6xx_wdt_data;
- 
 diff --git a/fs/bcachefs/bcachefs.h b/fs/bcachefs/bcachefs.h
 index 161cf2f05d2a..52978e5fd439 100644
 --- a/fs/bcachefs/bcachefs.h
@@ -2565,28 +2349,6 @@ index d425861e6b82..b8fffabcfe43 100644
  };
  
  /**
-diff --git a/fs/xfs/scrub/stats.c b/fs/xfs/scrub/stats.c
-index 7ea40b92f286..abbde6b307b0 100644
---- a/fs/xfs/scrub/stats.c
-+++ b/fs/xfs/scrub/stats.c
-@@ -327,7 +327,7 @@ xchk_stats_init(
- void
- xchk_stats_register(
- 	struct xchk_stats	*cs,
--	struct dentry		*parent)
-+	struct debugfs_node	*parent)
- {
- 	if (!parent)
- 		return;
-@@ -361,7 +361,7 @@ xchk_stats_unregister(
- /* Initialize global stats and register them */
- int __init
- xchk_global_stats_setup(
--	struct dentry		*parent)
-+	struct debugfs_node	*parent)
- {
- 	int			error;
- 
 diff --git a/fs/xfs/scrub/stats.h b/fs/xfs/scrub/stats.h
 index b358ad8d8b90..df56db591ba8 100644
 --- a/fs/xfs/scrub/stats.h
@@ -3005,19 +2767,6 @@ index 9c21ba45b7af..62c4decfa9ee 100644
  	struct dentry		*options;
  	struct dentry		*percpu_dir;
  	struct eventfs_inode	*event_dir;
-diff --git a/lib/fault-inject.c b/lib/fault-inject.c
-index d9a8fe11e6a4..5bf0f47725e8 100644
---- a/lib/fault-inject.c
-+++ b/lib/fault-inject.c
-@@ -262,7 +262,7 @@ struct debugfs_node *fault_create_debugfs_attr(const char *name,
- 	debugfs_create_xul("reject-end", mode, dir, &attr->reject_end);
- #endif /* CONFIG_FAULT_INJECTION_STACKTRACE_FILTER */
- 
--	attr->dname = dget(dir);
-+	attr->dname = debugfs_node_get(dir);
- 	return dir;
- }
- EXPORT_SYMBOL_GPL(fault_create_debugfs_attr);
 diff --git a/lib/notifier-error-inject.h b/lib/notifier-error-inject.h
 index a08c4d14a26f..d840a0ef33e1 100644
 --- a/lib/notifier-error-inject.h
@@ -3152,18 +2901,9 @@ index 443d36294c99..efc76f42ac83 100644
  };
  
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index edba5dd67c41..165764eafe9e 100644
+index e76c0c3738e1..165764eafe9e 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -1017,7 +1017,7 @@ static int kvm_create_vm_debugfs(struct kvm *kvm, const char *fdname)
- 	dent = debugfs_lookup(dir_name, kvm_debugfs_dir);
- 	if (dent) {
- 		pr_warn_ratelimited("KVM: debugfs: duplicate directory %s\n", dir_name);
--		dput(dent);
-+		debugfs_node_put(dent);
- 		mutex_unlock(&kvm_debugfs_lock);
- 		return 0;
- 	}
 @@ -6216,7 +6216,8 @@ static void kvm_uevent_notify_change(unsigned int type, struct kvm *kvm)
  		char *tmp, *p = kmalloc(PATH_MAX, GFP_KERNEL);
  

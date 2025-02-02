@@ -1,6 +1,6 @@
-From 400b5c2b145ba8b932a3771db376da57d9a29c63 Mon Sep 17 00:00:00 2001
+From 34e5a532da455bd60423b5bce104c2f98d5c0b04 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 14:05:25 -0800
+Date: Sat, 1 Feb 2025 17:28:51 -0800
 Subject: [RFC PATCH 0/4] debugfs: Use opaque handle for debugfs nodes instead
  of dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -452,7 +452,7 @@ David Reaver (4):
  drivers/gpu/drm/xe/xe_huc_debugfs.h           |   4 +-
  drivers/gpu/drm/xe/xe_uc_debugfs.c            |   4 +-
  drivers/gpu/drm/xe/xe_uc_debugfs.h            |   2 +-
- drivers/gpu/drm/xlnx/zynqmp_dp.c              |   4 +-
+ drivers/gpu/drm/xlnx/zynqmp_dp.c              |  12 +-
  drivers/gpu/host1x/debug.c                    |   2 +-
  drivers/gpu/host1x/dev.h                      |   7 +-
  drivers/gpu/vga/vga_switcheroo.c              |   2 +-
@@ -512,7 +512,7 @@ David Reaver (4):
  drivers/infiniband/hw/bnxt_re/ib_verbs.h      |   2 +-
  drivers/infiniband/hw/cxgb4/device.c          |   2 +-
  drivers/infiniband/hw/cxgb4/iw_cxgb4.h        |   2 +-
- drivers/infiniband/hw/hfi1/debugfs.c          |   4 +-
+ drivers/infiniband/hw/hfi1/debugfs.c          |   8 +-
  drivers/infiniband/hw/hfi1/fault.c            |   4 +-
  drivers/infiniband/hw/hfi1/fault.h            |   2 +-
  drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
@@ -584,7 +584,7 @@ David Reaver (4):
  .../st/sti/c8sectpfe/c8sectpfe-core.h         |   2 +-
  drivers/media/platform/st/sti/hva/hva.h       |   4 +-
  drivers/media/radio/radio-si476x.c            |   2 +-
- .../media/test-drivers/visl/visl-debugfs.c    |  10 +-
+ .../media/test-drivers/visl/visl-debugfs.c    |   4 +-
  drivers/media/test-drivers/visl/visl.h        |   6 +-
  drivers/media/usb/uvc/uvc_debugfs.c           |   2 +-
  drivers/media/usb/uvc/uvcvideo.h              |   2 +-
@@ -958,7 +958,7 @@ David Reaver (4):
  drivers/thermal/mediatek/lvts_thermal.c       |   4 +-
  drivers/thermal/qcom/tsens.h                  |   4 +-
  drivers/thermal/tegra/soctherm.c              |   4 +-
- drivers/thermal/testing/command.c             |   2 +-
+ drivers/thermal/testing/command.c             |   7 +-
  drivers/thermal/testing/thermal_testing.h     |   2 +-
  drivers/thermal/testing/zone.c                |   2 +-
  drivers/thermal/thermal_debugfs.c             |  11 +-
@@ -1038,7 +1038,7 @@ David Reaver (4):
  fs/pstore/ftrace.c                            |   2 +-
  fs/ubifs/debug.c                              |  76 +++----
  fs/ubifs/debug.h                              |  22 +-
- fs/xfs/scrub/stats.c                          |   6 +-
+ fs/xfs/scrub/stats.c                          |   7 +-
  fs/xfs/scrub/stats.h                          |   6 +-
  fs/xfs/xfs_mount.h                            |   2 +-
  fs/xfs/xfs_super.c                            |   8 +-
@@ -1229,7 +1229,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2901 insertions(+), 2615 deletions(-)
+ 1109 files changed, 2907 insertions(+), 2621 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45
