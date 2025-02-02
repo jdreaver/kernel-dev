@@ -21,8 +21,8 @@ T arg;
 wfa(..., arg, ...)
 
 // Rewrite rule is separate in case wrapper is not in the same file.
-@rewrite_wrapper_returns@
-identifier wrapper_function_returns.wfr;
+@rewrite_wrapper_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier wfr =~ "debugfs|dbgfs";
 @@
 
 - struct dentry *
@@ -30,8 +30,8 @@ identifier wrapper_function_returns.wfr;
 wfr(...) { ... }
 
 // Rewrite rule is separate in case wrapper is not in the same file.
-@rewrite_wrapper_args@
-identifier wrapper_function_args.wfa;
+@rewrite_wrapper_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier wfa =~ "debugfs|dbgfs";
 identifier arg;
 @@
 
@@ -315,29 +315,3 @@ idexpression T e;
 - dentry_path_raw(e,
 + debugfs_node_path_raw(e,
   ...);
-
-//
-// (
-// // Replace dput
-// - dput(var)
-// + debugfs_node_put(var)
-// |
-// - dput(E->var)
-// + debugfs_node_put(E->var)
-// |
-// // Replace dget
-// - dget(var)
-// + debugfs_node_get(var)
-// |
-// - dget(E->var)
-// + debugfs_node_get(E->var)
-// |
-// // Replace dentry_path_raw
-// - dentry_path_raw(var,
-// + debugfs_node_path_raw(var,
-//    ...)
-// |
-// - dentry_path_raw(E->var,
-// + debugfs_node_path_raw(E->var,
-//    ...)
-// )
