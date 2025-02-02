@@ -7,7 +7,7 @@ static struct dentry *debugfs_unused;
 
 struct debugfs_node* debugfs_create_dir(const char *name, struct dentry *parent);
 struct debugfs_node* debugfs_create_file(const char *name, umode_t mode, struct debugfs_node *parent, void *data, const struct file_operations *fops);
-
+int debugfs_file_get(struct dentry *dentry);
 
 struct blah {
 	int a;
@@ -130,4 +130,11 @@ void another_function(void)
 	struct dentry *local_dir;
 	struct dentry *direct_assign;
 	struct dentry *header_dentry;
+}
+
+void file_get_fakeout(void)
+{
+	struct dentry *d;
+
+	debugfs_file_get(d);
 }

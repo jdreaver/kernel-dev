@@ -56,10 +56,17 @@ identifier f = {
 f(...)
 
 @all_functions@
-identifier f = { find_debugfs_functions.f, find_wrapper_ret.f, find_wrapper_args.f };
+identifier fm = { find_debugfs_functions.f, find_wrapper_ret.f, find_wrapper_args.f };
+identifier f != {
+  // Exclude functions that might have been fuzzy matched that should
+  // "stay" with dentry.
+  debugfs_create_automount,
+  debugfs_file_get,
+  debugfs_file_put
+};
 @@
 
-f(...)
+fm@f(...)
 
 //
 // Standalone declarations

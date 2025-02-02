@@ -85,7 +85,13 @@ identifier hf = {
 };
 identifier wrapper_function_returns.wfr;
 identifier wrapper_function_args.wfa;
-identifier f;
+// Exclude functions that might have been fuzzy matched that should
+// "stay" with dentry.
+identifier f != {
+  debugfs_create_automount,
+  debugfs_file_get,
+  debugfs_file_put
+};
 @@
 
 (

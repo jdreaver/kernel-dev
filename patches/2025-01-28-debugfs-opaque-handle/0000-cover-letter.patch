@@ -1,6 +1,6 @@
-From 2ade182cc683ece2e5e5aa2711d38b6cb3f64e55 Mon Sep 17 00:00:00 2001
+From 8e98b7ddd55f877ffcb205963046f2277c06d2ff Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 2 Feb 2025 07:23:19 -0800
+Date: Sun, 2 Feb 2025 09:28:14 -0800
 Subject: [RFC PATCH 0/4] debugfs: Use opaque handle for debugfs nodes instead
  of dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -99,6 +99,18 @@ Challenges I encountered:
 I focused on handling the most common cases rather than covering every
 edge case, balancing script complexity with effectiveness. The script
 performs pretty well -- most of this patch set was generated from it.
+
+Testing
+=======
+
+TODO:
+- compiled with allmodconfig
+- Try to read every debugfs file in my kernel
+- Ran this:
+
+  $ rg 'struct dentry \*.*(debug|dbg).*' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
+  $ rg '(debug|dbg).*struct dentry \*' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
+
 
 Links
 =====
@@ -951,7 +963,7 @@ David Reaver (4):
  drivers/thermal/mediatek/lvts_thermal.c       |   4 +-
  drivers/thermal/qcom/tsens.h                  |   4 +-
  drivers/thermal/tegra/soctherm.c              |   4 +-
- drivers/thermal/testing/command.c             |   5 +-
+ drivers/thermal/testing/command.c             |   2 +-
  drivers/thermal/testing/thermal_testing.h     |   2 +-
  drivers/thermal/testing/zone.c                |   2 +-
  drivers/thermal/thermal_debugfs.c             |  11 +-
@@ -1222,7 +1234,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2898 insertions(+), 2614 deletions(-)
+ 1109 files changed, 2896 insertions(+), 2613 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45

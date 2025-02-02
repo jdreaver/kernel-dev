@@ -1,6 +1,6 @@
-From 896a88a3892290e12e88a6396ac5b584da6127e6 Mon Sep 17 00:00:00 2001
+From d483456efd38f9dc755b0d91f0baa8b01ca92ea9 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 19:26:07 -0800
+Date: Sun, 2 Feb 2025 09:27:50 -0800
 Subject: [RFC PATCH 2/4] debugfs: Run Coccinelle to update the rest of the
  kernel
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -338,7 +338,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/gpu/drm/xe/xe_huc_debugfs.h           |  2 +-
  drivers/gpu/drm/xe/xe_uc_debugfs.c            |  4 +-
  drivers/gpu/drm/xe/xe_uc_debugfs.h            |  2 +-
- drivers/gpu/drm/xlnx/zynqmp_dp.c              | 12 +--
+ drivers/gpu/drm/xlnx/zynqmp_dp.c              |  4 +-
  drivers/gpu/host1x/debug.c                    |  2 +-
  drivers/gpu/host1x/dev.h                      |  5 +-
  drivers/gpu/vga/vga_switcheroo.c              |  2 +-
@@ -398,7 +398,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/infiniband/hw/bnxt_re/ib_verbs.h      |  2 +-
  drivers/infiniband/hw/cxgb4/device.c          |  2 +-
  drivers/infiniband/hw/cxgb4/iw_cxgb4.h        |  2 +-
- drivers/infiniband/hw/hfi1/debugfs.c          |  8 +-
+ drivers/infiniband/hw/hfi1/debugfs.c          |  4 +-
  drivers/infiniband/hw/hfi1/fault.c            |  4 +-
  drivers/infiniband/hw/hfi1/fault.h            |  2 +-
  drivers/infiniband/hw/hns/hns_roce_debugfs.c  |  7 +-
@@ -821,7 +821,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/thermal/mediatek/lvts_thermal.c       |  4 +-
  drivers/thermal/qcom/tsens.h                  |  4 +-
  drivers/thermal/tegra/soctherm.c              |  4 +-
- drivers/thermal/testing/command.c             |  7 +-
+ drivers/thermal/testing/command.c             |  2 +-
  drivers/thermal/testing/thermal_testing.h     |  2 +-
  drivers/thermal/testing/zone.c                |  2 +-
  drivers/thermal/thermal_debugfs.c             | 11 +--
@@ -1076,7 +1076,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  2 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  8 +-
- 1060 files changed, 2152 insertions(+), 2014 deletions(-)
+ 1060 files changed, 2143 insertions(+), 2006 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -7037,45 +7037,9 @@ index a13382df2bd7..5e32d73ca312 100644
  
  #endif
 diff --git a/drivers/gpu/drm/xlnx/zynqmp_dp.c b/drivers/gpu/drm/xlnx/zynqmp_dp.c
-index 979f6d3239ba..ae33ba71ea74 100644
+index 979f6d3239ba..9f7bb664cce5 100644
 --- a/drivers/gpu/drm/xlnx/zynqmp_dp.c
 +++ b/drivers/gpu/drm/xlnx/zynqmp_dp.c
-@@ -1872,7 +1872,7 @@ static int zynqmp_dp_test_setup(struct zynqmp_dp *dp)
- static ssize_t zynqmp_dp_pattern_read(struct file *file, char __user *user_buf,
- 				      size_t count, loff_t *ppos)
- {
--	struct dentry *dentry = file->f_path.dentry;
-+	struct debugfs_node *dentry = file->f_path.dentry;
- 	struct zynqmp_dp *dp = file->private_data;
- 	char buf[16];
- 	ssize_t ret;
-@@ -1894,7 +1894,7 @@ static ssize_t zynqmp_dp_pattern_write(struct file *file,
- 				       const char __user *user_buf,
- 				       size_t count, loff_t *ppos)
- {
--	struct dentry *dentry = file->f_path.dentry;
-+	struct debugfs_node *dentry = file->f_path.dentry;
- 	struct zynqmp_dp *dp = file->private_data;
- 	char buf[16];
- 	ssize_t ret;
-@@ -2044,7 +2044,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_zynqmp_dp_active, zynqmp_dp_active_get,
- static ssize_t zynqmp_dp_custom_read(struct file *file, char __user *user_buf,
- 				     size_t count, loff_t *ppos)
- {
--	struct dentry *dentry = file->f_path.dentry;
-+	struct debugfs_node *dentry = file->f_path.dentry;
- 	struct zynqmp_dp *dp = file->private_data;
- 	ssize_t ret;
- 
-@@ -2065,7 +2065,7 @@ static ssize_t zynqmp_dp_custom_write(struct file *file,
- 				      const char __user *user_buf,
- 				      size_t count, loff_t *ppos)
- {
--	struct dentry *dentry = file->f_path.dentry;
-+	struct debugfs_node *dentry = file->f_path.dentry;
- 	struct zynqmp_dp *dp = file->private_data;
- 	ssize_t ret;
- 	char buf[sizeof(dp->test.custom)];
 @@ -2303,10 +2303,10 @@ DEFINE_DEBUGFS_ATTRIBUTE(fops_zynqmp_dp_ignore_hpd, zynqmp_dp_ignore_hpd_get,
  			 zynqmp_dp_ignore_hpd_set, "%llu\n");
  
@@ -8072,10 +8036,10 @@ index 5b3007acaa1f..102ae39baeb9 100644
  	struct xarray hwtids;
  	struct xarray atids;
 diff --git a/drivers/infiniband/hw/hfi1/debugfs.c b/drivers/infiniband/hw/hfi1/debugfs.c
-index a1e01b447265..3b5dfa8a54d6 100644
+index a1e01b447265..3e9ef6b75dc5 100644
 --- a/drivers/infiniband/hw/hfi1/debugfs.c
 +++ b/drivers/infiniband/hw/hfi1/debugfs.c
-@@ -20,13 +20,13 @@
+@@ -20,7 +20,7 @@
  #include "sdma.h"
  #include "fault.h"
  
@@ -8084,22 +8048,6 @@ index a1e01b447265..3b5dfa8a54d6 100644
  
  /* wrappers to enforce srcu in seq file */
  ssize_t hfi1_seq_read(struct file *file, char __user *buf, size_t size,
- 		      loff_t *ppos)
- {
--	struct dentry *d = file->f_path.dentry;
-+	struct debugfs_node *d = file->f_path.dentry;
- 	ssize_t r;
- 
- 	r = debugfs_file_get(d);
-@@ -39,7 +39,7 @@ ssize_t hfi1_seq_read(struct file *file, char __user *buf, size_t size,
- 
- loff_t hfi1_seq_lseek(struct file *file, loff_t offset, int whence)
- {
--	struct dentry *d = file->f_path.dentry;
-+	struct debugfs_node *d = file->f_path.dentry;
- 	loff_t r;
- 
- 	r = debugfs_file_get(d);
 @@ -1183,7 +1183,7 @@ void hfi1_dbg_ibdev_init(struct hfi1_ibdev *ibd)
  	char link[10];
  	struct hfi1_devdata *dd = dd_from_dev(ibd);
@@ -16248,7 +16196,7 @@ index 2c5ddf0db40c..cbd3dcec64bf 100644
  	root = debugfs_create_dir("soctherm", NULL);
  
 diff --git a/drivers/thermal/testing/command.c b/drivers/thermal/testing/command.c
-index ba11d70e8021..acd74d01dc23 100644
+index ba11d70e8021..49313e215e3a 100644
 --- a/drivers/thermal/testing/command.c
 +++ b/drivers/thermal/testing/command.c
 @@ -86,7 +86,7 @@
@@ -16260,25 +16208,6 @@ index ba11d70e8021..acd74d01dc23 100644
  
  #define TT_COMMAND_SIZE		16
  
-@@ -139,7 +139,8 @@ static int tt_command_exec(int index, const char *arg)
- 	return ret;
- }
- 
--static ssize_t tt_command_process(struct dentry *dentry, const char __user *user_buf,
-+static ssize_t tt_command_process(struct debugfs_node *dentry,
-+				  const char __user *user_buf,
- 				  size_t count)
- {
- 	char *buf __free(kfree);
-@@ -173,7 +174,7 @@ static ssize_t tt_command_process(struct dentry *dentry, const char __user *user
- static ssize_t tt_command_write(struct file *file, const char __user *user_buf,
- 				size_t count, loff_t *ppos)
- {
--	struct dentry *dentry = file->f_path.dentry;
-+	struct debugfs_node *dentry = file->f_path.dentry;
- 	ssize_t ret;
- 
- 	if (*ppos)
 diff --git a/drivers/thermal/testing/thermal_testing.h b/drivers/thermal/testing/thermal_testing.h
 index c790a32aae4e..2d4d954b3119 100644
 --- a/drivers/thermal/testing/thermal_testing.h

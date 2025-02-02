@@ -54,6 +54,8 @@ git format-patch master...HEAD \
 
 ## Coccinelle
 
+- Investigate wrapper functions not getting transformed in `drivers/cxl/cxlmem.h` and `drivers/cxl/mem.c`
+
 - Inversion idea from slide 195 here: <https://www.lrz.de/services/compute/courses/x_lecturenotes/hspc1w19.pdf>
   1. Find all declarations of type `struct dentry *`, record their position (maybe record if they are a field or not?)
   2. See if any of these are used in our debugfs-like functions (including wrappers)
@@ -63,19 +65,13 @@ git format-patch master...HEAD \
      - Could do multiple passes. I think rewriting wrappers in the first pass
      - I think we can rewrite return values with a dedicated rule, and function args can be handled like other declarations. Then we don't need to specially rewrite wrappers
 
-- Don't allow `debugfs_file_get` to infect dentry to debugfs_node. Example:s
-  - `drivers/gpu/drm/xlnx/zynqmp_dp.c`
-  - `drivers/net/netdevsim/netdevsim.h`
-  - `drivers/thermal/testing/command.c`
-
 - `sound/soc/soc-pcm.c` isn't working (only file I think). It interesting because there is no dentry declaration in the actual file (but there is debugfs usage)
   - (old TODO) `include/sound/soc.h` has a `struct dentry *debugfs_dpcm_root;` field that refuses to get matches. I think all the `#define`s in the file are screwing with Coccinelle, because it works when I move that struct to my test file.
 
 - Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
 
 - Split up coccinelle file, primarily for ease of understanding, but also some other benefits
-  - I think the rules are stepping on each other because if one rule proposes changes to a header file, and another proposes different changes, I think spatch doesn't like that
-  - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
+  - It would be simpler if we did a first pass of rewriting helper functions with "debugfs" in the name, and a second pass without using regexes. In the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
 - Test more complex assignments like `hb->dbgfs.base_dir = debugfs_create_dir("heartbeat", accel_dev->debugfs_dir);` in test file
 
@@ -107,13 +103,6 @@ git format-patch master...HEAD \
   - I had it pulled in once when I just ran against `drivers/scsi/lpfc/`
   - I cannot for the life of me get this ignored
 
-- v2 cocci problems:
-  - If I could find a way to match global declarations before their use _inside_ a function, I might not need the indirection of finding vars and then doing stuff with the vars in another rule.
-    - Similar with struct fields.
-  - Local variables are being changed inside other functions just because they have the same name. That makes no sense.
-    - I could just accept this and fix them in the fixup commit
-  - Not catching some uses of `E.var`, like in `gpio-virtuser.c`
-
 - Manual stuff:
   - Revert include/linux/fs.h changes (maybe we can exclude this file in the cocci script)
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
@@ -121,6 +110,7 @@ git format-patch master...HEAD \
 ## Coccinelle automation
 
 Good directories/files to test:
+- `drivers/cxl/cxlmem.h` and `drivers/cxl/mem.c` lots of wrapper functions
 - drivers/gpio
 - lib/kunit (includes both source e.g. `lib/kunit/debugfs.c` and a header in `include/kunit/test.h`)
 - Contains wrapper functions that wrap debugfs:
