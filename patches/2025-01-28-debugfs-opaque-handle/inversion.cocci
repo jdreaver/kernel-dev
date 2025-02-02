@@ -16,14 +16,18 @@ f(..., arg, ...)
 
 @find_debugfs_functions@
 identifier f = {
+  // Macros with debugfs_node. Coccinelle can't infer types for these.
+  debugfs_create_file,
+  debugfs_create_file_aux,
+  debugfs_create_file_aux_num,
+  debugfs_remove_recursive,
+
+  // Actual functions
   debugfs_change_name,
   debugfs_create_atomic_t,
   debugfs_create_bool,
   debugfs_create_devm_seqfile,
   debugfs_create_dir,
-  debugfs_create_file,
-  debugfs_create_file_aux,
-  debugfs_create_file_aux_num,
   debugfs_create_file_full,
   debugfs_create_file_short,
   debugfs_create_file_size,
@@ -48,8 +52,7 @@ identifier f = {
   debugfs_node_path_raw,
   debugfs_node_put,
   debugfs_real_fops,
-  debugfs_remove,
-  debugfs_remove_recursive
+  debugfs_remove
 };
 @@
 
@@ -162,7 +165,7 @@ fn(...,
 //
 // Function return types
 //
-@exists@
+@@
 identifier f;
 idexpression struct debugfs_node *e;
 @@
@@ -177,7 +180,7 @@ struct
   ...
 }
 
-@exists@
+@@
 identifier fn;
 identifier find_debugfs_functions.f;
 @@

@@ -55,6 +55,9 @@ git format-patch master...HEAD \
 ## Coccinelle
 
 - Investigate wrapper functions not getting transformed in `drivers/cxl/cxlmem.h` and `drivers/cxl/mem.c`
+- `scmi_raw_mode_init` has declaration arg type changed, but not header prototype
+- Pretty simple case not getting handled: `struct dentry *direct = blah->foo;` where `foo` was just migrated from dentry to debugfs_node. `direct` remains `dentry`
+
 
 - Inversion idea from slide 195 here: <https://www.lrz.de/services/compute/courses/x_lecturenotes/hspc1w19.pdf>
   1. Find all declarations of type `struct dentry *`, record their position (maybe record if they are a field or not?)

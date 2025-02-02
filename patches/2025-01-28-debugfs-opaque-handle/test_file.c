@@ -63,6 +63,11 @@ static struct dentry *another_nested_helper(const char *name)
 	return foo;
 }
 
+static struct dentry *returns_func_call(struct dentry *parent, const char *name)
+{
+	return debugfs_create_dir(name, parent);
+}
+
 int do_stuff(struct dentry *arg)
 {
 	struct blah *blah;
@@ -116,6 +121,16 @@ int do_stuff(struct dentry *arg)
 	struct debugfs_node *tmp;
 	struct qname *tmp_name = d_inode(tmp)->i_qname;
 	d_inode(tmp);
+
+	d_inode(blah->foo);
+	d_inode(blah->inner.inner);
+
+	blah->foo->d_inode;;
+	blah->inner.inner->d_inode;
+
+	struct dentry *direct = blah->foo;
+
+
 }
 
 void another_function(void)

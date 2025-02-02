@@ -48,14 +48,18 @@ wfa(...,
 // go and mutate core debugfs functions on accident. Many of these purposely
 // have dentry types in them.
 identifier hf = {
+  // Macros with debugfs_node. Coccinelle can't infer types for these.
+  debugfs_create_file,
+  debugfs_create_file_aux,
+  debugfs_create_file_aux_num,
+  debugfs_remove_recursive,
+
+  // Actual functions
   debugfs_change_name,
   debugfs_create_atomic_t,
   debugfs_create_bool,
   debugfs_create_devm_seqfile,
   debugfs_create_dir,
-  debugfs_create_file,
-  debugfs_create_file_aux,
-  debugfs_create_file_aux_num,
   debugfs_create_file_full,
   debugfs_create_file_short,
   debugfs_create_file_size,
@@ -80,8 +84,7 @@ identifier hf = {
   debugfs_node_path_raw,
   debugfs_node_put,
   debugfs_real_fops,
-  debugfs_remove,
-  debugfs_remove_recursive
+  debugfs_remove
 };
 identifier wrapper_function_returns.wfr;
 identifier wrapper_function_args.wfa;
@@ -288,6 +291,21 @@ idexpression struct debugfs_node *e;
     return e;
     ...
   }
+
+@@
+identifier fn;
+identifier function_calls.f;
+@@
+
+struct
+- dentry
++ debugfs_node
+ *fn(...)
+{
+  ...
+  return f(...);
+  ...
+}
 
 //
 // Transform various helper functions
