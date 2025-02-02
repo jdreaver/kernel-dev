@@ -1,4 +1,4 @@
-From 51b26442db6e2c2280cfae8dd7a8fc7223e8c000 Mon Sep 17 00:00:00 2001
+From 2b71f6273677a8f23eac6d5c247cff0c26fde346 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 2 Feb 2025 13:39:14 -0800
 Subject: [RFC PATCH 2/4] debugfs: Run Coccinelle to update the rest of the
@@ -18085,10 +18085,10 @@ index d55b30057a45..a867483aaae6 100644
  
  	mempool_t              *req_mempool;
 diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index 5471e520f1ef..f863fcb89bb1 100644
+index 1bb8b01657f6..074d5c21a1a7 100644
 --- a/include/linux/debugfs.h
 +++ b/include/linux/debugfs.h
-@@ -343,7 +343,7 @@ static inline struct debugfs_node *debugfs_create_symlink(const char *name,
+@@ -338,7 +338,7 @@ static inline struct debugfs_node *debugfs_create_symlink(const char *name,
  }
  
  static inline struct dentry *debugfs_create_automount(const char *name,
@@ -18097,7 +18097,7 @@ index 5471e520f1ef..f863fcb89bb1 100644
  					debugfs_automount_t f,
  					void *data)
  {
-@@ -371,7 +371,7 @@ static inline int debugfs_file_get(struct debugfs_node *debugfs_node)
+@@ -366,7 +366,7 @@ static inline int debugfs_file_get(struct debugfs_node *debugfs_node)
  static inline void debugfs_file_put(struct debugfs_node *debugfs_node)
  { }
  

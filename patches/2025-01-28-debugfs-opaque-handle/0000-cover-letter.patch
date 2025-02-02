@@ -1,6 +1,6 @@
-From 8774c2d5f5021ddffc974d7e1e73570daa031515 Mon Sep 17 00:00:00 2001
+From 5bda02d261975d43cea73eab4608d890b33c1c86 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 2 Feb 2025 13:40:23 -0800
+Date: Sun, 2 Feb 2025 13:49:58 -0800
 Subject: [RFC PATCH 0/4] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -125,7 +125,7 @@ Link: https://lore.kernel.org/all/20240125104822.04a5ad44@gandalf.local.home/ [2
 Link: https://lore.kernel.org/all/20250128102744.1b94a789@gandalf.local.home/ [3]
 
 David Reaver (4):
-  debugfs: Use opaque debugfs_node handle to support kernfs migration
+  debugfs: Introduce opaque debugfs_node to replace dentry pointers
   debugfs: Run Coccinelle to update the rest of the kernel
   debugfs: Manual fixes for cases Coccinelle missed
   relay: Use debugfs_node instead of dentry
@@ -216,7 +216,7 @@ David Reaver (4):
  drivers/block/aoe/aoe.h                       |   2 +-
  drivers/block/aoe/aoeblk.c                    |   2 +-
  drivers/block/brd.c                           |   2 +-
- drivers/block/drbd/drbd_debugfs.c             |  26 +--
+ drivers/block/drbd/drbd_debugfs.c             |  26 +-
  drivers/block/drbd/drbd_int.h                 |  30 +--
  drivers/block/mtip32xx/mtip32xx.c             |   2 +-
  drivers/block/mtip32xx/mtip32xx.h             |   2 +-
@@ -305,7 +305,7 @@ David Reaver (4):
  drivers/edac/altera_edac.h                    |   2 +-
  drivers/edac/armada_xp_edac.c                 |   2 +-
  drivers/edac/debugfs.c                        |  21 +-
- drivers/edac/edac_module.h                    |  36 ++--
+ drivers/edac/edac_module.h                    |  36 +--
  drivers/edac/i5100_edac.c                     |   4 +-
  drivers/edac/igen6_edac.c                     |   2 +-
  drivers/edac/npcm_edac.c                      |   2 +-
@@ -421,7 +421,7 @@ David Reaver (4):
  drivers/gpu/drm/nouveau/nouveau_debugfs.c     |   6 +-
  drivers/gpu/drm/nouveau/nouveau_debugfs.h     |   2 +-
  drivers/gpu/drm/nouveau/nouveau_drm.c         |   2 +-
- .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |  24 +--
+ .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |  24 +-
  drivers/gpu/drm/omapdrm/dss/dss.c             |   4 +-
  drivers/gpu/drm/omapdrm/dss/dss.h             |   2 +-
  drivers/gpu/drm/panel/panel-edp.c             |   3 +-
@@ -609,7 +609,7 @@ David Reaver (4):
  drivers/memory/tegra/tegra30-emc.c            |   2 +-
  drivers/mfd/intel-lpss.c                      |   6 +-
  drivers/mfd/tps65010.c                        |   2 +-
- drivers/misc/cxl/cxl.h                        |  26 ++-
+ drivers/misc/cxl/cxl.h                        |  26 +-
  drivers/misc/cxl/debugfs.c                    |  21 +-
  drivers/misc/eeprom/idt_89hpesx.c             |   4 +-
  drivers/misc/genwqe/card_base.c               |   2 +-
@@ -630,7 +630,7 @@ David Reaver (4):
  drivers/mtd/mtdswap.c                         |   2 +-
  drivers/mtd/nand/raw/nandsim.c                |   4 +-
  drivers/mtd/spi-nor/debugfs.c                 |   4 +-
- drivers/mtd/ubi/debug.c                       |  48 ++---
+ drivers/mtd/ubi/debug.c                       |  48 ++--
  drivers/mtd/ubi/ubi.h                         |  22 +-
  drivers/net/bonding/bond_debugfs.c            |   2 +-
  drivers/net/caif/caif_serial.c                |   4 +-
@@ -667,7 +667,7 @@ David Reaver (4):
  .../net/ethernet/intel/ixgbe/ixgbe_debugfs.c  |   2 +-
  drivers/net/ethernet/marvell/mvpp2/mvpp2.h    |   2 +-
  .../ethernet/marvell/mvpp2/mvpp2_debugfs.c    |  43 ++--
- .../net/ethernet/marvell/octeontx2/af/rvu.h   |  24 +--
+ .../net/ethernet/marvell/octeontx2/af/rvu.h   |  24 +-
  drivers/net/ethernet/marvell/skge.c           |   2 +-
  drivers/net/ethernet/marvell/skge.h           |   2 +-
  drivers/net/ethernet/marvell/sky2.c           |   4 +-
@@ -813,7 +813,7 @@ David Reaver (4):
  drivers/net/wireless/rsi/rsi_debugfs.h        |   4 +-
  drivers/net/wireless/silabs/wfx/debug.c       |   2 +-
  drivers/net/wireless/st/cw1200/debug.h        |   2 +-
- drivers/net/wireless/ti/wl1251/wl1251.h       | 194 ++++++++---------
+ drivers/net/wireless/ti/wl1251/wl1251.h       | 194 +++++++--------
  drivers/net/wireless/ti/wl12xx/debugfs.c      |   4 +-
  drivers/net/wireless/ti/wl12xx/debugfs.h      |   2 +-
  drivers/net/wireless/ti/wl18xx/debugfs.c      |   4 +-
@@ -925,7 +925,7 @@ David Reaver (4):
  drivers/scsi/hisi_sas/hisi_sas.h              |  10 +-
  drivers/scsi/hisi_sas/hisi_sas_main.c         |   2 +-
  drivers/scsi/hisi_sas/hisi_sas_v3_hw.c        |  14 +-
- drivers/scsi/lpfc/lpfc.h                      |  74 +++----
+ drivers/scsi/lpfc/lpfc.h                      |  74 +++---
  drivers/scsi/lpfc/lpfc_debugfs.c              |  42 ++--
  drivers/scsi/megaraid/megaraid_sas.h          |   4 +-
  drivers/scsi/megaraid/megaraid_sas_base.c     |   2 +-
@@ -1028,8 +1028,8 @@ David Reaver (4):
  fs/bcachefs/bcachefs.h                        |   4 +-
  fs/bcachefs/debug.c                           |   4 +-
  fs/ceph/super.h                               |  14 +-
- fs/debugfs/file.c                             | 117 +++++------
- fs/debugfs/inode.c                            | 145 +++++++++----
+ fs/debugfs/file.c                             | 117 ++++-----
+ fs/debugfs/inode.c                            | 227 +++++++++++-------
  fs/debugfs/internal.h                         |   7 +
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
@@ -1046,7 +1046,7 @@ David Reaver (4):
  fs/ocfs2/super.c                              |   2 +-
  fs/orangefs/orangefs-debugfs.c                |   4 +-
  fs/pstore/ftrace.c                            |   2 +-
- fs/ubifs/debug.c                              |  76 +++----
+ fs/ubifs/debug.c                              |  76 +++---
  fs/ubifs/debug.h                              |  22 +-
  fs/xfs/scrub/stats.c                          |   7 +-
  fs/xfs/scrub/stats.h                          |   6 +-
@@ -1074,7 +1074,7 @@ David Reaver (4):
  include/linux/ceph/osd_client.h               |   2 +-
  include/linux/clk-provider.h                  |   3 +-
  include/linux/closure.h                       |   2 +-
- include/linux/debugfs.h                       | 195 +++++++++++-------
+ include/linux/debugfs.h                       | 190 +++++++++------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
@@ -1094,7 +1094,7 @@ David Reaver (4):
  include/linux/kvm_host.h                      |   5 +-
  include/linux/mfd/aat2870.h                   |   2 +-
  include/linux/mhi.h                           |   2 +-
- include/linux/mlx5/driver.h                   |  24 +--
+ include/linux/mlx5/driver.h                   |  24 +-
  include/linux/mmc/card.h                      |   2 +-
  include/linux/mmc/host.h                      |   2 +-
  include/linux/moxtet.h                        |   2 +-
@@ -1153,7 +1153,7 @@ David Reaver (4):
  kernel/module/tracking.c                      |   2 +-
  kernel/power/energy_model.c                   |   8 +-
  kernel/printk/index.c                         |   4 +-
- kernel/relay.c                                |  89 ++++----
+ kernel/relay.c                                |  89 +++----
  kernel/sched/debug.c                          |  16 +-
  kernel/trace/blktrace.c                       |  19 +-
  kernel/trace/trace.h                          |   2 +-
@@ -1239,7 +1239,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2894 insertions(+), 2612 deletions(-)
+ 1109 files changed, 2933 insertions(+), 2650 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45
