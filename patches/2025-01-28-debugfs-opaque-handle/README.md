@@ -48,6 +48,10 @@ git format-patch master...HEAD \
   3. Change the types of any of the declarations that matched in function usage. We use the identifier/position from the first rule, and we just "depend on" the second rule
   4. We can also do our wrapper rewrites and stuff, easy peasy
      - Ensure we don't overconstrain rewriting wrappers as depending on matching a dentry.
+     - Could do multiple passes. I think rewriting wrappers in the first pass
+     - I think we can rewrite return values with a dedicated rule, and function args can be handled like other declarations. Then we don't need to specially rewrite wrappers
+
+- Missing dentry rewrite in `arch/powerpc/include/asm/kvm_ppc.h` callback function `create_vcpu_debugfs`
 
 - New bash script doing one by one
   - BUG: "wrapper" functions we find that are _not_ defined in the same file (example, `fault_create_debugfs_attr` used in blk-timeout.c and lib/fault-inject-usercopy.c) don't result in args or return values getting transformed.

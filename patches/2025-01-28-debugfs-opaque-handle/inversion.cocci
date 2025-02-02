@@ -1,24 +1,3 @@
-// Find declarations of dentries
-
-@find_dentry_decls@
-identifier var;
-position p;
-@@
-
-// N.B. Matches static globals, function args, and locals too.
-struct dentry@p *var;
-
-@find_dentry_struct_decls@
-identifier var, struct_name;
-position p;
-@@
-
-struct struct_name {
-       ...
-       struct dentry@p *var;
-       ...
-};
-
 @find_wrapper_ret@
 identifier f =~ "debugfs|dbgfs";
 type T = { struct dentry *, struct debugfs_node * };
@@ -83,7 +62,26 @@ identifier f = { find_debugfs_functions.f, find_wrapper_ret.f, find_wrapper_args
 
 f(...)
 
-@find_dentry_debugfs_usage@
+@find_dentry_decls@
+identifier var;
+position p;
+@@
+
+// N.B. Matches static globals, function args, and locals too.
+struct dentry@p *var;
+
+@find_dentry_struct_decls@
+identifier var, struct_name;
+position p;
+@@
+
+struct struct_name {
+       ...
+       struct dentry@p *var;
+       ...
+};
+
+@find_decl_use@
 identifier all_functions.f;
 identifier find_dentry_decls.var;
 @@
@@ -94,7 +92,7 @@ identifier find_dentry_decls.var;
   f(..., var, ...)
 )
 
-@find_dentry_struct_debugfs_usage@
+@find_struct_use@
 identifier all_functions.f;
 identifier find_dentry_struct_decls.var;
 expression E;
@@ -105,12 +103,12 @@ expression E;
 |
   E->var = f(...)
 |
-  f = (..., E->var, ...)
+  f(..., E->var, ...)
 |
-  f = (..., E.var, ...)
+  f(..., E.var, ...)
 )
 
-@change_decl_types depends on find_dentry_debugfs_usage type@
+@change_decl_types depends on find_decl_use type@
 position p = { find_dentry_decls.p };
 @@
 
@@ -118,7 +116,7 @@ struct
 -dentry@p
 +debugfs_node
 
-@change_struct_decl_types depends on find_dentry_struct_debugfs_usage type@
+@change_struct_decl_types depends on find_struct_use type@
 position p = { find_dentry_struct_decls.p };
 @@
 
