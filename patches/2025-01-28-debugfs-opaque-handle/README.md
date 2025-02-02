@@ -35,8 +35,17 @@ git format-patch master...HEAD \
   - Fill out cover letter
   - Decide on subject. Should we not mention kernfs in any of this?
 
+## Thorough testing
+
 - Compile with debugfs disabled in kernel
-- Do a make mrproper and a full rebuild, just to be sure (ensure I have `allyesconfig`)
+- Do a make mrproper and a full rebuild, just to be sure (ensure I have `allmodconfig` or `allyesconfig`)
+- Make a script that reads all debugfs file in qemu
+- Inspect output of these
+
+  ```
+  $ rg 'struct dentry \*.*(debug|dbg).*' -g '*.{c,h}' -g '!fs/debugfs' -g '!linux/include/debugfs.h'
+  $ rg '(debug|dbg).*struct dentry \*' -g '*.{c,h}' -g '!fs/debugfs' -g '!linux/include/debugfs.h'
+  ```
 
 ## Non-coccinelle changes
 
@@ -148,7 +157,7 @@ $ find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i -E ':a;s/(struct 
 Steve suggested we do the opaque pointer migration in one go. I need to make sure I get _everything_ in this case:
 
 - Automation idea: I think I can use `rg` to find all users of the debugfs API and clang-query `to` figure out the types of variables that used to be `dentry`. Then I can ask for the variable definition and edit those types, perhaps using coccinelle in the pipeline somewhere too.
-- Compile with `makeallyesconfig`
+- Compile with `make allmodconfig` or `make allyesconfig`
 - Manually grep public debugfs APIs to make sure I covered everything
 - Re-check my query (and as I do this, think of other things to grep for)
 

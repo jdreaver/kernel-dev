@@ -86,6 +86,19 @@ I focused on handling the most common cases rather than covering every
 edge case, balancing script complexity with effectiveness. The script
 performs pretty well -- most of this patch set was generated from it.
 
+Testing
+=======
+
+TODO:
+- compiled with allmodconfig
+- Try to read every debugfs file in my kernel
+- Ran this:
+
+  $ rg 'struct dentry \*.*(debug|dbg).*' -g '*.{c,h}' -g '!fs/debugfs' -g '!linux/include/debugfs.h'
+  $ rg '(debug|dbg).*struct dentry \*' -g '*.{c,h}' -g '!fs/debugfs' -g '!linux/include/debugfs.h'
+
+
+
 Links
 =====
 
