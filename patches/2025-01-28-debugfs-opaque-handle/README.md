@@ -36,6 +36,7 @@ git format-patch master...HEAD \
   - Decide on subject. Should we not mention kernfs in any of this?
 
 - Compile with debugfs disabled in kernel
+- Do a make mrproper and a full rebuild, just to be sure (ensure I have `allyesconfig`)
 
 ## Non-coccinelle changes
 
