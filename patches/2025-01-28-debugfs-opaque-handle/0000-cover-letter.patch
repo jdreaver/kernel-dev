@@ -1,6 +1,6 @@
-From c882e8500615ce1ff3338ca0ee3503cbcf662668 Mon Sep 17 00:00:00 2001
+From c3c7fd28da605b56e4b1efc504ac5a072d74f70d Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 2 Feb 2025 14:26:01 -0800
+Date: Sun, 2 Feb 2025 15:46:11 -0800
 Subject: [RFC PATCH 0/4] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -141,6 +141,8 @@ David Reaver (4):
  arch/mips/kernel/setup.c                      |   2 +-
  arch/mips/math-emu/me-debugfs.c               |   4 +-
  arch/mips/mm/sc-debugfs.c                     |   2 +-
+ arch/powerpc/include/asm/kvm_ppc.h            |   2 +-
+ arch/powerpc/include/asm/vas.h                |   2 +-
  arch/powerpc/kernel/iommu.c                   |   4 +-
  arch/powerpc/kernel/kdebugfs.c                |   2 +-
  arch/powerpc/kernel/traps.c                   |   2 +-
@@ -162,11 +164,12 @@ David Reaver (4):
  arch/powerpc/platforms/pseries/lpar.c         |   2 +-
  arch/powerpc/sysdev/xive/common.c             |   4 +-
  arch/powerpc/sysdev/xive/native.c             |   2 +-
+ arch/powerpc/sysdev/xive/xive-internal.h      |   2 +-
  arch/s390/hypfs/hypfs.h                       |   2 +-
  arch/s390/hypfs/hypfs_dbfs.c                  |   2 +-
  arch/s390/include/asm/debug.h                 |   4 +-
  arch/s390/include/asm/pci.h                   |   2 +-
- arch/s390/kernel/debug.c                      |   6 +-
+ arch/s390/kernel/debug.c                      |   8 +-
  arch/s390/kernel/hiperdispatch.c              |   2 +-
  arch/s390/kernel/kdebugfs.c                   |   2 +-
  arch/s390/kernel/sysinfo.c                    |   2 +-
@@ -237,7 +240,7 @@ David Reaver (4):
  drivers/clk/bcm/clk-bcm2835.c                 |   8 +-
  drivers/clk/clk-fractional-divider.c          |   2 +-
  drivers/clk/clk.c                             |   9 +-
- drivers/clk/davinci/pll.c                     |   3 +-
+ drivers/clk/davinci/pll.c                     |   5 +-
  .../clk/starfive/clk-starfive-jh7110-pll.c    |   3 +-
  drivers/clk/starfive/clk-starfive-jh71x0.c    |   3 +-
  drivers/clk/tegra/clk-dfll.c                  |   4 +-
@@ -609,7 +612,7 @@ David Reaver (4):
  drivers/memory/tegra/tegra30-emc.c            |   2 +-
  drivers/mfd/intel-lpss.c                      |   6 +-
  drivers/mfd/tps65010.c                        |   2 +-
- drivers/misc/cxl/cxl.h                        |  26 +-
+ drivers/misc/cxl/cxl.h                        |  30 ++-
  drivers/misc/cxl/debugfs.c                    |  21 +-
  drivers/misc/eeprom/idt_89hpesx.c             |   4 +-
  drivers/misc/genwqe/card_base.c               |   2 +-
@@ -799,7 +802,7 @@ David Reaver (4):
  .../wireless/mediatek/mt76/mt7921/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt7925/debugfs.c   |   2 +-
  .../wireless/mediatek/mt76/mt7996/debugfs.c   |  18 +-
- .../wireless/mediatek/mt76/mt7996/mt7996.h    |   5 +-
+ .../wireless/mediatek/mt76/mt7996/mt7996.h    |   7 +-
  .../net/wireless/mediatek/mt7601u/debugfs.c   |   2 +-
  drivers/net/wireless/quantenna/qtnfmac/bus.h  |   2 +-
  drivers/net/wireless/quantenna/qtnfmac/core.c |   4 +-
@@ -893,6 +896,7 @@ David Reaver (4):
  drivers/pmdomain/core.c                       |   4 +-
  drivers/pmdomain/qcom/cpr.c                   |   2 +-
  drivers/power/sequencing/core.c               |   2 +-
+ drivers/power/supply/axp288_fuel_gauge.c      |   2 +-
  drivers/power/supply/da9030_battery.c         |   6 +-
  drivers/ptp/ptp_ocp.c                         |   6 +-
  drivers/ptp/ptp_private.h                     |   4 +-
@@ -925,7 +929,7 @@ David Reaver (4):
  drivers/scsi/hisi_sas/hisi_sas.h              |  10 +-
  drivers/scsi/hisi_sas/hisi_sas_main.c         |   2 +-
  drivers/scsi/hisi_sas/hisi_sas_v3_hw.c        |  14 +-
- drivers/scsi/lpfc/lpfc.h                      |  74 +++---
+ drivers/scsi/lpfc/lpfc.h                      |  76 +++---
  drivers/scsi/lpfc/lpfc_debugfs.c              |  42 ++--
  drivers/scsi/megaraid/megaraid_sas.h          |   4 +-
  drivers/scsi/megaraid/megaraid_sas_base.c     |   2 +-
@@ -936,7 +940,7 @@ David Reaver (4):
  drivers/scsi/qedf/qedf_debugfs.c              |   2 +-
  drivers/scsi/qedi/qedi_dbg.h                  |   2 +-
  drivers/scsi/qedi/qedi_debugfs.c              |   2 +-
- drivers/scsi/qla2xxx/qla_def.h                |  18 +-
+ drivers/scsi/qla2xxx/qla_def.h                |  23 +-
  drivers/scsi/qla2xxx/qla_dfs.c                |   2 +-
  drivers/scsi/scsi_debug.c                     |   8 +-
  drivers/scsi/snic/snic.h                      |  10 +-
@@ -1119,6 +1123,7 @@ David Reaver (4):
  include/linux/wkup_m3_ipc.h                   |   2 +-
  include/linux/wwan.h                          |   8 +-
  include/media/cec.h                           |   2 +-
+ include/media/v4l2-async.h                    |   6 +-
  include/media/v4l2-dev.h                      |   4 +-
  include/media/v4l2-dv-timings.h               |   8 +-
  include/net/6lowpan.h                         |   2 +-
@@ -1224,6 +1229,7 @@ David Reaver (4):
  sound/soc/fsl/fsl_ssi.h                       |   2 +-
  sound/soc/fsl/imx-audmux.c                    |   2 +-
  sound/soc/intel/avs/avs.h                     |   2 +-
+ sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/mediatek/mt8365/mt8365-afe-common.h |   2 +-
  sound/soc/renesas/rcar/debugfs.c              |   2 +-
  sound/soc/soc-core.c                          |   2 +-
@@ -1239,7 +1245,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2937 insertions(+), 2650 deletions(-)
+ 1115 files changed, 2951 insertions(+), 2669 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45

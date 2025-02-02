@@ -36,6 +36,8 @@ git format-patch master...HEAD \
   - Decide on subject. Should we not mention kernfs in any of this?
   - Actually go through testing again before submitting!
 - Check for TODO items
+- Use clang or a different nix-shell for cross-compilation (and add that I did that to test procedure)
+  - At least try powerpc, s390, and mips
 
 ## Non-coccinelle changes
 

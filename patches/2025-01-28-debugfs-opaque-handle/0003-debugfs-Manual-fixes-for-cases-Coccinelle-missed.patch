@@ -1,4 +1,4 @@
-From 3ad2a588e4fd649d243738c074dd3d96533f5d17 Mon Sep 17 00:00:00 2001
+From 898f26c636c2808aebbe02b3026d6c7548f28142 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: Manual fixes for cases Coccinelle missed
@@ -15,8 +15,13 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
+ arch/powerpc/include/asm/kvm_ppc.h            |   2 +-
+ arch/powerpc/include/asm/vas.h                |   2 +-
+ arch/powerpc/sysdev/xive/xive-internal.h      |   2 +-
+ arch/s390/kernel/debug.c                      |   2 +-
  drivers/accel/habanalabs/common/habanalabs.h  |   2 +-
  drivers/block/drbd/drbd_debugfs.c             |   2 +-
+ drivers/clk/davinci/pll.c                     |   2 +-
  drivers/crypto/caam/caamalg_qi2.h             |   2 +-
  .../intel/qat/qat_common/adf_heartbeat.h      |  12 +-
  drivers/cxl/cxlmem.h                          |   2 +-
@@ -50,6 +55,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/memory/tegra/tegra20-emc.c            |   2 +-
  drivers/memory/tegra/tegra210-emc.h           |   2 +-
  drivers/memory/tegra/tegra30-emc.c            |   2 +-
+ drivers/misc/cxl/cxl.h                        |   4 +-
  drivers/mtd/ubi/debug.c                       |  42 ++--
  .../ethernet/hisilicon/hibmcge/hbg_debugfs.c  |   2 +-
  drivers/net/ethernet/huawei/hinic/hinic_dev.h |   2 +-
@@ -80,15 +86,19 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/wireless/marvell/libertas/dev.h   |   4 +-
  .../wireless/mediatek/mt76/mt7915/debugfs.c   |  22 +-
  .../wireless/mediatek/mt76/mt7996/debugfs.c   |  22 +-
+ .../wireless/mediatek/mt76/mt7996/mt7996.h    |   2 +-
  drivers/net/wireless/realtek/rtlwifi/debug.c  |   2 +-
  drivers/net/wireless/rsi/rsi_debugfs.h        |   2 +-
  drivers/net/wireless/ti/wl1251/wl1251.h       | 188 +++++++++---------
  drivers/net/wireless/ti/wlcore/wlcore.h       |   2 +-
  drivers/net/wwan/iosm/iosm_ipc_trace.c        |  17 +-
  drivers/net/wwan/t7xx/t7xx_port_trace.c       |  22 +-
+ drivers/power/supply/axp288_fuel_gauge.c      |   2 +-
  drivers/remoteproc/remoteproc_internal.h      |   4 +-
  drivers/scsi/bfa/bfad_drv.h                   |   2 +-
+ drivers/scsi/lpfc/lpfc.h                      |   2 +-
  drivers/scsi/lpfc/lpfc_debugfs.c              |  40 ++--
+ drivers/scsi/qla2xxx/qla_def.h                |   5 -
  drivers/soc/qcom/qcom_aoss.c                  |   4 +-
  fs/bcachefs/bcachefs.h                        |   4 +-
  fs/ceph/super.h                               |   4 +-
@@ -107,6 +117,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/fault-inject.h                  |   3 +-
  include/linux/fs.h                            |   8 +-
  include/media/cec.h                           |   2 +-
+ include/media/v4l2-async.h                    |   6 +-
  include/net/mac80211.h                        |  12 +-
  include/soc/tegra/mc.h                        |   2 +-
  include/sound/soc-dapm.h                      |   3 +-
@@ -120,10 +131,63 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/mac80211/key.h                            |   4 +-
  net/sunrpc/debugfs.c                          |   5 +-
  net/wireless/debugfs.c                        |   2 +-
+ sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 107 files changed, 486 insertions(+), 409 deletions(-)
+ 119 files changed, 500 insertions(+), 428 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index ca3829d47ab7..a1ed51f3ba57 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -318,7 +318,7 @@ struct kvmppc_ops {
+ 	int (*enable_dawr1)(struct kvm *kvm);
+ 	bool (*hash_v3_possible)(void);
+ 	int (*create_vm_debugfs)(struct kvm *kvm);
+-	int (*create_vcpu_debugfs)(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry);
++	int (*create_vcpu_debugfs)(struct kvm_vcpu *vcpu, struct debugfs_node *debugfs_dentry);
+ };
+ 
+ extern struct kvmppc_ops *kvmppc_hv_ops;
+diff --git a/arch/powerpc/include/asm/vas.h b/arch/powerpc/include/asm/vas.h
+index c36f71e01c0f..2f441d2bac2a 100644
+--- a/arch/powerpc/include/asm/vas.h
++++ b/arch/powerpc/include/asm/vas.h
+@@ -84,7 +84,7 @@ struct vas_window {
+ 	enum vas_cop_type cop;
+ 	struct vas_user_win_ref task_ref;
+ 	char *dbgname;
+-	struct dentry *dbgdir;
++	struct debugfs_node *dbgdir;
+ };
+ 
+ /*
+diff --git a/arch/powerpc/sysdev/xive/xive-internal.h b/arch/powerpc/sysdev/xive/xive-internal.h
+index fe6d95d54af9..7e60bdbd034e 100644
+--- a/arch/powerpc/sysdev/xive/xive-internal.h
++++ b/arch/powerpc/sysdev/xive/xive-internal.h
+@@ -58,7 +58,7 @@ struct xive_ops {
+ 	void	(*put_ipi)(unsigned int cpu, struct xive_cpu *xc);
+ #endif
+ 	int	(*debug_show)(struct seq_file *m, void *private);
+-	int	(*debug_create)(struct dentry *xive_dir);
++	int	(*debug_create)(struct debugfs_node *xive_dir);
+ 	const char *name;
+ };
+ 
+diff --git a/arch/s390/kernel/debug.c b/arch/s390/kernel/debug.c
+index b59401b28f0d..bc9b55ed475c 100644
+--- a/arch/s390/kernel/debug.c
++++ b/arch/s390/kernel/debug.c
+@@ -253,7 +253,7 @@ static debug_info_t *debug_info_alloc(const char *name, int pages_per_area,
+ 	rc->entry_size	   = sizeof(debug_entry_t) + buf_size;
+ 	strscpy(rc->name, name, sizeof(rc->name));
+ 	memset(rc->views, 0, DEBUG_MAX_VIEWS * sizeof(struct debug_view *));
+-	memset(rc->debugfs_entries, 0, DEBUG_MAX_VIEWS * sizeof(struct dentry *));
++	memset(rc->debugfs_entries, 0, DEBUG_MAX_VIEWS * sizeof(struct debugfs_node *));
+ 	refcount_set(&(rc->ref_count), 0);
+ 
+ 	return rc;
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
 --- a/drivers/accel/habanalabs/common/habanalabs.h
@@ -150,6 +214,19 @@ index 2a52a47b6a9e..6e4332627636 100644
  {
  	debugfs_remove(*dp);
  	*dp = NULL;
+diff --git a/drivers/clk/davinci/pll.c b/drivers/clk/davinci/pll.c
+index 92ca8031e80f..19f16b89dd5b 100644
+--- a/drivers/clk/davinci/pll.c
++++ b/drivers/clk/davinci/pll.c
+@@ -189,7 +189,7 @@ static int davinci_pll_set_rate(struct clk_hw *hw, unsigned long rate,
+ }
+ 
+ #ifdef CONFIG_DEBUG_FS
+-static void davinci_pll_debug_init(struct clk_hw *hw, struct dentry *dentry);
++static void davinci_pll_debug_init(struct clk_hw *hw, struct debugfs_node *dentry);
+ #else
+ #define davinci_pll_debug_init NULL
+ #endif
 diff --git a/drivers/crypto/caam/caamalg_qi2.h b/drivers/crypto/caam/caamalg_qi2.h
 index 61d1219a202f..e4a9f4583a83 100644
 --- a/drivers/crypto/caam/caamalg_qi2.h
@@ -765,6 +842,21 @@ index 921dce1b8bc6..49b92e03c9d0 100644
  		unsigned long min_rate;
  		unsigned long max_rate;
  	} debugfs;
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index d889799046bc..130e890e31a8 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -637,8 +637,8 @@ struct cxl_service_layer_ops {
+ 	int (*attach_afu_directed)(struct cxl_context *ctx, u64 wed, u64 amr);
+ 	int (*attach_dedicated_process)(struct cxl_context *ctx, u64 wed, u64 amr);
+ 	void (*update_dedicated_ivtes)(struct cxl_context *ctx);
+-	void (*debugfs_add_adapter_regs)(struct cxl *adapter, struct dentry *dir);
+-	void (*debugfs_add_afu_regs)(struct cxl_afu *afu, struct dentry *dir);
++	void (*debugfs_add_adapter_regs)(struct cxl *adapter, struct debugfs_node *dir);
++	void (*debugfs_add_afu_regs)(struct cxl_afu *afu, struct debugfs_node *dir);
+ 	void (*psl_irq_dump_registers)(struct cxl_context *ctx);
+ 	void (*err_irq_dump_registers)(struct cxl *adapter);
+ 	void (*debugfs_stop_trace)(struct cxl *adapter);
 diff --git a/drivers/mtd/ubi/debug.c b/drivers/mtd/ubi/debug.c
 index 885b311379d4..78cb7801818b 100644
 --- a/drivers/mtd/ubi/debug.c
@@ -1552,6 +1644,19 @@ index e4175914d034..63a2d4c3dc64 100644
  					      1500, 512, &relay_cb, NULL);
  	if (!dev->relay_fwlog)
  		return -ENOMEM;
+diff --git a/drivers/net/wireless/mediatek/mt76/mt7996/mt7996.h b/drivers/net/wireless/mediatek/mt76/mt7996/mt7996.h
+index 5a73fafbd611..1d9c9ae51f58 100644
+--- a/drivers/net/wireless/mediatek/mt76/mt7996/mt7996.h
++++ b/drivers/net/wireless/mediatek/mt76/mt7996/mt7996.h
+@@ -743,7 +743,7 @@ int mt7996_mmio_wed_init(struct mt7996_dev *dev, void *pdev_ptr,
+ u32 mt7996_wed_init_buf(void *ptr, dma_addr_t phys, int token_id);
+ 
+ #ifdef CONFIG_MTK_DEBUG
+-int mt7996_mtk_init_debugfs(struct mt7996_phy *phy, struct dentry *dir);
++int mt7996_mtk_init_debugfs(struct mt7996_phy *phy, struct debugfs_node *dir);
+ #endif
+ 
+ #ifdef CONFIG_NET_MEDIATEK_SOC_WED
 diff --git a/drivers/net/wireless/realtek/rtlwifi/debug.c b/drivers/net/wireless/realtek/rtlwifi/debug.c
 index 0b2286993bf6..3a7e5350c17e 100644
 --- a/drivers/net/wireless/realtek/rtlwifi/debug.c
@@ -1901,6 +2006,19 @@ index 98cdceeb6048..3647c98bc797 100644
  	if (!relaych)
  		goto err_rm_debugfs_dir;
  
+diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
+index a3d71fc72064..a1f94c8944c2 100644
+--- a/drivers/power/supply/axp288_fuel_gauge.c
++++ b/drivers/power/supply/axp288_fuel_gauge.c
+@@ -123,7 +123,7 @@ struct axp288_fg_info {
+ 	int max_volt;
+ 	int pwr_op;
+ 	int low_cap;
+-	struct dentry *debug_file;
++	struct debugfs_node *debug_file;
+ 
+ 	char valid;                 /* zero until following fields are valid */
+ 	unsigned long last_updated; /* in jiffies */
 diff --git a/drivers/remoteproc/remoteproc_internal.h b/drivers/remoteproc/remoteproc_internal.h
 index ec2b32c65989..5ddbd53e105a 100644
 --- a/drivers/remoteproc/remoteproc_internal.h
@@ -1936,6 +2054,19 @@ index 542dcf9663a5..02ee1e500301 100644
  	struct list_head	free_aen_q;
  	struct list_head	active_aen_q;
  	struct bfa_aen_entry_s	aen_list[BFA_AEN_MAX_ENTRY];
+diff --git a/drivers/scsi/lpfc/lpfc.h b/drivers/scsi/lpfc/lpfc.h
+index 248a457bef61..cfd518da22cf 100644
+--- a/drivers/scsi/lpfc/lpfc.h
++++ b/drivers/scsi/lpfc/lpfc.h
+@@ -1366,7 +1366,7 @@ struct lpfc_hba {
+ 
+ 	struct debugfs_node *debug_nvmeio_trc;
+ 	struct lpfc_debugfs_nvmeio_trc *nvmeio_trc;
+-	struct dentry *debug_hdwqinfo;
++	struct debugfs_node *debug_hdwqinfo;
+ #ifdef LPFC_HDWQ_LOCK_STAT
+ 	struct debugfs_node *debug_lockstat;
+ #endif
 diff --git a/drivers/scsi/lpfc/lpfc_debugfs.c b/drivers/scsi/lpfc/lpfc_debugfs.c
 index 1b28a4bed80c..4d1cad7bb461 100644
 --- a/drivers/scsi/lpfc/lpfc_debugfs.c
@@ -2032,6 +2163,22 @@ index 1b28a4bed80c..4d1cad7bb461 100644
  		tmp = cpu_to_be64(tmp);
  		memcpy(&phba->lpfc_injerr_wwpn, &tmp, sizeof(struct lpfc_name));
  	} else
+diff --git a/drivers/scsi/qla2xxx/qla_def.h b/drivers/scsi/qla2xxx/qla_def.h
+index 19feba0ec5ad..fb6af5fede0a 100644
+--- a/drivers/scsi/qla2xxx/qla_def.h
++++ b/drivers/scsi/qla2xxx/qla_def.h
+@@ -34,11 +34,6 @@
+ 
+ #include <uapi/scsi/fc/fc_els.h>
+ 
+-#define QLA_DFS_DEFINE_DENTRY(_debugfs_file_name) \
+-	struct dentry *dfs_##_debugfs_file_name
+-#define QLA_DFS_ROOT_DEFINE_DENTRY(_debugfs_file_name) \
+-	struct dentry *qla_dfs_##_debugfs_file_name
+-
+ /* Big endian Fibre Channel S_ID (source ID) or D_ID (destination ID). */
+ typedef struct {
+ 	uint8_t domain;
 diff --git a/drivers/soc/qcom/qcom_aoss.c b/drivers/soc/qcom/qcom_aoss.c
 index c745cd9830f1..c0735ecae4a7 100644
 --- a/drivers/soc/qcom/qcom_aoss.c
@@ -2495,6 +2642,31 @@ index 0c8e86115b6f..0c172c059927 100644
  
  	u32 sequence;
  
+diff --git a/include/media/v4l2-async.h b/include/media/v4l2-async.h
+index f26c323e9c96..a53436578a16 100644
+--- a/include/media/v4l2-async.h
++++ b/include/media/v4l2-async.h
+@@ -11,7 +11,7 @@
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ 
+-struct dentry;
++struct debugfs_node;
+ struct device;
+ struct device_node;
+ struct v4l2_device;
+@@ -140,9 +140,9 @@ struct v4l2_async_subdev_endpoint {
+ /**
+  * v4l2_async_debug_init - Initialize debugging tools.
+  *
+- * @debugfs_dir: pointer to the parent debugfs &struct dentry
++ * @debugfs_dir: pointer to the parent debugfs &struct debugfs_node
+  */
+-void v4l2_async_debug_init(struct dentry *debugfs_dir);
++void v4l2_async_debug_init(struct debugfs_node *debugfs_dir);
+ 
+ /**
+  * v4l2_async_nf_init - Initialize a notifier.
 diff --git a/include/net/mac80211.h b/include/net/mac80211.h
 index 3443ac47384a..8896fdc00ecb 100644
 --- a/include/net/mac80211.h
@@ -2801,6 +2973,19 @@ index b9822e13a414..c07af2468881 100644
  
  	DEBUGFS_ADD(rts_threshold);
  	DEBUGFS_ADD(fragmentation_threshold);
+diff --git a/sound/soc/mediatek/mt8195/mt8195-afe-common.h b/sound/soc/mediatek/mt8195/mt8195-afe-common.h
+index f93f439e2bd9..6023d6ae5258 100644
+--- a/sound/soc/mediatek/mt8195/mt8195-afe-common.h
++++ b/sound/soc/mediatek/mt8195/mt8195-afe-common.h
+@@ -128,7 +128,7 @@ struct mt8195_afe_private {
+ 	struct regmap *topckgen;
+ 	int pm_runtime_bypass_reg_ctl;
+ #ifdef CONFIG_DEBUG_FS
+-	struct dentry **debugfs_dentry;
++	struct debugfs_node **debugfs_dentry;
+ #endif
+ 	int afe_on_ref_cnt;
+ 	int top_cg_ref_cnt[MT8195_TOP_CG_NUM];
 diff --git a/sound/soc/sof/sof-client-ipc-flood-test.c b/sound/soc/sof/sof-client-ipc-flood-test.c
 index 443d36294c99..efc76f42ac83 100644
 --- a/sound/soc/sof/sof-client-ipc-flood-test.c
