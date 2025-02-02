@@ -1,6 +1,6 @@
 From 12f29a4521a48c24a7af6b9439c5e2b6be98ab55 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 19:26:59 -0800
+Date: Sat, 1 Feb 2025 20:19:38 -0800
 Subject: [RFC PATCH 0/4] debugfs: Use opaque handle for debugfs nodes instead
  of dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -14,8 +14,8 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
-This patch series replaces the use of raw dentry pointers in the debugfs with an
-opaque wrapper struct called debugfs_node:
+This patch series replaces raw dentry pointers in debugfs with an opaque
+wrapper struct:
 
 	struct debugfs_node {
 		struct dentry dentry;
@@ -24,90 +24,81 @@ opaque wrapper struct called debugfs_node:
 Background
 ==========
 
-Using dentry pointers in the debugfs API is an anti-pattern. Ideally, a dentry
-and inode are only created when necessary, and we aren't using dentry as the
-core data structure for a pseudo-filesystem. A few kernel developers have
-expressed a desire to use an opaque handle for debugfs nodes instead of dentry
-pointers [1][2][3]. Eventually, perhaps debugfs could use kernfs under the hood.
-
-This patch series would make any migration of debugfs internals (either to
-kernfs or some other representation besides dentry) much easier.
+Using dentry pointers in debugfs is an anti-pattern. Ideally, a dentry
+and inode should only exist when needed, rather than being core to a
+pseudo-filesystem. A few kernel developers have expressed a desire to
+use an opaque handle for debugfs nodes instead of dentry pointers
+[1][2][3]. This change makes internal debugfs migrations -- whether to
+kernfs or another approach -- easier.
 
 About this patch series
 =======================
 
-This patch series is presented as a series of commits for easier review. Once
-this series is ready, they should be squashed into one commit. The commits are
-as follows:
+This series is split into multiple commits for review but should be
+squashed into one commit when merged. Commits:
 
-1. Migrate fs/debugfs/ code to use debugfs_node.
-2. Run Coccinelle on the rest of the kernel tree (see Coccinelle section below)
-3. Manual fixups for things Coccinelle didn't handle
-4. Migrate the relay system to use debugfs_node instead of dentry
+1. Migrate fs/debugfs/ to debugfs_node.
+2. Run Coccinelle to update the rest of the kernel (see below).
+3. Manual fixes for cases Coccinelle missed.
+4. Update relay system to use debugfs_node instead of dentry.
 
-The changes to fs/debugfs/ are pretty mechanical. I replaced dentry with
-debugfs_node in the API where appropriate. Internal functions just convert back
-and forth between dentry/debugfs_node as necessary. I only had to add a few
-trivial helper functions for a small number of debugfs users. Also, huge thanks
-to Al Viro, who refactored this code very recently, which made the migration
-much easier.
+The changes to fs/debugfs/ are straightfoward, swapping dentry with
+debugfs_node in the API where appropriate. Internal functions convert
+between the two as needed. I only had to add a few trivial helper
+functions for a small number of debugfs users. Also, huge thanks to Al
+Viro, who recently refactored this code, which simplified this change.
 
-The vast majority of changes to other files are very simple conversions of
-variable definitions from dentry to debugfs_node. Coccinelle handled most of
-them. I had to manually fix up situations that my .cocci script didnt' handle,
-like variable definitions nested in layers of headers or function calls, code
-inside macros, etc.
+Most changes outside of fs/debugfs/ where mechanical, and thankfully
+Coccinelle could handle them. I had to manually fix situations that
+Coccinelle couldn't handle, like variable definitions nested in layers
+of headers or function calls, code inside macros, etc.
 
 Relay changes
 =============
 
-The most invasive change is the change to the relay system, which is why I put
-it into a separate commit. (Note that the changes to relay.c and users of
-rchan_callbacks are much smaller and clearer once these commits are squashed.)
+The most intrusive change is in the relay system, which now uses
+debugfs_node instead of dentry. I put this change into a separate commit
+because it is more than just a fixup. (Note that the changes to relay.c
+and users of rchan_callbacks are much smaller and clearer once these
+commits are squashed.)
 
-The relay API passes around dentry pointers, and the docs use the phrase
-"e.g. debugfs" a lot, but all users of relay use debugfs. I replaced these
-dentry pointers with debugfs_node, and I updated the documentation to reflect
-that.
+The relay API passes around dentry pointers. While the relay API
+technically supports non-debugfs users, in practice, all relay users
+rely on debugfs. I replaced dentry pointers with debugfs_node, and I
+updated the documentation to reflect that.
 
 Coccinelle
 ==========
 
-I created a Coccinelle script to perform the bulk of this change. I would
-appreciate any feedback on it!
+I wrote a Coccinelle script to automate most of the conversion. Feedback
+is welcome!
 
 The script attempts to do the following:
 
-- Find all identifiers of type struct dentry * that are arguments to or return
-  values of a debugfs_* function.
+- Find all dentry identifiers that are arguments to or return values of
+  a debugfs_* function.
 
-- Change the types of those identifiers to struct debugfs_node * by finding
-  where they are declared -- standalone declaration, struct field, function
-  argument, etc -- and replacing dentry with debugfs_node.
+- Updates relevant declarations, struct fields, and function signatures
+  to use debugfs_node.
 
-- Perform some fixups, like finding "wrapper" functions and changing arg/return
-  types, replacing d_inode() with debugfs_node_inode() where appropriate, etc.
+- Perform some fixups, like replacing d_inode() or ->d_inode with
+  debugfs_node_inode() where appropriate.
 
-Any feedback on the .cocci script would be appreciated. I felt like I was
-fighting with Coccinelle for days, but this is also my first time using it :)
-Some problems I have (or had) include:
+Challenges I encountered:
 
-- Running spatch over the kernel tree in one go makes spatch spit out
-  conflicting hunks in the patch. spatch can take different "paths" to get to a
-  header file, which can result in different changes. If different runs against
-  the header file produce different diffs, it appears one of them "wins" unless
-  you tweak the patch to incorporate both changes. I avoided this problem by
-  writing a bash script that runs spatch against any files containing "dentry"
-  or "debugfs", one-by-one.
+- Running a single spatch invocation over the whole tree produces
+  inconsistent results because of how header diffs are resolved. spatch
+  can take different "paths" to get to a header file, which can result
+  in different -- somtimes conflicting -- changes. I avoided this
+  problem by writing a bash script that runs spatch against any files
+  containing "dentry" or "debugfs", one-by-one.
 
-- The script is more verbose than I would like. I started with a much smaller
-  script and I kept having to break out different cases, along with duplicating
-  some replacement rules, to get the script to work.
+- The script is more verbose than I would like. I started small but had
+  to break out cases and duplicate rules for reliability.
 
-I purposely didn't try to cover every possible case, because we get diminishing
-returns on .cocci script size vs actual changes that need to be made. The script
-performs pretty well; the vast majority of this patch set was generated from the
-script.
+I focused on handling the most common cases rather than covering every
+edge case, balancing script complexity with effectiveness. The script
+performs pretty well -- most of this patch set was generated from it.
 
 Links
 =====
