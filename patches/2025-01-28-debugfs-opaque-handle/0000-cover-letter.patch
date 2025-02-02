@@ -1,6 +1,6 @@
-From 8791b33e9bb38fccccfa5fea2731f6f80dcc1897 Mon Sep 17 00:00:00 2001
+From c882e8500615ce1ff3338ca0ee3503cbcf662668 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 2 Feb 2025 13:50:49 -0800
+Date: Sun, 2 Feb 2025 14:26:01 -0800
 Subject: [RFC PATCH 0/4] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -1029,7 +1029,7 @@ David Reaver (4):
  fs/bcachefs/debug.c                           |   4 +-
  fs/ceph/super.h                               |  14 +-
  fs/debugfs/file.c                             | 117 ++++-----
- fs/debugfs/inode.c                            | 227 +++++++++++-------
+ fs/debugfs/inode.c                            | 232 +++++++++++-------
  fs/debugfs/internal.h                         |   7 +
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
@@ -1074,7 +1074,7 @@ David Reaver (4):
  include/linux/ceph/osd_client.h               |   2 +-
  include/linux/clk-provider.h                  |   3 +-
  include/linux/closure.h                       |   2 +-
- include/linux/debugfs.h                       | 190 +++++++++------
+ include/linux/debugfs.h                       | 190 ++++++++------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
@@ -1239,7 +1239,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2932 insertions(+), 2650 deletions(-)
+ 1109 files changed, 2937 insertions(+), 2650 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45
