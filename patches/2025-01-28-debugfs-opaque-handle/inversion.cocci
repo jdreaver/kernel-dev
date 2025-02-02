@@ -51,7 +51,6 @@ identifier f = {
   debugfs_remove,
   debugfs_remove_recursive
 };
-
 @@
 
 f(...)
@@ -170,3 +169,60 @@ struct
   return e;
   ...
 }
+
+@exists@
+identifier fn;
+identifier find_debugfs_functions.f;
+@@
+
+struct
+- dentry
++ debugfs_node
+ *fn(...)
+{
+  ...
+  return f(...);
+  ...
+}
+
+//
+// Transform various helper functions
+//
+@@
+idexpression struct debugfs_node *e;
+@@
+
+-d_inode(e)
++debugfs_node_inode(e)
+
+@@
+idexpression struct debugfs_node *e;
+@@
+
+-e->d_inode
++debugfs_node_inode(e)
+
+@@
+type T = { struct debugfs_node * };
+idexpression T e;
+@@
+
+-dput(e)
++debugfs_node_put(e)
+
+@@
+type T = { struct debugfs_node * };
+idexpression T e;
+@@
+
+-dget(e)
++debugfs_node_get(e)
+
+@@
+type T = { struct debugfs_node * };
+idexpression T e;
+@@
+
+- dentry_path_raw(e,
++ debugfs_node_path_raw(e,
+  ...);

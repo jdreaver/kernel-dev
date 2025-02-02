@@ -294,6 +294,13 @@ idexpression struct debugfs_node *e;
 +debugfs_node_inode(e)
 
 @@
+idexpression struct debugfs_node *e;
+@@
+
+-e->d_inode
++debugfs_node_inode(e)
+
+@@
 type T = { struct debugfs_node * };
 idexpression T e;
 @@

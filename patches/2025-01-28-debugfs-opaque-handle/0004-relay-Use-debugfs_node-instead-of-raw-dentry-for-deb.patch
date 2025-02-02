@@ -1,4 +1,4 @@
-From 2d8d6c9d43ccb36fbaa28816209ed7b8c042bdd5 Mon Sep 17 00:00:00 2001
+From 12f29a4521a48c24a7af6b9439c5e2b6be98ab55 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sat, 1 Feb 2025 06:45:03 -0800
 Subject: [RFC PATCH 4/4] relay: Use debugfs_node instead of raw dentry for
@@ -8,6 +8,8 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Danilo Krummrich <dakr@kernel.org>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
     Christian Brauner <brauner@kernel.org>,
+    Alexander Viro <viro@zeniv.linux.org.uk>,
+    Tejun Heo <tj@kernel.org>,
     linux-fsdevel@vger.kernel.org,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org

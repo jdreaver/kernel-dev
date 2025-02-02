@@ -17,6 +17,8 @@ git format-patch master...HEAD \
       --to 'Danilo Krummrich <dakr@kernel.org>' \
       --cc 'Steven Rostedt <rostedt@goodmis.org>' \
       --cc 'Christian Brauner <brauner@kernel.org>' \
+      --cc 'Alexander Viro <viro@zeniv.linux.org.uk>' \
+      --cc 'Tejun Heo <tj@kernel.org>' \
       --cc 'linux-fsdevel@vger.kernel.org' \
       --cc 'cocci@inria.fr' \
       --cc 'linux-kernel@vger.kernel.org'
@@ -51,15 +53,6 @@ git format-patch master...HEAD \
      - Could do multiple passes. I think rewriting wrappers in the first pass
      - I think we can rewrite return values with a dedicated rule, and function args can be handled like other declarations. Then we don't need to specially rewrite wrappers
 
-- Missing dentry rewrite in `arch/powerpc/include/asm/kvm_ppc.h` callback function `create_vcpu_debugfs`
-
-- New bash script doing one by one
-  - BUG: "wrapper" functions we find that are _not_ defined in the same file (example, `fault_create_debugfs_attr` used in blk-timeout.c and lib/fault-inject-usercopy.c) don't result in args or return values getting transformed.
-    - I think we can split the rules up so we separate finding them and rewriting them.
-    - We could always run spatch at the top-level, and _then_ one by one.
-    - Maybe two passes will help: one to transform "obvious" wrapper stuff, and the next is entirely type-based on definitions.
-    - Consider running a global spatch once or twice, and then the script.
-
 - `sound/soc/soc-pcm.c` isn't working (only file I think). It interesting because there is no dentry declaration in the actual file (but there is debugfs usage)
   - (old TODO) `include/sound/soc.h` has a `struct dentry *debugfs_dpcm_root;` field that refuses to get matches. I think all the `#define`s in the file are screwing with Coccinelle, because it works when I move that struct to my test file.
 
@@ -69,44 +62,7 @@ git format-patch master...HEAD \
   - I think the rules are stepping on each other because if one rule proposes changes to a header file, and another proposes different changes, I think spatch doesn't like that
   - If we do this, in the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
-- spatch needing two runs to work, or just not working at top level and only when run on individual files/directories
-  - Inspect the `.rej` files that patch makes! I see some of them have more changes than the change that was accepted. I think coccinelle is clearly stepping on itself
-    - Investigate ways to combine the divergent hunks. Maybe running patch with `-f` is not right. Maybe I should can manually combine them?
-  - Ideas to fix
-    - Just run it more than once and see if it converges.
-      - Running twice converged (a third time did nothing), but I'm still not seeing all the changes I should
-    - Run with more verbose options
-    - Try using `make coccicheck` or whatever method to generate patches to see if it fixes the problem where some files don't get processed
-      - Try Kees' method to use coccicheck <https://github.com/kees/kernel-tools/tree/trunk/coccinelle#run-in-parallel>
-    - Need `--recursive-includes`?
-    - (didn't work) Run without caching headers (`--no-include-cache`)
-    - (didn't work) Run without `--jobs` in case parallelism is the enemy
-    - (didn't work) `--timeout=0` (drivers/scsi/lpfc is quite slow, for example)
-      - When we hit the timeout, there is an error message like `EXN: Coccinelle_modules.Common.Timeout in ./security/selinux/selinuxfs.c`, so look for that
-    - (just changed fewer files) Run in two steps: one with `--all-includes` and one without. Maybe the problem is spatch runs a header in isolation and thinks nothing needs to change, but when it wants to change that same header when it reaches it from a C file it uses the cached no-change result.
-      - `--include-headers` only really makes sense for ones with C code in them and for the fuzzy-matching "this looks like a debugfs dentry" stuff. If we split that into another pass then maybe it will work?
-      - Also try this in conjunction with `--no-include cache`?
-
-  - Ideas for workarounds:
-    - Now that I have a complete patch set that compiles, I can inspect the files that are getting missed and see if I can find a command to get them run, either individually, or some subdirectories, etc.
-    - Run spatch with `find ... -exec` (plus a script to apply the patch) on every C file instead of running it on the tree.
-      - We can use grep for `debugfs` to find files, maybe? Wouldn't work with helper functions. Maybe do this in addition to running over the tree.
-  - Examples:
-    - Easiest repro: `drivers/crypto/intel/qat/qat_common/adf_cfg.h`
-      - Running against `drivers/crypto/intel/qat/qat_common/adf_cfg.c` (note the .c) works, but not `drivers/crypto/intel/qat/qat_common/`. wth
-
-- Test that this works with `&` and detects that the `i2c_bus` on `dev_entry` should be a `debugfs_node *`
-
-  ```
-  	debugfs_create_u8("i2c_bus",
-  				0644,
-  				root,
-  				&dev_entry->i2c_bus);
-  ```
-
 - Test more complex assignments like `hb->dbgfs.base_dir = debugfs_create_dir("heartbeat", accel_dev->debugfs_dir);` in test file
-- In `struct dentry *parent = ibd->hfi1_ibdev_dbg;` we know that `parent` is used as an arg to a debugfs_function, and `ibd->hfi1_ibdev_dbg` is debugfs_node, so we should have migrated parent. We should allow any expression on the RHS, not just function calls to debugfs functions.
-- `->d_inode` -> `debugfs_node_inode` (just check arg type)
 
 - Use this style for putting type on different line from function def (not pointer `*` position):
 
@@ -129,8 +85,6 @@ git format-patch master...HEAD \
           ...
   };
   ```
-
-- static anonymous struct in `ie6xx_wdt.c` didn't have a field transformed. This is common in drivers because there is a global struct for debug stuff.
 
 - Consider removing the `all_function_calls` thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
 

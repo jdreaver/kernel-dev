@@ -1,6 +1,6 @@
-From 2d8d6c9d43ccb36fbaa28816209ed7b8c042bdd5 Mon Sep 17 00:00:00 2001
+From 12f29a4521a48c24a7af6b9439c5e2b6be98ab55 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 18:00:31 -0800
+Date: Sat, 1 Feb 2025 19:26:59 -0800
 Subject: [RFC PATCH 0/4] debugfs: Use opaque handle for debugfs nodes instead
  of dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -8,6 +8,8 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Danilo Krummrich <dakr@kernel.org>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
     Christian Brauner <brauner@kernel.org>,
+    Alexander Viro <viro@zeniv.linux.org.uk>,
+    Tejun Heo <tj@kernel.org>,
     linux-fsdevel@vger.kernel.org,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
@@ -320,7 +322,7 @@ David Reaver (4):
  drivers/gpio/gpio-virtuser.c                  |  17 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_aca.c       |   3 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_aca.h       |   3 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c   |  13 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c   |   9 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_fence.c     |   2 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_gem.c       |   2 +-
  drivers/gpu/drm/amd/amdgpu/amdgpu_gfx.c       |   4 +-
@@ -1229,7 +1231,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2907 insertions(+), 2621 deletions(-)
+ 1109 files changed, 2904 insertions(+), 2620 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45

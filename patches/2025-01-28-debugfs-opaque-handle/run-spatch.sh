@@ -19,5 +19,10 @@ for file in $files; do
     echo "($counter/$total_files) $file"
     counter=$((counter+1))
 
-    time spatch "$script_dir/script.cocci" --all-includes --include-headers --patch . --in-place "$file" 2>&1 | tee "$log_dir/$(echo "$file" | tr '/' '--').log"
+    time spatch "$script_dir/script.cocci" \
+      --all-includes --include-headers --patch . \
+      --ignore linux/include/fs.h \
+      --ignore fs/debugfs \
+      --in-place "$file" 2>&1 \
+      | tee "$log_dir/$(echo "$file" | tr '/' '--').log"
 done

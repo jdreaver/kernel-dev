@@ -1,4 +1,4 @@
-From e26fcd757b7024a4c621aa08244c65d538959902 Mon Sep 17 00:00:00 2001
+From d3b71cf2ba8beee03bc9108b3b5b72e7bf24b2e5 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: tmp commit with fixups not handled by
@@ -8,6 +8,8 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Danilo Krummrich <dakr@kernel.org>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
     Christian Brauner <brauner@kernel.org>,
+    Alexander Viro <viro@zeniv.linux.org.uk>,
+    Tejun Heo <tj@kernel.org>,
     linux-fsdevel@vger.kernel.org,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
@@ -21,7 +23,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/cxl/cxlmem.h                          |   2 +-
  drivers/cxl/mem.c                             |  12 +-
  drivers/firmware/arm_scmi/raw_mode.h          |   2 +-
- drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c   |   7 +-
  .../gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c    |   9 +-
  drivers/gpu/drm/drm_debugfs.c                 |   4 +-
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  22 +-
@@ -30,9 +31,8 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |   8 +-
  drivers/gpu/drm/omapdrm/dss/dss.h             |   2 +-
  drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   2 +
- drivers/gpu/drm/xe/xe_gt_debugfs.c            |   4 +-
- drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  29 +--
- drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c   |   4 +-
+ drivers/gpu/drm/xe/xe_gt_debugfs.c            |   2 +-
+ drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  23 ++-
  drivers/gpu/drm/xe/xe_guc_debugfs.h           |   2 +
  drivers/gpu/drm/xe/xe_huc_debugfs.h           |   2 +-
  drivers/gpu/host1x/dev.h                      |   2 +-
@@ -123,7 +123,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/wireless/debugfs.c                        |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 109 files changed, 499 insertions(+), 417 deletions(-)
+ 107 files changed, 488 insertions(+), 409 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -249,30 +249,6 @@ index 8af756a83fd1..4e4acc4503b0 100644
  			 u8 *channels, int num_chans,
  			 const struct scmi_desc *desc, int tx_max_msg);
  void scmi_raw_mode_cleanup(void *raw);
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
-index e974d42ab282..a5cb0882ce01 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_debugfs.c
-@@ -1644,14 +1644,17 @@ int amdgpu_debugfs_regs_init(struct amdgpu_device *adev)
- {
- 	struct drm_minor *minor = adev_to_drm(adev)->primary;
- 	struct debugfs_node *ent, *root = minor->debugfs_root;
-+	struct inode *ent_inode;
- 	unsigned int i;
- 
- 	for (i = 0; i < ARRAY_SIZE(debugfs_regs); i++) {
- 		ent = debugfs_create_file(debugfs_regs_names[i],
- 					  S_IFREG | 0400, root,
- 					  adev, debugfs_regs[i]);
--		if (!i && !IS_ERR_OR_NULL(ent))
--			i_size_write(ent->d_inode, adev->rmmio_size);
-+		if (!i && !IS_ERR_OR_NULL(ent)) {
-+			ent_inode = debugfs_node_inode(ent);
-+			i_size_write(ent_inode, adev->rmmio_size);
-+		}
- 	}
- 
- 	return 0;
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c
 index 52c16bfeccaa..a0791a9276b9 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c
@@ -459,7 +435,7 @@ index 9099da88b398..48658b1af61b 100644
  struct xe_gsc;
  
 diff --git a/drivers/gpu/drm/xe/xe_gt_debugfs.c b/drivers/gpu/drm/xe/xe_gt_debugfs.c
-index f5d2ffdd70ff..3bc631d11f9d 100644
+index 6e5cbb23d5c9..3bc631d11f9d 100644
 --- a/drivers/gpu/drm/xe/xe_gt_debugfs.c
 +++ b/drivers/gpu/drm/xe/xe_gt_debugfs.c
 @@ -75,7 +75,7 @@ int xe_gt_debugfs_simple_show(struct seq_file *m, void *data)
@@ -471,17 +447,8 @@ index f5d2ffdd70ff..3bc631d11f9d 100644
  	struct xe_gt *gt = parent->d_inode->i_private;
  	int (*print)(struct xe_gt *, struct drm_printer *) = node->info_ent->data;
  
-@@ -332,7 +332,7 @@ void xe_gt_debugfs_register(struct xe_gt *gt)
- 	 * so other GT specific attributes under that directory may refer to
- 	 * it by looking at its parent node private data.
- 	 */
--	root->d_inode->i_private = gt;
-+	debugfs_node_inode(root)->i_private = gt;
- 
- 	drm_debugfs_create_files(debugfs_list,
- 				 ARRAY_SIZE(debugfs_list),
 diff --git a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
-index fae2c64e25a6..cf64e936e0d3 100644
+index b0a32211d892..cf64e936e0d3 100644
 --- a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
 +++ b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
 @@ -32,17 +32,20 @@
@@ -555,55 +522,6 @@ index fae2c64e25a6..cf64e936e0d3 100644
  	struct xe_gt *gt = extract_gt(parent);
  	unsigned int vfid = extract_vfid(parent);
  	ssize_t ret;
-@@ -521,7 +524,7 @@ void xe_gt_sriov_pf_debugfs_register(struct xe_gt *gt,
- 	char buf[14]; /* should be enough up to "vf%u\0" for 2^32 - 1 */
- 
- 	xe_gt_assert(gt, IS_SRIOV_PF(xe));
--	xe_gt_assert(gt, root->d_inode->i_private == gt);
-+	xe_gt_assert(gt, debugfs_node_inode(root)->i_private == gt);
- 
- 	/*
- 	 *      /sys/kernel/debug/dri/0/
-@@ -531,7 +534,7 @@ void xe_gt_sriov_pf_debugfs_register(struct xe_gt *gt,
- 	pfdentry = debugfs_create_dir("pf", root);
- 	if (IS_ERR(pfdentry))
- 		return;
--	pfdentry->d_inode->i_private = gt;
-+	debugfs_node_inode(pfdentry)->i_private = gt;
- 
- 	drm_debugfs_create_files(pf_info, ARRAY_SIZE(pf_info), pfdentry, minor);
- 	pf_add_policy_attrs(gt, pfdentry);
-@@ -548,7 +551,7 @@ void xe_gt_sriov_pf_debugfs_register(struct xe_gt *gt,
- 		vfdentry = debugfs_create_dir(buf, root);
- 		if (IS_ERR(vfdentry))
- 			break;
--		vfdentry->d_inode->i_private = (void *)(uintptr_t)n;
-+		debugfs_node_inode(vfdentry)->i_private = (void *)(uintptr_t)n;
- 
- 		pf_add_config_attrs(gt, vfdentry, VFID(n));
- 		debugfs_create_file("control", 0600, vfdentry, NULL, &control_ops);
-diff --git a/drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c b/drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c
-index 2dc47ce65913..a91525a6c8c0 100644
---- a/drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c
-+++ b/drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c
-@@ -57,7 +57,7 @@ void xe_gt_sriov_vf_debugfs_register(struct xe_gt *gt,
- 	struct debugfs_node *vfdentry;
- 
- 	xe_assert(xe, IS_SRIOV_VF(xe));
--	xe_assert(xe, root->d_inode->i_private == gt);
-+	xe_assert(xe, debugfs_node_inode(root)->i_private == gt);
- 
- 	/*
- 	 *      /sys/kernel/debug/dri/0/
-@@ -67,7 +67,7 @@ void xe_gt_sriov_vf_debugfs_register(struct xe_gt *gt,
- 	vfdentry = debugfs_create_dir("vf", root);
- 	if (IS_ERR(vfdentry))
- 		return;
--	vfdentry->d_inode->i_private = gt;
-+	debugfs_node_inode(vfdentry)->i_private = gt;
- 
- 	drm_debugfs_create_files(vf_info, ARRAY_SIZE(vf_info), vfdentry, minor);
- }
 diff --git a/drivers/gpu/drm/xe/xe_guc_debugfs.h b/drivers/gpu/drm/xe/xe_guc_debugfs.h
 index 3befd9fe3bcf..2582a4a558f0 100644
 --- a/drivers/gpu/drm/xe/xe_guc_debugfs.h

@@ -5,6 +5,10 @@
 static struct dentry *test;
 static struct dentry *debugfs_unused;
 
+struct debugfs_node* debugfs_create_dir(const char *name, struct dentry *parent);
+struct debugfs_node* debugfs_create_file(const char *name, umode_t mode, struct debugfs_node *parent, void *data, const struct file_operations *fops);
+
+
 struct blah {
 	int a;
 	struct dentry *foo;
@@ -87,6 +91,8 @@ int do_stuff(struct dentry *arg)
 	throw_off = debugfs_create_dir("just_args", just_arg);
 
 	debugfs_create_dir("was_null", was_null);
+
+	direct_assign->d_inode = NULL;
 
 	test = debugfs_create_dir("test_file", NULL);
 	local_dir = debugfs_create_file("test_file", 0644, arg, NULL, &fops);
