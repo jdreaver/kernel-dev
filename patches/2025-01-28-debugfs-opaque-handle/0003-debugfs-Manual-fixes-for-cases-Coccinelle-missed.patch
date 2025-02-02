@@ -1,4 +1,4 @@
-From 7c8e712e143e21fde4fafedc16fbc23ab95f90b0 Mon Sep 17 00:00:00 2001
+From d2d49f519be0a56c38c7cf2ce2a063848e6fd832 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: Manual fixes for cases Coccinelle missed
@@ -31,7 +31,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/gpu/drm/omapdrm/dss/dss.h             |   2 +-
  drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   2 +
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   2 +-
- drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  23 ++-
+ drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  22 +-
  drivers/gpu/drm/xe/xe_guc_debugfs.h           |   2 +
  drivers/gpu/drm/xe/xe_huc_debugfs.h           |   2 +-
  drivers/gpu/host1x/dev.h                      |   2 +-
@@ -122,7 +122,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/wireless/debugfs.c                        |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 107 files changed, 487 insertions(+), 409 deletions(-)
+ 107 files changed, 486 insertions(+), 409 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -447,10 +447,10 @@ index 6e5cbb23d5c9..3bc631d11f9d 100644
  	int (*print)(struct xe_gt *, struct drm_printer *) = node->info_ent->data;
  
 diff --git a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
-index b0a32211d892..cf64e936e0d3 100644
+index b0a32211d892..8ab4758a3ba6 100644
 --- a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
 +++ b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
-@@ -32,17 +32,20 @@
+@@ -32,17 +32,19 @@
   *      │   ├── vfN	# d_inode->i_private = VFID(N)
   */
  
@@ -465,7 +465,6 @@ index b0a32211d892..cf64e936e0d3 100644
 +static struct xe_gt *extract_gt(struct debugfs_node *d)
  {
 -	return extract_priv(d->d_parent);
-+	// TODO: Use debugfs_node_parent
 +	struct dentry *dentry = debugfs_node_dentry(d);
 +	struct debugfs_node *parent = debugfs_node_from_dentry(dentry->d_parent);
 +	return extract_priv(parent);
@@ -476,7 +475,7 @@ index b0a32211d892..cf64e936e0d3 100644
  {
  	return extract_priv(d) == extract_gt(d) ? PFID : (uintptr_t)extract_priv(d);
  }
-@@ -332,7 +335,7 @@ static const struct {
+@@ -332,7 +334,7 @@ static const struct {
  static ssize_t control_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
@@ -485,7 +484,7 @@ index b0a32211d892..cf64e936e0d3 100644
  	struct xe_gt *gt = extract_gt(parent);
  	struct xe_device *xe = gt_to_xe(gt);
  	unsigned int vfid = extract_vfid(parent);
-@@ -400,7 +403,7 @@ static ssize_t guc_state_read(struct file *file, char __user *buf,
+@@ -400,7 +402,7 @@ static ssize_t guc_state_read(struct file *file, char __user *buf,
  			      size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
@@ -494,7 +493,7 @@ index b0a32211d892..cf64e936e0d3 100644
  	struct xe_gt *gt = extract_gt(parent);
  	unsigned int vfid = extract_vfid(parent);
  
-@@ -411,7 +414,7 @@ static ssize_t guc_state_write(struct file *file, const char __user *buf,
+@@ -411,7 +413,7 @@ static ssize_t guc_state_write(struct file *file, const char __user *buf,
  			       size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
@@ -503,7 +502,7 @@ index b0a32211d892..cf64e936e0d3 100644
  	struct xe_gt *gt = extract_gt(parent);
  	unsigned int vfid = extract_vfid(parent);
  
-@@ -438,7 +441,7 @@ static ssize_t config_blob_read(struct file *file, char __user *buf,
+@@ -438,7 +440,7 @@ static ssize_t config_blob_read(struct file *file, char __user *buf,
  				size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
@@ -512,7 +511,7 @@ index b0a32211d892..cf64e936e0d3 100644
  	struct xe_gt *gt = extract_gt(parent);
  	unsigned int vfid = extract_vfid(parent);
  	ssize_t ret;
-@@ -466,7 +469,7 @@ static ssize_t config_blob_write(struct file *file, const char __user *buf,
+@@ -466,7 +468,7 @@ static ssize_t config_blob_write(struct file *file, const char __user *buf,
  				 size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
