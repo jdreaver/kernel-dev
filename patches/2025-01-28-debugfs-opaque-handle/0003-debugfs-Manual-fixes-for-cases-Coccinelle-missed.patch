@@ -1,4 +1,4 @@
-From 6a1dd879feb912049886620dccf8c16419584e2a Mon Sep 17 00:00:00 2001
+From 6c89e43381f55ba0506b6ca4e35aa2b3eeb4cbbb Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: Manual fixes for cases Coccinelle missed
@@ -85,9 +85,8 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/wireless/ti/wl1251/wl1251.h       | 188 +++++++++---------
  drivers/net/wireless/ti/wlcore/wlcore.h       |   2 +-
  drivers/net/wwan/iosm/iosm_ipc_trace.c        |  17 +-
- drivers/net/wwan/t7xx/t7xx_port_trace.c       |  20 +-
- drivers/remoteproc/remoteproc_debugfs.c       |   2 +-
- drivers/remoteproc/remoteproc_internal.h      |   9 +-
+ drivers/net/wwan/t7xx/t7xx_port_trace.c       |  22 +-
+ drivers/remoteproc/remoteproc_internal.h      |   4 +-
  drivers/scsi/bfa/bfad_drv.h                   |   2 +-
  drivers/scsi/lpfc/lpfc_debugfs.c              |  40 ++--
  drivers/soc/qcom/qcom_aoss.c                  |   4 +-
@@ -113,7 +112,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/sound/soc-dapm.h                      |   3 +-
  include/sound/soc.h                           |   2 +-
  kernel/gcov/fs.c                              |   2 +-
- kernel/trace/blktrace.c                       |  23 ++-
+ kernel/trace/blktrace.c                       |  25 ++-
  kernel/trace/trace.h                          |   2 +-
  lib/notifier-error-inject.h                   |   7 +-
  net/mac80211/debugfs_netdev.c                 |  10 +-
@@ -123,7 +122,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/wireless/debugfs.c                        |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 108 files changed, 489 insertions(+), 410 deletions(-)
+ 107 files changed, 487 insertions(+), 409 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -1795,12 +1794,12 @@ index 1f8511bf9bb3..f5d49d4b3963 100644
  				  struct wl1271_static_data *static_data);
  	int (*scan_start)(struct wl1271 *wl, struct wl12xx_vif *wlvif,
 diff --git a/drivers/net/wwan/iosm/iosm_ipc_trace.c b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-index 1070689b32cf..9417a15b66f4 100644
+index e9bc05d7e46d..047e325bc563 100644
 --- a/drivers/net/wwan/iosm/iosm_ipc_trace.c
 +++ b/drivers/net/wwan/iosm/iosm_ipc_trace.c
 @@ -33,20 +33,25 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
  /* Creates relay file in debugfs. */
- static struct dentry *
+ static struct debugfs_node *
  ipc_trace_create_buf_file_handler(const char *filename,
 -				  struct debugfs_node *parent,
 +				  struct dentry *parent,
@@ -1848,14 +1847,16 @@ index 1070689b32cf..9417a15b66f4 100644
  					  IOSM_TRC_N_SUB_BUFF,
  					  &relay_callbacks, NULL);
 diff --git a/drivers/net/wwan/t7xx/t7xx_port_trace.c b/drivers/net/wwan/t7xx/t7xx_port_trace.c
-index 6e219ea7d530..3647c98bc797 100644
+index 98cdceeb6048..3647c98bc797 100644
 --- a/drivers/net/wwan/t7xx/t7xx_port_trace.c
 +++ b/drivers/net/wwan/t7xx/t7xx_port_trace.c
-@@ -16,19 +16,24 @@
+@@ -15,20 +15,25 @@
+ #define T7XX_TRC_SUB_BUFF_SIZE		131072
  #define T7XX_TRC_N_SUB_BUFF		32
  
- static struct dentry *t7xx_trace_create_buf_file_handler(const char *filename,
+-static struct debugfs_node *t7xx_trace_create_buf_file_handler(const char *filename,
 -							 struct debugfs_node *parent,
++static struct dentry *t7xx_trace_create_buf_file_handler(const char *filename,
 +							 struct dentry *parent,
  							 umode_t mode,
  							 struct rchan_buf *buf,
@@ -1901,21 +1902,8 @@ index 6e219ea7d530..3647c98bc797 100644
  	if (!relaych)
  		goto err_rm_debugfs_dir;
  
-diff --git a/drivers/remoteproc/remoteproc_debugfs.c b/drivers/remoteproc/remoteproc_debugfs.c
-index 1bebfc8f847a..a48b7f3d5380 100644
---- a/drivers/remoteproc/remoteproc_debugfs.c
-+++ b/drivers/remoteproc/remoteproc_debugfs.c
-@@ -383,7 +383,7 @@ void rproc_remove_trace_file(struct debugfs_node *tfile)
- 	debugfs_remove(tfile);
- }
- 
--struct dentry *rproc_create_trace_file(const char *name, struct rproc *rproc,
-+struct debugfs_node *rproc_create_trace_file(const char *name, struct rproc *rproc,
- 				       struct rproc_debug_trace *trace)
- {
- 	return debugfs_create_file(name, 0400, rproc->dbg_dir, trace,
 diff --git a/drivers/remoteproc/remoteproc_internal.h b/drivers/remoteproc/remoteproc_internal.h
-index 0cd09e67ac14..3229b8bca2a2 100644
+index ec2b32c65989..5ddbd53e105a 100644
 --- a/drivers/remoteproc/remoteproc_internal.h
 +++ b/drivers/remoteproc/remoteproc_internal.h
 @@ -19,7 +19,7 @@ struct rproc;
@@ -1927,20 +1915,15 @@ index 0cd09e67ac14..3229b8bca2a2 100644
  	struct list_head node;
  	struct rproc_mem_entry trace_mem;
  };
-@@ -63,9 +63,10 @@ int rproc_of_parse_firmware(struct device *dev, int index,
+@@ -63,7 +63,7 @@ int rproc_of_parse_firmware(struct device *dev, int index,
  irqreturn_t rproc_vq_interrupt(struct rproc *rproc, int vq_id);
  
  /* from remoteproc_debugfs.c */
 -void rproc_remove_trace_file(struct dentry *tfile);
--struct dentry *rproc_create_trace_file(const char *name, struct rproc *rproc,
--				       struct rproc_debug_trace *trace);
 +void rproc_remove_trace_file(struct debugfs_node *tfile);
-+struct debugfs_node *rproc_create_trace_file(const char *name,
-+					     struct rproc *rproc,
-+					     struct rproc_debug_trace *trace);
+ struct debugfs_node *rproc_create_trace_file(const char *name, struct rproc *rproc,
+ 				       struct rproc_debug_trace *trace);
  void rproc_delete_debug_dir(struct rproc *rproc);
- void rproc_create_debug_dir(struct rproc *rproc);
- void rproc_init_debugfs(void);
 diff --git a/drivers/scsi/bfa/bfad_drv.h b/drivers/scsi/bfa/bfad_drv.h
 index 542dcf9663a5..02ee1e500301 100644
 --- a/drivers/scsi/bfa/bfad_drv.h
@@ -2624,7 +2607,7 @@ index ed65d02010e0..8290ea6391ef 100644
  	char name[];
  };
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 0bb9a7d1144a..e9423ddd5597 100644
+index ced765ad646d..e9423ddd5597 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
 @@ -473,21 +473,29 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
@@ -2642,8 +2625,9 @@ index 0bb9a7d1144a..e9423ddd5597 100644
  	return 0;
  }
  
- static struct dentry *blk_create_buf_file_callback(const char *filename,
+-static struct debugfs_node *blk_create_buf_file_callback(const char *filename,
 -						   struct debugfs_node *parent,
++static struct dentry *blk_create_buf_file_callback(const char *filename,
 +						   struct dentry *parent,
  						   umode_t mode,
  						   struct rchan_buf *buf,

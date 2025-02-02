@@ -325,26 +325,23 @@ idexpression struct debugfs_node *e;
 +debugfs_node_inode(e)
 
 @@
-type T = { struct debugfs_node * };
-idexpression T e;
+idexpression struct debugfs_node *e;
 @@
 
 -dput(e)
 +debugfs_node_put(e)
 
 @@
-type T = { struct debugfs_node * };
-idexpression T e;
+idexpression struct debugfs_node *e;
 @@
 
 -dget(e)
 +debugfs_node_get(e)
 
 @@
-type T = { struct debugfs_node * };
-idexpression T e;
+idexpression struct debugfs_node *e;
 @@
 
-- dentry_path_raw(e,
-+ debugfs_node_path_raw(e,
-  ...);
+- dentry_path_raw
++ debugfs_node_path_raw
+  (e, ...);

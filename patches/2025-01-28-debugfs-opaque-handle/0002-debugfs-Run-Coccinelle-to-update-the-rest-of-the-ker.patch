@@ -1,6 +1,6 @@
-From d483456efd38f9dc755b0d91f0baa8b01ca92ea9 Mon Sep 17 00:00:00 2001
+From 51b26442db6e2c2280cfae8dd7a8fc7223e8c000 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 2 Feb 2025 09:27:50 -0800
+Date: Sun, 2 Feb 2025 13:39:14 -0800
 Subject: [RFC PATCH 2/4] debugfs: Run Coccinelle to update the rest of the
  kernel
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -677,10 +677,10 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/wireless/ti/wlcore/hw_ops.h       |  2 +-
  drivers/net/wireless/virtual/mac80211_hwsim.c |  4 +-
  drivers/net/wwan/iosm/iosm_ipc_imem.h         |  4 +-
- drivers/net/wwan/iosm/iosm_ipc_trace.c        |  4 +-
+ drivers/net/wwan/iosm/iosm_ipc_trace.c        |  6 +-
  drivers/net/wwan/iosm/iosm_ipc_trace.h        |  2 +-
  drivers/net/wwan/t7xx/t7xx_pci.h              |  2 +-
- drivers/net/wwan/t7xx/t7xx_port_trace.c       | 10 +--
+ drivers/net/wwan/t7xx/t7xx_port_trace.c       | 12 +--
  drivers/net/wwan/wwan_core.c                  | 10 +--
  drivers/net/wwan/wwan_hwsim.c                 | 10 +--
  drivers/net/xen-netback/common.h              |  4 +-
@@ -757,7 +757,8 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/ras/debugfs.h                         |  4 +-
  drivers/regulator/core.c                      |  2 +-
  drivers/regulator/internal.h                  |  2 +-
- drivers/remoteproc/remoteproc_debugfs.c       |  4 +-
+ drivers/remoteproc/remoteproc_debugfs.c       |  6 +-
+ drivers/remoteproc/remoteproc_internal.h      |  2 +-
  drivers/s390/block/dasd.c                     | 22 +++---
  drivers/s390/block/dasd_int.h                 |  8 +-
  drivers/s390/char/zcore.c                     |  6 +-
@@ -994,7 +995,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  kernel/power/energy_model.c                   |  8 +-
  kernel/printk/index.c                         |  4 +-
  kernel/sched/debug.c                          | 16 ++--
- kernel/trace/blktrace.c                       |  6 +-
+ kernel/trace/blktrace.c                       |  8 +-
  lib/842/842_debugfs.h                         |  2 +-
  lib/debugobjects.c                            |  2 +-
  lib/dynamic_debug.c                           |  2 +-
@@ -1076,7 +1077,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  2 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  8 +-
- 1060 files changed, 2143 insertions(+), 2006 deletions(-)
+ 1061 files changed, 2148 insertions(+), 2011 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -13235,12 +13236,15 @@ index 5664ac507c90..b3b77dc46fb9 100644
  };
  
 diff --git a/drivers/net/wwan/iosm/iosm_ipc_trace.c b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-index eeecfa3d10c5..1070689b32cf 100644
+index eeecfa3d10c5..e9bc05d7e46d 100644
 --- a/drivers/net/wwan/iosm/iosm_ipc_trace.c
 +++ b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-@@ -33,7 +33,7 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
+@@ -31,9 +31,9 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
+ }
+ 
  /* Creates relay file in debugfs. */
- static struct dentry *
+-static struct dentry *
++static struct debugfs_node *
  ipc_trace_create_buf_file_handler(const char *filename,
 -				  struct dentry *parent,
 +				  struct debugfs_node *parent,
@@ -13283,14 +13287,16 @@ index b25d867e72d2..14e26d01d768 100644
  	u32			mode;
  	bool			debug_ports_show;
 diff --git a/drivers/net/wwan/t7xx/t7xx_port_trace.c b/drivers/net/wwan/t7xx/t7xx_port_trace.c
-index 4ed8b4e29bf1..6e219ea7d530 100644
+index 4ed8b4e29bf1..98cdceeb6048 100644
 --- a/drivers/net/wwan/t7xx/t7xx_port_trace.c
 +++ b/drivers/net/wwan/t7xx/t7xx_port_trace.c
-@@ -16,7 +16,7 @@
+@@ -15,8 +15,8 @@
+ #define T7XX_TRC_SUB_BUFF_SIZE		131072
  #define T7XX_TRC_N_SUB_BUFF		32
  
- static struct dentry *t7xx_trace_create_buf_file_handler(const char *filename,
+-static struct dentry *t7xx_trace_create_buf_file_handler(const char *filename,
 -							 struct dentry *parent,
++static struct debugfs_node *t7xx_trace_create_buf_file_handler(const char *filename,
 +							 struct debugfs_node *parent,
  							 umode_t mode,
  							 struct rchan_buf *buf,
@@ -14879,7 +14885,7 @@ index b3d48dc38bc4..13ea51270bc4 100644
  
  extern const struct class regulator_class;
 diff --git a/drivers/remoteproc/remoteproc_debugfs.c b/drivers/remoteproc/remoteproc_debugfs.c
-index b86c1d09c70c..1bebfc8f847a 100644
+index b86c1d09c70c..a48b7f3d5380 100644
 --- a/drivers/remoteproc/remoteproc_debugfs.c
 +++ b/drivers/remoteproc/remoteproc_debugfs.c
 @@ -25,7 +25,7 @@
@@ -14891,7 +14897,7 @@ index b86c1d09c70c..1bebfc8f847a 100644
  
  /*
   * A coredump-configuration-to-string lookup table, for exposing a
-@@ -378,7 +378,7 @@ static int rproc_carveouts_show(struct seq_file *seq, void *p)
+@@ -378,12 +378,12 @@ static int rproc_carveouts_show(struct seq_file *seq, void *p)
  
  DEFINE_SHOW_ATTRIBUTE(rproc_carveouts);
  
@@ -14900,6 +14906,25 @@ index b86c1d09c70c..1bebfc8f847a 100644
  {
  	debugfs_remove(tfile);
  }
+ 
+-struct dentry *rproc_create_trace_file(const char *name, struct rproc *rproc,
++struct debugfs_node *rproc_create_trace_file(const char *name, struct rproc *rproc,
+ 				       struct rproc_debug_trace *trace)
+ {
+ 	return debugfs_create_file(name, 0400, rproc->dbg_dir, trace,
+diff --git a/drivers/remoteproc/remoteproc_internal.h b/drivers/remoteproc/remoteproc_internal.h
+index 0cd09e67ac14..ec2b32c65989 100644
+--- a/drivers/remoteproc/remoteproc_internal.h
++++ b/drivers/remoteproc/remoteproc_internal.h
+@@ -64,7 +64,7 @@ irqreturn_t rproc_vq_interrupt(struct rproc *rproc, int vq_id);
+ 
+ /* from remoteproc_debugfs.c */
+ void rproc_remove_trace_file(struct dentry *tfile);
+-struct dentry *rproc_create_trace_file(const char *name, struct rproc *rproc,
++struct debugfs_node *rproc_create_trace_file(const char *name, struct rproc *rproc,
+ 				       struct rproc_debug_trace *trace);
+ void rproc_delete_debug_dir(struct rproc *rproc);
+ void rproc_create_debug_dir(struct rproc *rproc);
 diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
 index 3ed642f4f00d..ddafbc489b72 100644
 --- a/drivers/s390/block/dasd.c
@@ -19478,10 +19503,10 @@ index fd7e85220715..9776f59a7db4 100644
  			snprintf(buf, sizeof(buf), "domain%d", i);
  			d_sd = debugfs_create_dir(buf, d_cpu);
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 3679a6d18934..0bb9a7d1144a 100644
+index 3679a6d18934..ced765ad646d 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -473,7 +473,7 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
+@@ -473,15 +473,15 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
  	return 0;
  }
  
@@ -19490,11 +19515,12 @@ index 3679a6d18934..0bb9a7d1144a 100644
  {
  	debugfs_remove(dentry);
  
-@@ -481,7 +481,7 @@ static int blk_remove_buf_file_callback(struct dentry *dentry)
+ 	return 0;
  }
  
- static struct dentry *blk_create_buf_file_callback(const char *filename,
+-static struct dentry *blk_create_buf_file_callback(const char *filename,
 -						   struct dentry *parent,
++static struct debugfs_node *blk_create_buf_file_callback(const char *filename,
 +						   struct debugfs_node *parent,
  						   umode_t mode,
  						   struct rchan_buf *buf,

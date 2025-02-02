@@ -34,25 +34,24 @@ git format-patch master...HEAD \
   - Fill out commit messages
   - Fill out cover letter
   - Decide on subject. Should we not mention kernfs in any of this?
-
-## Thorough testing
-
-- Compile with debugfs disabled in kernel
-- Do a make mrproper and a full rebuild, just to be sure (ensure I have `allmodconfig` or `allyesconfig`)
-- Make a script that reads all debugfs file in qemu
-- Inspect output of these
-
-  ```
-  $ rg 'struct dentry \*.*(debug|dbg).*' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
-  $ rg '(debug|dbg).*struct dentry \*' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
-  ```
+  - Actually go through testing again before submitting!
+    - See "Testing" section of cover letter and run through it.
 
 ## Non-coccinelle changes
+
+- Core debugfs commit:
+  - Change commit message to: debugfs: Introduce opaque debugfs_node to replace dentry pointers
+  - Add message body
+  - Fix references to dentry and struct dentry in comments
+  - Check that I'm not using d_inode on a `debugfs_node`
 
 - Try removing a few `debugfs_node_dentry` calls. I think they are only used for `%pd2` printf'ing and fetching a parent.
   - Consider a `->d_parent` -> new helper `debugfs_node_parent` and add to Coccinelle as well
 
 ## Coccinelle
+
+- Clean up script. Pick either the old script or test the new script and see if that works.
+- Don't hard code all of the debugfs functions. They should be found with the regex. We might just need the macros, but even then the regex should catch those.
 
 - Investigate wrapper functions not getting transformed in `drivers/cxl/cxlmem.h` and `drivers/cxl/mem.c`
 - `scmi_raw_mode_init` has declaration arg type changed, but not header prototype
@@ -131,6 +130,7 @@ Good directories/files to test:
   - `include/linux/mlx5/driver.h`
   - `bnxt_re.h` has an even simpler one that wasn't caught
   - `drivers/crypto/intel/qat/qat_common/adf_cfg.c` (and `.h`)
+- `drivers/gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c` has `struct dentry *de = ras->de_ras_eeprom_table` and a `d_inode`
 
 Run patch script with (note that `--in-place` doesn't appear to work):
 

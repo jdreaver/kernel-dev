@@ -1,4 +1,4 @@
-From 8e98b7ddd55f877ffcb205963046f2277c06d2ff Mon Sep 17 00:00:00 2001
+From 8774c2d5f5021ddffc974d7e1e73570daa031515 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sat, 1 Feb 2025 06:45:03 -0800
 Subject: [RFC PATCH 4/4] relay: Use debugfs_node instead of dentry
@@ -26,12 +26,12 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../net/wireless/ath/ath9k/common-spectral.c  | 22 +++--
  .../wireless/mediatek/mt76/mt7915/debugfs.c   | 22 +++--
  .../wireless/mediatek/mt76/mt7996/debugfs.c   | 22 +++--
- drivers/net/wwan/iosm/iosm_ipc_trace.c        | 18 ++--
+ drivers/net/wwan/iosm/iosm_ipc_trace.c        | 16 ++--
  drivers/net/wwan/t7xx/t7xx_port_trace.c       | 28 +++---
  include/linux/relay.h                         | 19 ++--
  kernel/relay.c                                | 89 ++++++++++---------
  kernel/trace/blktrace.c                       | 20 ++---
- 12 files changed, 156 insertions(+), 193 deletions(-)
+ 12 files changed, 155 insertions(+), 192 deletions(-)
 
 diff --git a/Documentation/filesystems/relay.rst b/Documentation/filesystems/relay.rst
 index 04ad083cfe62..b0ee7dcab8e7 100644
@@ -457,15 +457,12 @@ index 63a2d4c3dc64..de7c93894f6e 100644
  	if (!dev->relay_fwlog)
  		return -ENOMEM;
 diff --git a/drivers/net/wwan/iosm/iosm_ipc_trace.c b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-index 9417a15b66f4..a9d5214f90c8 100644
+index 047e325bc563..a9d5214f90c8 100644
 --- a/drivers/net/wwan/iosm/iosm_ipc_trace.c
 +++ b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-@@ -31,27 +31,23 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
- }
- 
+@@ -33,25 +33,21 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
  /* Creates relay file in debugfs. */
--static struct dentry *
-+static struct debugfs_node *
+ static struct debugfs_node *
  ipc_trace_create_buf_file_handler(const char *filename,
 -				  struct dentry *parent,
 +				  struct debugfs_node *parent,

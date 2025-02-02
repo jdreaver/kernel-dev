@@ -125,12 +125,23 @@ int do_stuff(struct dentry *arg)
 	d_inode(blah->foo);
 	d_inode(blah->inner.inner);
 
-	blah->foo->d_inode;;
+	blah->foo->d_inode;
 	blah->inner.inner->d_inode;
 
 	struct dentry *direct = blah->foo;
 
 
+}
+
+struct alread_migrated {
+	struct debugfs_node *node;
+};
+
+void test_migrated(void)
+{
+	struct alread_migrated *migrated;
+
+	d_inode(migrated->node);
 }
 
 void another_function(void)

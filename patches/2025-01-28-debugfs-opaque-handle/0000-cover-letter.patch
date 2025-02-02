@@ -1,8 +1,8 @@
-From 8e98b7ddd55f877ffcb205963046f2277c06d2ff Mon Sep 17 00:00:00 2001
+From 8774c2d5f5021ddffc974d7e1e73570daa031515 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 2 Feb 2025 09:28:14 -0800
-Subject: [RFC PATCH 0/4] debugfs: Use opaque handle for debugfs nodes instead
- of dentry
+Date: Sun, 2 Feb 2025 13:40:23 -0800
+Subject: [RFC PATCH 0/4] debugfs: Replace dentry with an opaque handle in
+ debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>
@@ -42,13 +42,13 @@ squashed into one commit when merged. Commits:
 3. Manual fixes for cases Coccinelle missed.
 4. Update relay system to use debugfs_node instead of dentry.
 
-The changes to fs/debugfs/ are straightfoward, swapping dentry with
+The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
 between the two as needed. I only had to add a few trivial helper
 functions for a small number of debugfs users. Also, huge thanks to Al
 Viro, who recently refactored this code, which simplified this change.
 
-Most changes outside of fs/debugfs/ where mechanical, and thankfully
+Most changes outside of fs/debugfs/ were mechanical, and thankfully
 Coccinelle could handle them. I had to manually fix situations that
 Coccinelle couldn't handle, like variable definitions nested in layers
 of headers or function calls, code inside macros, etc.
@@ -88,10 +88,10 @@ Challenges I encountered:
 
 - Running a single spatch invocation over the whole tree produces
   inconsistent results because of how header diffs are resolved. spatch
-  can take different "paths" to get to a header file, which can result
-  in different -- somtimes conflicting -- changes. I avoided this
-  problem by writing a bash script that runs spatch against any files
-  containing "dentry" or "debugfs", one-by-one.
+  can take different paths to resolve a header file, sometimes resulting
+  in different patch hunks. I avoided this problem by writing a bash
+  script that runs spatch against any files containing "dentry" or
+  "debugfs", one-by-one.
 
 - The script is more verbose than I would like. I started small but had
   to break out cases and duplicate rules for reliability.
@@ -99,18 +99,23 @@ Challenges I encountered:
 I focused on handling the most common cases rather than covering every
 edge case, balancing script complexity with effectiveness. The script
 performs pretty well -- most of this patch set was generated from it.
+All clever attempts I made to add new rules resulted in needing more
+manual fixups.
 
 Testing
 =======
 
-TODO:
-- compiled with allmodconfig
-- Try to read every debugfs file in my kernel
-- Ran this:
+This was tested by building the kernel with allmodconfig. I also loaded
+this kernel into a QEMU system and ran:
 
-  $ rg 'struct dentry \*.*(debug|dbg).*' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
-  $ rg '(debug|dbg).*struct dentry \*' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
+  find /sys/kernel/debug -type f -exec stat {} +
 
+To catch any missed instances of dentry declarations related to debugfs,
+I ran the following ripgrep command and reviewed its output to ensure I
+didn't miss anything obvious:
+
+  rg 'struct dentry \*.*(debug|dbg)|(debug|dbg).*struct dentry \*' -g '*.{c,h}' \
+    -g '!fs/debugfs' -g '!include/linux/debugfs.h'
 
 Links
 =====
@@ -899,7 +904,7 @@ David Reaver (4):
  drivers/regulator/core.c                      |   2 +-
  drivers/regulator/internal.h                  |   2 +-
  drivers/remoteproc/remoteproc_debugfs.c       |   6 +-
- drivers/remoteproc/remoteproc_internal.h      |   9 +-
+ drivers/remoteproc/remoteproc_internal.h      |   6 +-
  drivers/s390/block/dasd.c                     |  22 +-
  drivers/s390/block/dasd_int.h                 |   8 +-
  drivers/s390/char/zcore.c                     |   6 +-
@@ -1234,7 +1239,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2896 insertions(+), 2613 deletions(-)
+ 1109 files changed, 2894 insertions(+), 2612 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45
