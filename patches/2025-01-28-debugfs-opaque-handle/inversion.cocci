@@ -62,24 +62,16 @@ identifier f = { find_debugfs_functions.f, find_wrapper_ret.f, find_wrapper_args
 
 f(...)
 
+//
+// Standalone declarations
+//
 @find_dentry_decls@
 identifier var;
 position p;
 @@
 
-// N.B. Matches static globals, function args, and locals too.
+// N.B. Matches static globals too
 struct dentry@p *var;
-
-@find_dentry_struct_decls@
-identifier var, struct_name;
-position p;
-@@
-
-struct struct_name {
-       ...
-       struct dentry@p *var;
-       ...
-};
 
 @find_decl_use@
 identifier all_functions.f;
@@ -91,6 +83,28 @@ identifier find_dentry_decls.var;
 |
   f(..., var, ...)
 )
+
+@change_decl_types depends on find_decl_use type@
+position p = { find_dentry_decls.p };
+@@
+
+struct
+-dentry@p
++debugfs_node
+
+//
+// Struct fields
+//
+@find_dentry_struct_decls@
+identifier var, struct_name;
+position p;
+@@
+
+struct struct_name {
+       ...
+       struct dentry@p *var;
+       ...
+};
 
 @find_struct_use@
 identifier all_functions.f;
@@ -108,14 +122,6 @@ expression E;
   f(..., E.var, ...)
 )
 
-@change_decl_types depends on find_decl_use type@
-position p = { find_dentry_decls.p };
-@@
-
-struct
--dentry@p
-+debugfs_node
-
 @change_struct_decl_types depends on find_struct_use type@
 position p = { find_dentry_struct_decls.p };
 @@
@@ -123,3 +129,44 @@ position p = { find_dentry_struct_decls.p };
 struct
 -dentry@p
 +debugfs_node
+
+//
+// Function args
+//
+@@
+identifier var, fn;
+identifier all_functions.f;
+@@
+
+fn(...,
+  struct
+- dentry
++ debugfs_node
+  *var, ...)
+{
+  ...
+(
+  var = f(...)
+|
+  f(..., var, ...)
+)
+  ...
+}
+
+//
+// Function return types
+//
+@exists@
+identifier f;
+idexpression struct debugfs_node *e;
+@@
+
+struct
+- dentry
++ debugfs_node
+ *f(...)
+{
+  ...
+  return e;
+  ...
+}
