@@ -1,6 +1,6 @@
-From 032884492e747c0e16027bce31dd5e766b4f8dc8 Mon Sep 17 00:00:00 2001
+From 2ade182cc683ece2e5e5aa2711d38b6cb3f64e55 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sat, 1 Feb 2025 20:56:54 -0800
+Date: Sun, 2 Feb 2025 07:23:19 -0800
 Subject: [RFC PATCH 0/4] debugfs: Use opaque handle for debugfs nodes instead
  of dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -505,7 +505,7 @@ David Reaver (4):
  drivers/infiniband/hw/bnxt_re/ib_verbs.h      |   2 +-
  drivers/infiniband/hw/cxgb4/device.c          |   2 +-
  drivers/infiniband/hw/cxgb4/iw_cxgb4.h        |   2 +-
- drivers/infiniband/hw/hfi1/debugfs.c          |   8 +-
+ drivers/infiniband/hw/hfi1/debugfs.c          |   4 +-
  drivers/infiniband/hw/hfi1/fault.c            |   4 +-
  drivers/infiniband/hw/hfi1/fault.h            |   2 +-
  drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
@@ -703,7 +703,7 @@ David Reaver (4):
  drivers/net/netdevsim/dev.c                   |   6 +-
  drivers/net/netdevsim/ethtool.c               |   2 +-
  drivers/net/netdevsim/fib.c                   |   2 +-
- drivers/net/netdevsim/netdevsim.h             |  26 +--
+ drivers/net/netdevsim/netdevsim.h             |  28 +--
  drivers/net/netdevsim/psample.c               |   2 +-
  drivers/net/phy/sfp.c                         |   2 +-
  drivers/net/wireless/ath/ath10k/core.h        |   2 +-
@@ -951,7 +951,7 @@ David Reaver (4):
  drivers/thermal/mediatek/lvts_thermal.c       |   4 +-
  drivers/thermal/qcom/tsens.h                  |   4 +-
  drivers/thermal/tegra/soctherm.c              |   4 +-
- drivers/thermal/testing/command.c             |   7 +-
+ drivers/thermal/testing/command.c             |   5 +-
  drivers/thermal/testing/thermal_testing.h     |   2 +-
  drivers/thermal/testing/zone.c                |   2 +-
  drivers/thermal/thermal_debugfs.c             |  11 +-
@@ -1222,7 +1222,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1109 files changed, 2900 insertions(+), 2616 deletions(-)
+ 1109 files changed, 2898 insertions(+), 2614 deletions(-)
 
 
 base-commit: 60c828cf80c07394762a1edfaff63bea55cc8e45

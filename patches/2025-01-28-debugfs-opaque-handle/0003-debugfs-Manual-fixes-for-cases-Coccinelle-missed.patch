@@ -1,4 +1,4 @@
-From eff38e1ff6343040d83b597629aefbcfe6418c51 Mon Sep 17 00:00:00 2001
+From eed71accd4b349f8aa9642830ce0580d106473dd Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: Manual fixes for cases Coccinelle missed
@@ -37,6 +37,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/gpu/drm/xlnx/zynqmp_dp.c              |   8 +-
  drivers/gpu/host1x/dev.h                      |   2 +-
  drivers/hwmon/asus_atk0110.c                  |   2 +-
+ drivers/infiniband/hw/hfi1/debugfs.c          |   4 +-
  drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
  drivers/infiniband/hw/hns/hns_roce_debugfs.h  |   4 +-
  drivers/infiniband/hw/ocrdma/ocrdma.h         |   2 +-
@@ -62,6 +63,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/ethernet/netronome/nfp/nfp_net.h  |   4 +-
  .../ethernet/netronome/nfp/nfp_net_debugfs.c  |   2 +-
  drivers/net/ethernet/qualcomm/qca_spi.h       |   2 +-
+ drivers/net/netdevsim/netdevsim.h             |   2 +-
  drivers/net/wireless/ath/ath10k/spectral.c    |  17 +-
  drivers/net/wireless/ath/ath11k/spectral.c    |  19 +-
  drivers/net/wireless/ath/ath11k/spectral.h    |   6 +-
@@ -91,6 +93,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/scsi/bfa/bfad_drv.h                   |   2 +-
  drivers/scsi/lpfc/lpfc_debugfs.c              |  40 ++--
  drivers/soc/qcom/qcom_aoss.c                  |   4 +-
+ drivers/thermal/testing/command.c             |   4 +-
  fs/bcachefs/bcachefs.h                        |   4 +-
  fs/ceph/super.h                               |   4 +-
  fs/ubifs/debug.c                              |  62 +++---
@@ -123,7 +126,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  net/wireless/debugfs.c                        |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 108 files changed, 492 insertions(+), 413 deletions(-)
+ 111 files changed, 497 insertions(+), 418 deletions(-)
 
 diff --git a/drivers/accel/habanalabs/common/habanalabs.h b/drivers/accel/habanalabs/common/habanalabs.h
 index 6f27ce4fa01b..ca5ee6bb5b02 100644
@@ -614,6 +617,28 @@ index f1862b8c37c8..57db75aa8a11 100644
  		u32 id;
  	} debugfs;
  };
+diff --git a/drivers/infiniband/hw/hfi1/debugfs.c b/drivers/infiniband/hw/hfi1/debugfs.c
+index 3b5dfa8a54d6..3e9ef6b75dc5 100644
+--- a/drivers/infiniband/hw/hfi1/debugfs.c
++++ b/drivers/infiniband/hw/hfi1/debugfs.c
+@@ -26,7 +26,7 @@ static struct debugfs_node *hfi1_dbg_root;
+ ssize_t hfi1_seq_read(struct file *file, char __user *buf, size_t size,
+ 		      loff_t *ppos)
+ {
+-	struct debugfs_node *d = file->f_path.dentry;
++	struct dentry *d = file->f_path.dentry;
+ 	ssize_t r;
+ 
+ 	r = debugfs_file_get(d);
+@@ -39,7 +39,7 @@ ssize_t hfi1_seq_read(struct file *file, char __user *buf, size_t size,
+ 
+ loff_t hfi1_seq_lseek(struct file *file, loff_t offset, int whence)
+ {
+-	struct debugfs_node *d = file->f_path.dentry;
++	struct dentry *d = file->f_path.dentry;
+ 	loff_t r;
+ 
+ 	r = debugfs_file_get(d);
 diff --git a/drivers/infiniband/hw/hfi1/verbs.h b/drivers/infiniband/hw/hfi1/verbs.h
 index 070e4f0babe8..e8c0ff01353f 100644
 --- a/drivers/infiniband/hw/hfi1/verbs.h
@@ -1089,6 +1114,19 @@ index 90b290f94c27..ee558d6254f5 100644
  #endif
  
  	/* user configurable options */
+diff --git a/drivers/net/netdevsim/netdevsim.h b/drivers/net/netdevsim/netdevsim.h
+index a1b920eb6844..57a22c30a59a 100644
+--- a/drivers/net/netdevsim/netdevsim.h
++++ b/drivers/net/netdevsim/netdevsim.h
+@@ -134,7 +134,7 @@ struct netdevsim {
+ 		u32 sleep;
+ 		u32 __ports[2][NSIM_UDP_TUNNEL_N_PORTS];
+ 		u32 (*ports)[NSIM_UDP_TUNNEL_N_PORTS];
+-		struct dentry *ddir;
++		struct debugfs_node *ddir;
+ 		struct debugfs_u32_array dfs_ports[2];
+ 	} udp_ports;
+ 
 diff --git a/drivers/net/wireless/ath/ath10k/spectral.c b/drivers/net/wireless/ath/ath10k/spectral.c
 index 82e4a530a605..f0009d2e759c 100644
 --- a/drivers/net/wireless/ath/ath10k/spectral.c
@@ -2099,6 +2137,28 @@ index c745cd9830f1..c0735ecae4a7 100644
  			entry = &qmp_debugfs_entries[i];
  			break;
  		}
+diff --git a/drivers/thermal/testing/command.c b/drivers/thermal/testing/command.c
+index acd74d01dc23..71b989078683 100644
+--- a/drivers/thermal/testing/command.c
++++ b/drivers/thermal/testing/command.c
+@@ -139,7 +139,7 @@ static int tt_command_exec(int index, const char *arg)
+ 	return ret;
+ }
+ 
+-static ssize_t tt_command_process(struct debugfs_node *dentry,
++static ssize_t tt_command_process(struct dentry *dentry,
+ 				  const char __user *user_buf,
+ 				  size_t count)
+ {
+@@ -174,7 +174,7 @@ static ssize_t tt_command_process(struct debugfs_node *dentry,
+ static ssize_t tt_command_write(struct file *file, const char __user *user_buf,
+ 				size_t count, loff_t *ppos)
+ {
+-	struct debugfs_node *dentry = file->f_path.dentry;
++	struct dentry *dentry = file->f_path.dentry;
+ 	ssize_t ret;
+ 
+ 	if (*ppos)
 diff --git a/fs/bcachefs/bcachefs.h b/fs/bcachefs/bcachefs.h
 index 161cf2f05d2a..52978e5fd439 100644
 --- a/fs/bcachefs/bcachefs.h
