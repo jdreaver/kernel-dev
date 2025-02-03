@@ -28,12 +28,16 @@ About this patch series
 
 The commits in this series do the following:
 
-1. Add "#define debugfs_node dentry"
-2. Add a debugfs few helper functions used by the Coccinelle script
+1. Add a temporary "#define debugfs_node dentry".
+2. Add a few debugfs helper functions used by the Coccinelle script.
 3. Update relay system to use debugfs_node instead of dentry.
-4. Run Coccinelle to convert most of the kernel to debugfs_node
+4. Run Coccinelle to convert most of the kernel to debugfs_node.
 5. Manual fixes for cases Coccinelle missed.
-6. Remove the #define and use struct debugfs_node in debugfs
+6. Remove the #define and use struct debugfs_node in debugfs.
+
+I put the #define in _both_ debugfs.h and dentry.h so I didn't have to
+poke around and add tons of #include<linux/debugfs.h> just to remove
+them in the last commit.
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert

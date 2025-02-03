@@ -1,6 +1,6 @@
-From 348b060257e292664181f6d46b1e5dad37cb417a Mon Sep 17 00:00:00 2001
+From 8d34f2e563f0d2fe958737cc16f6f4034d413e8c Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 15:44:38 -0800
+Date: Mon, 3 Feb 2025 15:55:56 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -42,12 +42,16 @@ About this patch series
 
 The commits in this series do the following:
 
-1. Add "#define debugfs_node dentry"
-2. Add a debugfs few helper functions used by the Coccinelle script
+1. Add a temporary "#define debugfs_node dentry".
+2. Add a few debugfs helper functions used by the Coccinelle script.
 3. Update relay system to use debugfs_node instead of dentry.
-4. Run Coccinelle to convert most of the kernel to debugfs_node
+4. Run Coccinelle to convert most of the kernel to debugfs_node.
 5. Manual fixes for cases Coccinelle missed.
-6. Remove the #define and use struct debugfs_node in debugfs
+6. Remove the #define and use struct debugfs_node in debugfs.
+
+I put the #define in _both_ debugfs.h and dentry.h so I didn't have to
+poke around and add tons of #include<linux/debugfs.h> just to remove
+them in the last commit.
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
@@ -466,12 +470,12 @@ idexpression struct debugfs_node *e;
 ---
 
 David Reaver (6):
-  debugfs: Define debugfs_node to be dentry
+  debugfs: Add temporary "#define debugfs_node dentry"
   debugfs: Add helper functions to encapsulate debugfs_node
   relay: Use debugfs_node instead of dentry
   debugfs: Automated conversion of dentry to debugfs_node
   debugfs: Manual fixes for cases Coccinelle missed
-  debugfs: Introduce opaque debugfs_node to replace dentry pointers
+  debugfs: Replace debugfs_node define with struct wrapping dentry
 
  Documentation/filesystems/relay.rst           |  32 ++-
  arch/arm/mach-omap1/pm.c                      |   2 +-

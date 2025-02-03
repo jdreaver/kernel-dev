@@ -1,4 +1,4 @@
-From a6dff2bd61b0cbbd580615804e0eda3cd7302d46 Mon Sep 17 00:00:00 2001
+From dbee15d74482b6308c41738e32dd15473978dedd Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:25:34 -0800
 Subject: [RFC PATCH 2/6] debugfs: Add helper functions to encapsulate
@@ -75,10 +75,10 @@ index 75715d8877ee..6892538d9d49 100644
  {
  	struct dentry *dentry;
 diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index fa2568b4380d..093f29325f22 100644
+index e6ee571e8c36..33b4c3c9a5a9 100644
 --- a/include/linux/debugfs.h
 +++ b/include/linux/debugfs.h
-@@ -77,10 +77,23 @@ struct debugfs_short_fops {
+@@ -79,10 +79,23 @@ struct debugfs_short_fops {
  
  struct dentry *debugfs_lookup(const char *name, struct dentry *parent);
  
@@ -102,7 +102,7 @@ index fa2568b4380d..093f29325f22 100644
  struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
  					 struct dentry *parent, void *data,
  					 const void *aux,
-@@ -269,6 +282,35 @@ static inline struct dentry *debugfs_lookup(const char *name,
+@@ -271,6 +284,35 @@ static inline struct dentry *debugfs_lookup(const char *name,
  	return ERR_PTR(-ENODEV);
  }
  
