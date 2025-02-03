@@ -1,6 +1,6 @@
-From 84d635a93aa25e458f42d2fdfdff3ee6d4d8fef4 Mon Sep 17 00:00:00 2001
+From f109edc03558d32c62bbb3b03a61b2200d521d05 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 07:04:31 -0800
+Date: Mon, 3 Feb 2025 08:29:11 -0800
 Subject: [RFC PATCH 0/4] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -14,8 +14,8 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
-This patch series replaces raw dentry pointers in debugfs with an opaque
-wrapper struct:
+This patch series replaces raw dentry pointers in the debugfs API with
+an opaque wrapper struct:
 
 	struct debugfs_node {
 		struct dentry dentry;
@@ -24,12 +24,14 @@ wrapper struct:
 Background
 ==========
 
-Using dentry pointers in debugfs is an anti-pattern. Ideally, a dentry
-and inode should only exist when needed, rather than being core to a
-pseudo-filesystem. A few kernel developers have expressed a desire to
-use an opaque handle for debugfs nodes instead of dentry pointers
-[1][2][3]. This change makes internal debugfs migrations -- whether to
-kernfs or another approach -- easier.
+debugfs currently relies on dentry to represent its filesystem
+hierarchy, and its API directly exposes dentry pointers to users. This
+tight coupling makes it harder to change debugfs internals without
+affecting external users. A dentry and inode should exist only when
+needed, rather than being persistently tied to debugfs. Some kernel
+developers have suggested using an opaque handle for debugfs nodes
+instead of dentry pointers [1][2][3]. This change simplifies future
+debugfs migrations away from dentry.
 
 About this patch series
 =======================
@@ -1034,7 +1036,7 @@ David Reaver (4):
  fs/ceph/super.h                               |  14 +-
  fs/debugfs/file.c                             | 117 ++++-----
  fs/debugfs/inode.c                            | 232 +++++++++++-------
- fs/debugfs/internal.h                         |   7 +
+ fs/debugfs/internal.h                         |   6 +
  fs/dlm/debug_fs.c                             |   6 +-
  fs/dlm/dlm_internal.h                         |  12 +-
  fs/f2fs/debug.c                               |   2 +-
@@ -1245,7 +1247,7 @@ David Reaver (4):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1115 files changed, 2951 insertions(+), 2669 deletions(-)
+ 1115 files changed, 2950 insertions(+), 2669 deletions(-)
 
 
 base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b

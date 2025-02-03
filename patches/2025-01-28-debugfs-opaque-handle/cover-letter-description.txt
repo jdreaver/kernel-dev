@@ -1,7 +1,7 @@
 debugfs: Replace dentry with an opaque handle in debugfs API
 
-This patch series replaces raw dentry pointers in debugfs with an opaque
-wrapper struct:
+This patch series replaces raw dentry pointers in the debugfs API with
+an opaque wrapper struct:
 
 	struct debugfs_node {
 		struct dentry dentry;
@@ -10,12 +10,14 @@ wrapper struct:
 Background
 ==========
 
-Using dentry pointers in debugfs is an anti-pattern. Ideally, a dentry
-and inode should only exist when needed, rather than being core to a
-pseudo-filesystem. A few kernel developers have expressed a desire to
-use an opaque handle for debugfs nodes instead of dentry pointers
-[1][2][3]. This change makes internal debugfs migrations -- whether to
-kernfs or another approach -- easier.
+debugfs currently relies on dentry to represent its filesystem
+hierarchy, and its API directly exposes dentry pointers to users. This
+tight coupling makes it harder to change debugfs internals without
+affecting external users. A dentry and inode should exist only when
+needed, rather than being persistently tied to debugfs. Some kernel
+developers have suggested using an opaque handle for debugfs nodes
+instead of dentry pointers [1][2][3]. This change simplifies future
+debugfs migrations away from dentry.
 
 About this patch series
 =======================

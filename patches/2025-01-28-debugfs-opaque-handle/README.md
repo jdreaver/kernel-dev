@@ -1,4 +1,4 @@
-# Migrate `debugfs` to use `kernfs` under the hood
+# Migrate `debugfs` to use and opaque pointer instead of dentry in its API
 
 Related: [2025-01-19-sample-kernfs](../2025-01-19-sample-kernfs) and [2025-01-22-port-tracefs-kernfs](../2025-01-22-port-tracefs-kernfs).
 
@@ -33,7 +33,6 @@ git format-patch master...HEAD \
   - Send to Steve first?
   - Fill out commit messages
   - Fill out cover letter
-  - Decide on subject. Should we not mention kernfs in any of this?
   - Actually go through testing again before submitting!
 - Check for TODO items
 - Use clang or a different nix-shell for cross-compilation (and add that I did that to test procedure)

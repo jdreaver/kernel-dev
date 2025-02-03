@@ -1,4 +1,4 @@
-From 1487199095cb239f338192337fa9082351366890 Mon Sep 17 00:00:00 2001
+From 2c51c6d7ab499255bddaab25b0c26f84cd847fcd Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 28 Jan 2025 13:53:41 -0800
 Subject: [RFC PATCH 1/4] debugfs: Introduce opaque debugfs_node to replace
@@ -18,9 +18,9 @@ Signed-off-by: David Reaver <me@davidreaver.com>
 ---
  fs/debugfs/file.c       | 117 ++++++++++----------
  fs/debugfs/inode.c      | 232 ++++++++++++++++++++++++++--------------
- fs/debugfs/internal.h   |   7 ++
+ fs/debugfs/internal.h   |   6 ++
  include/linux/debugfs.h | 190 +++++++++++++++++++-------------
- 4 files changed, 328 insertions(+), 218 deletions(-)
+ 4 files changed, 327 insertions(+), 218 deletions(-)
 
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
 index 69e9ddcb113d..327cea02761e 100644
@@ -830,10 +830,10 @@ index 75715d8877ee..7f0ba38ad0d6 100644
  	struct inode *dir;
  	va_list ap;
 diff --git a/fs/debugfs/internal.h b/fs/debugfs/internal.h
-index 93483fe84425..3dd345ce161f 100644
+index 93483fe84425..c7a9a62dfcd0 100644
 --- a/fs/debugfs/internal.h
 +++ b/fs/debugfs/internal.h
-@@ -7,10 +7,17 @@
+@@ -7,10 +7,16 @@
  
  #ifndef _DEBUGFS_INTERNAL_H_
  #define _DEBUGFS_INTERNAL_H_
@@ -843,7 +843,6 @@ index 93483fe84425..3dd345ce161f 100644
  
  struct file_operations;
  
-+/* Opaque handle to debugfs nodes to support migration to kernfs. */
 +struct debugfs_node {
 +	struct dentry dentry;
 +};

@@ -1,4 +1,4 @@
-From f9f28b70b0f9401dc041d2b20916318ae858aa0b Mon Sep 17 00:00:00 2001
+From 30f84d422b20b67100010c659985b66e4f910b49 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 2 Feb 2025 13:39:14 -0800
 Subject: [RFC PATCH 2/4] debugfs: Run Coccinelle to update the rest of the
