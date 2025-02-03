@@ -1,4 +1,4 @@
-From f109edc03558d32c62bbb3b03a61b2200d521d05 Mon Sep 17 00:00:00 2001
+From 2d555124da63f2eb054275cb274cb0f6a3a943e1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sat, 1 Feb 2025 06:45:03 -0800
 Subject: [RFC PATCH 4/4] relay: Use debugfs_node instead of dentry
@@ -13,9 +13,13 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
-This is a more invasive change that I thought would be more illustrative as
-its own commit. The actual diff for these files once these are squashed is
-much smaller.
+Update the relay system to use debugfs_node instead of dentry.
+
+Relay debugfs support previously used dentry pointers directly. Since all
+relay users rely on debugfs, this commit updates the relay API to accept
+debugfs_node instead.
+
+Documentation and function signatures have been updated accordingly.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---

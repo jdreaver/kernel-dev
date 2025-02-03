@@ -1,4 +1,4 @@
-From 07de556c7d479a169c30ba9d69d63064a9176684 Mon Sep 17 00:00:00 2001
+From c9814916630c432e90dddd573b99461dbe19e207 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: Manual fixes for cases Coccinelle missed
@@ -12,6 +12,12 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     linux-fsdevel@vger.kernel.org,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
+
+Fix incomplete or incorrect conversions from dentry to debugfs_node.
+
+This commit addresses cases where Coccinelle could not perform a complete
+conversion. All remaining dentry references in debugfs-related code should
+now be intentional and necessary.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---

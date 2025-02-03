@@ -1,6 +1,6 @@
-From f109edc03558d32c62bbb3b03a61b2200d521d05 Mon Sep 17 00:00:00 2001
+From 2d555124da63f2eb054275cb274cb0f6a3a943e1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 08:42:44 -0800
+Date: Mon, 3 Feb 2025 10:10:19 -0800
 Subject: [RFC PATCH 0/4] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -76,31 +76,33 @@ updated the documentation to reflect that.
 Coccinelle
 ==========
 
-I wrote a Coccinelle script to automate most of the conversion. This is
-my first time using Coccinelle, so any feedback is welcome!
+I wrote a Coccinelle script to automate most of the conversion. I've
+inlined the script at the bottom of this cover letter. This is my first
+time using Coccinelle, so any feedback is welcome!
 
 The script attempts to do the following:
 
 - Find all dentry identifiers that are arguments to or return values of
-  a debugfs_* function.
+  a debugfs_* function. This step detects both debugfs.h functions and
+  various wrapper functions defined outside of debugfs proper.
 
 - Updates relevant declarations, struct fields, and function signatures
-  to use debugfs_node.
+  to use debugfs_node instead of dentry.
 
-- Perform some fixups, like replacing d_inode() or ->d_inode with
-  debugfs_node_inode() where appropriate.
+- Perform further fixups. For example, replace d_inode() or ->d_inode
+  with debugfs_node_inode() where appropriate.
 
 Challenges I encountered:
 
 - Running a single spatch invocation over the whole tree produces
   inconsistent results because of how header diffs are resolved. spatch
   can take different paths to resolve a header file, sometimes resulting
-  in different patch hunks. I avoided this problem by writing a bash
-  script that runs spatch against any files containing "dentry" or
-  "debugfs", one-by-one.
+  in different -- sometimes conflicting -- patch hunks. I avoided this
+  problem by writing a bash script that runs spatch against any files
+  containing "dentry" or "debugfs", one-by-one.
 
 - The script is more verbose than I would like. I started small but had
-  to break out cases and duplicate rules for reliability.
+  to break out cases and duplicate rules for clarity and reliability.
 
 I focused on handling the most common cases rather than covering every
 edge case, balancing script complexity with effectiveness. The script
@@ -130,9 +132,343 @@ Link: https://lore.kernel.org/all/2024012600-dose-happiest-f57d@gregkh/ [1]
 Link: https://lore.kernel.org/all/20240125104822.04a5ad44@gandalf.local.home/ [2]
 Link: https://lore.kernel.org/all/20250128102744.1b94a789@gandalf.local.home/ [3]
 
+---
+
+This is the Coccinelle script I've been using:
+
+---
+
+virtual patch
+
+//
+// Rewrite wrapper functions. These are functions that return a dentry
+// or accept a dentry as an argument and look like they are related to
+// debugfs.
+//
+@wrapper_function_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier wfr =~ "debugfs|dbgfs";
+type T = { struct dentry *, struct debugfs_node * };
+idexpression T e;
+@@
+
+e = wfr(...)
+
+@wrapper_function_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier wfa =~ "debugfs|dbgfs";
+type T = { struct dentry *, struct debugfs_node * };
+T arg;
+@@
+
+wfa(..., arg, ...)
+
+// Rewrite rule is separate in case wrapper is not in the same file.
+@rewrite_wrapper_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier wfr =~ "debugfs|dbgfs";
+@@
+
+- struct dentry *
++ struct debugfs_node *
+wfr(...) { ... }
+
+// Rewrite rule is separate in case wrapper is not in the same file.
+@rewrite_wrapper_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier wfa =~ "debugfs|dbgfs";
+identifier arg;
+@@
+
+wfa(...,
+- struct dentry
++ struct debugfs_node
+  *arg
+  ,...)
+{ ... }
+
+// Collect all function calls
+@function_calls@
+// This hard-coded list is separate from the wrapper regexes above so we don't
+// go and mutate core debugfs functions on accident. Many of these purposely
+// have dentry types in them.
+identifier hf = {
+  // Macros with debugfs_node. Coccinelle can't infer types for these.
+  debugfs_create_file,
+  debugfs_create_file_aux,
+  debugfs_create_file_aux_num,
+  debugfs_remove_recursive,
+
+  // Actual functions
+  debugfs_change_name,
+  debugfs_create_atomic_t,
+  debugfs_create_bool,
+  debugfs_create_devm_seqfile,
+  debugfs_create_dir,
+  debugfs_create_file_full,
+  debugfs_create_file_short,
+  debugfs_create_file_size,
+  debugfs_create_file_unsafe,
+  debugfs_create_regset32,
+  debugfs_create_size,
+  debugfs_create_str,
+  debugfs_create_symlink,
+  debugfs_create_u16,
+  debugfs_create_u32,
+  debugfs_create_u32_array,
+  debugfs_create_u64,
+  debugfs_create_u8,
+  debugfs_create_ulong,
+  debugfs_create_x16,
+  debugfs_create_x32,
+  debugfs_create_x64,
+  debugfs_create_x8,
+  debugfs_lookup,
+  debugfs_lookup_and_remove,
+  debugfs_node_get,
+  debugfs_node_path_raw,
+  debugfs_node_put,
+  debugfs_real_fops,
+  debugfs_remove
+};
+identifier wrapper_function_returns.wfr;
+identifier wrapper_function_args.wfa;
+// Exclude functions that might have been fuzzy matched that should
+// "stay" with dentry.
+identifier f != {
+  debugfs_create_automount,
+  debugfs_file_get,
+  debugfs_file_put
+};
+@@
+
+(
+  hf@f(...)
+|
+  wfr@f(...)
+|
+  wfa@f(...)
+)
+
+// We need to separate cases for when a variable is in the return
+// position vs a function arg. If we combine them, then we will miss
+// cases where they both happen at the same time, e.g. x = f(y) where x
+// and y are both dentries.
+@find_dentry_return_vars@
+identifier f = { function_calls.f };
+idexpression struct dentry *e;
+identifier var;
+@@
+
+e@var = f(...)
+
+@find_dentry_arg_vars@
+identifier f = { function_calls.f };
+idexpression struct dentry *e;
+identifier var;
+@@
+
+f(..., e@var, ...)
+
+// find_decls and change_decl_types are separate so we properly handle
+// static declarations as well as multi-declarations (e.g. struct dentry
+// *a, *b, *c;). The "= NULL", "= f(...)", and "= E" cases get thrown
+// off when we combine them into one rule.
+@find_decls@
+identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
+identifier f = { find_dentry_return_vars.f, find_dentry_arg_vars.f };
+position p;
+idexpression struct debugfs_node *E;
+@@
+
+(
+  struct dentry@p *var;
+|
+  struct dentry@p *var = NULL;
+|
+  struct dentry@p *var = f(...);
+|
+  struct dentry@p *var = E;
+)
+
+@change_decls type@
+position find_decls.p;
+@@
+
+-struct dentry@p
++struct debugfs_node
+
+@find_function_arg_decls@
+identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
+identifier f;
+position p;
+@@
+
+f(..., struct dentry@p *var, ...) {...}
+
+@change_function_arg_decls type@
+position find_function_arg_decls.p;
+@@
+
+-struct dentry@p
++struct debugfs_node
+
+
+//
+// Struct fields
+//
+@fields_need_rewrite@
+identifier function_calls.f;
+identifier var;
+expression E;
+@@
+
+(
+  E->var = f(...)
+|
+  E.var = f(...)
+|
+  f(..., E->var, ...)
+|
+  f(..., E.var, ...)
+)
+
+@rewrite_fields@
+identifier fields_need_rewrite.var;
+identifier struct_name;
+@@
+
+(
+struct struct_name {
+    ...
+-   struct dentry *
++   struct debugfs_node *
+    var;
+    ...
+};
+|
+struct {
+    ...
+-   struct dentry *
++   struct debugfs_node *
+    var;
+    ...
+} struct_name;
+)
+
+//
+// Rewrite declarations and fields that are dentries with names that
+// very strongly imply they are for debugfs. This is necessary because
+// sometimes Coccinelle doesn't go into all headers/structs.
+//
+@obvious_debugfs_decls depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
+@@
+
+(
+- struct dentry *
++ struct debugfs_node *
+  var;
+|
+- struct dentry *
++ struct debugfs_node *
+  var = NULL;
+)
+
+@obvious_debugfs_fields depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
+identifier struct_name;
+@@
+
+struct struct_name {
+    ...
+-   struct dentry *
++   struct debugfs_node *
+    var;
+    ...
+};
+
+@obvious_debugfs_field_arrays depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
+identifier struct_name;
+@@
+
+struct struct_name {
+    ...
+-   struct dentry *
++   struct debugfs_node *
+    var [...];
+    ...
+};
+
+// Rewrite return types of helper functions that return a debugfs_node
+// now.
+@@
+identifier f;
+idexpression struct debugfs_node *e;
+@@
+
+-struct dentry *
++struct debugfs_node *
+  f(...) {
+    ...
+    return e;
+    ...
+  }
+
+@@
+identifier fn;
+identifier function_calls.f;
+@@
+
+struct
+- dentry
++ debugfs_node
+ *fn(...)
+{
+  ...
+  return f(...);
+  ...
+}
+
+//
+// Transform various helper functions
+//
+@@
+idexpression struct debugfs_node *e;
+@@
+
+-d_inode(e)
++debugfs_node_inode(e)
+
+@@
+idexpression struct debugfs_node *e;
+@@
+
+-e->d_inode
++debugfs_node_inode(e)
+
+@@
+idexpression struct debugfs_node *e;
+@@
+
+-dput(e)
++debugfs_node_put(e)
+
+@@
+idexpression struct debugfs_node *e;
+@@
+
+-dget(e)
++debugfs_node_get(e)
+
+@@
+idexpression struct debugfs_node *e;
+@@
+
+- dentry_path_raw
++ debugfs_node_path_raw
+  (e, ...);
+
 David Reaver (4):
   debugfs: Introduce opaque debugfs_node to replace dentry pointers
-  debugfs: Run Coccinelle to update the rest of the kernel
+  debugfs: Automated conversion of dentry to debugfs_node
   debugfs: Manual fixes for cases Coccinelle missed
   relay: Use debugfs_node instead of dentry
 

@@ -1,8 +1,8 @@
-From 30f84d422b20b67100010c659985b66e4f910b49 Mon Sep 17 00:00:00 2001
+From 3512460674b5be4b1539cd2a5ff23e24a4117b83 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 2 Feb 2025 13:39:14 -0800
-Subject: [RFC PATCH 2/4] debugfs: Run Coccinelle to update the rest of the
- kernel
+Date: Mon, 3 Feb 2025 10:06:40 -0800
+Subject: [RFC PATCH 2/4] debugfs: Automated conversion of dentry to
+ debugfs_node
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>
@@ -13,6 +13,12 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     linux-fsdevel@vger.kernel.org,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
+
+This commit was generated using a Coccinelle script that updates debugfs
+API calls across the kernel tree. It replaces dentry with debugfs_node
+where applicable.
+
+Some cases require manual fixups, which are addressed in the next commit.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---

@@ -1,8 +1,9 @@
 virtual patch
 
 //
-// Rewrite wrapper functions. These are functions that return a dentry or accept
-// a dentry as an argument and look like they are related to debugfs.
+// Rewrite wrapper functions. These are functions that return a dentry
+// or accept a dentry as an argument and look like they are related to
+// debugfs.
 //
 @wrapper_function_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier wfr =~ "debugfs|dbgfs";
@@ -105,9 +106,10 @@ identifier f != {
   wfa@f(...)
 )
 
-// We need to separate cases for when a variable is in the return position vs a
-// function arg. If we combine them, then we will miss cases where they both
-// happen at the same time, e.g. x = f(y) where x and y are both dentries.
+// We need to separate cases for when a variable is in the return
+// position vs a function arg. If we combine them, then we will miss
+// cases where they both happen at the same time, e.g. x = f(y) where x
+// and y are both dentries.
 @find_dentry_return_vars@
 identifier f = { function_calls.f };
 idexpression struct dentry *e;
@@ -124,16 +126,14 @@ identifier var;
 
 f(..., e@var, ...)
 
-// find_decls and change_decl_types are separate so we properly handle static
-// declarations as well as multi-declarations (e.g. struct dentry *a, *b, *c;).
-// The "= NULL", "= f(...)", and "= E" cases get thrown off when we combine them
-// into one rule.
+// find_decls and change_decl_types are separate so we properly handle
+// static declarations as well as multi-declarations (e.g. struct dentry
+// *a, *b, *c;). The "= NULL", "= f(...)", and "= E" cases get thrown
+// off when we combine them into one rule.
 @find_decls@
 identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
 identifier f = { find_dentry_return_vars.f, find_dentry_arg_vars.f };
 position p;
-// TODO: idexpression is more restrictive than what we might want. It only
-// matches ids, not full expressions.
 idexpression struct debugfs_node *E;
 @@
 
@@ -171,7 +171,7 @@ position find_function_arg_decls.p;
 
 
 //
-// Structs
+// Struct fields
 //
 @fields_need_rewrite@
 identifier function_calls.f;
@@ -213,11 +213,10 @@ struct {
 )
 
 //
-// Rewrite declarations and fields that are dentries with names that very
-// strongly imply they are for debugfs. This is necessary because sometimes
-// Coccinelle doesn't go into all headers/structs.
+// Rewrite declarations and fields that are dentries with names that
+// very strongly imply they are for debugfs. This is necessary because
+// sometimes Coccinelle doesn't go into all headers/structs.
 //
-
 @obvious_debugfs_decls depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 @@
@@ -237,7 +236,6 @@ identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 identifier struct_name;
 @@
 
-(
 struct struct_name {
     ...
 -   struct dentry *
@@ -245,22 +243,12 @@ struct struct_name {
     var;
     ...
 };
-|
-struct {
-    ...
--   struct dentry *
-+   struct debugfs_node *
-    var;
-    ...
-} struct_name;
-)
 
 @obvious_debugfs_field_arrays depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
 identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
 identifier struct_name;
 @@
 
-(
 struct struct_name {
     ...
 -   struct dentry *
@@ -268,17 +256,9 @@ struct struct_name {
     var [...];
     ...
 };
-|
-struct struct_name {
-    ...
--   struct dentry *
-+   struct debugfs_node *
-    var [...];
-    ...
-} struct_name;
-)
 
-// Rewrite return types of helper functions that return a debugfs_node now.
+// Rewrite return types of helper functions that return a debugfs_node
+// now.
 @@
 identifier f;
 idexpression struct debugfs_node *e;

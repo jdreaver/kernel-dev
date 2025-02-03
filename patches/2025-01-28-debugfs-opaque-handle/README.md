@@ -28,12 +28,10 @@ git format-patch master...HEAD \
 
 ## Submitting, final checks
 
-- Feedback/RFC email
-  - Is it normal to do [RFC] in fsdevel?
-  - Send to Steve first?
-  - Fill out commit messages
-  - Fill out cover letter
-  - Actually go through testing again before submitting!
+- Send to Steve first?
+
+- Actually go through testing again before submitting!
+- Update coccinelle script in cover letter!
 - Check for TODO items
 - Use clang or a different nix-shell for cross-compilation (and add that I did that to test procedure)
   - At least try powerpc, s390, and mips
