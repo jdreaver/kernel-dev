@@ -7,7 +7,7 @@ Storing patches in this directory with:
 ```bash
 git format-patch master...HEAD \
       --base=origin/master \
-      -o ../patches/2025-01-28-debugfs-opaque-handle/ \
+      -o ../patches/2025-01-28-debugfs-opaque-handle/v1-patches/ \
       --cover-letter \
       --description-file=../patches/2025-01-28-debugfs-opaque-handle/cover-letter-description.txt \
       --cover-from-description=subject \
@@ -23,6 +23,10 @@ git format-patch master...HEAD \
       --cc 'cocci@inria.fr' \
       --cc 'linux-kernel@vger.kernel.org'
 ```
+
+Different versions:
+
+- [v0-patches](./v0-patches) Before Steve's suggestion of starting with a `#define`. This was meant to be RFC-only and each commit didn't compile until the last couple of them.
 
 # TODO
 
