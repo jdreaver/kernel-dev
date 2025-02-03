@@ -1,6 +1,6 @@
 From f109edc03558d32c62bbb3b03a61b2200d521d05 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 08:29:11 -0800
+Date: Mon, 3 Feb 2025 08:42:44 -0800
 Subject: [RFC PATCH 0/4] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -21,17 +21,21 @@ an opaque wrapper struct:
 		struct dentry dentry;
 	};
 
-Background
-==========
+Purpose/Background
+==================
 
 debugfs currently relies on dentry to represent its filesystem
 hierarchy, and its API directly exposes dentry pointers to users. This
-tight coupling makes it harder to change debugfs internals without
-affecting external users. A dentry and inode should exist only when
+tight coupling makes it difficult to modify debugfs internals without
+impacting external users. A dentry and inode should exist only when
 needed, rather than being persistently tied to debugfs. Some kernel
-developers have suggested using an opaque handle for debugfs nodes
-instead of dentry pointers [1][2][3]. This change simplifies future
-debugfs migrations away from dentry.
+developers have proposed using an opaque handle for debugfs nodes
+instead of dentry pointers [1][2][3].
+
+Replacing dentry with debugfs_node simplifies future migrations away
+from dentry. Additionally, debugfs_node makes code more self-explanatory
+-- its purpose is immediately clear, unlike dentry, which requires
+further context to understand its role as a debugfs dentry.
 
 About this patch series
 =======================
@@ -72,8 +76,8 @@ updated the documentation to reflect that.
 Coccinelle
 ==========
 
-I wrote a Coccinelle script to automate most of the conversion. Feedback
-is welcome!
+I wrote a Coccinelle script to automate most of the conversion. This is
+my first time using Coccinelle, so any feedback is welcome!
 
 The script attempts to do the following:
 
@@ -107,8 +111,8 @@ manual fixups.
 Testing
 =======
 
-This was tested by building the kernel with allmodconfig. I also loaded
-this kernel into a QEMU system and ran:
+This was tested by building the kernel on an x86_64 machine with
+allmodconfig. I also loaded this kernel into a QEMU system and ran:
 
   find /sys/kernel/debug -type f -exec stat {} +
 
