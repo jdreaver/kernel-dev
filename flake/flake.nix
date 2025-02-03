@@ -18,8 +18,80 @@
         ply
       ];
       python-and-packages = pkgs.python3.withPackages python-packages;
-    in {
-      devShells.x86_64-linux.default = pkgs.mkShell {
+
+      # Packages used across different shells. These are host-only and
+      # not used for cross-compiling.
+      commonPackages = with pkgs; [
+        # Kernel builds
+        autoconf
+        bc
+        binutils
+        bison
+        elfutils
+        fakeroot
+        flex
+        getopt
+        gnumake
+        libelf
+        ncurses
+        openssl
+        pahole
+        pkg-config
+        python-and-packages
+        xz
+        zlib
+
+        # QEMU and dev scripts
+        qemu
+        debootstrap
+        parted
+
+        # Use GNU screen to connect to serial port (e.g. sudo screen /dev/ttyUSB0 115200)
+        screen
+
+        # Kernel tools
+        coccinelle
+        cppcheck
+        sparse
+        #smatch
+        # qt5.full # for make xconfig
+        lz4
+
+        # buildroot
+        unzip
+
+        # b4 https://b4.docs.kernel.org/en/latest/
+        b4
+
+        # crosstool-ng
+        automake
+        help2man
+        ncurses
+        unzip
+        libtool
+
+        # stm32
+        stlink
+
+        # u-boot
+        swig
+        armTrustedFirmwareTools # for fiptool
+        ubootTools # mkimage
+        xxd
+
+        # DeviceTree tools
+        dtc
+        dt-schema
+
+        # For kernel docs
+        sphinx
+        python3Packages.pyyaml
+        texlive.combined.scheme-small
+        graphviz
+      ];
+
+      # Function to create a cross-compilation shell
+      mkCrossShell = crossSystem: extraPackages: pkgs.mkShell {
         # Disable default hardening flags. These are very confusing when doing
         # development and they break builds of packages/systems that don't
         # expect these flags to be on. Automatically enables stuff like
@@ -28,105 +100,72 @@
         # - https://nixos.wiki/wiki/C#Hardening_flags
         hardeningDisable = ["all"];
 
-        # Needed for Rust builds
-        RUST_LIB_SRC = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+        buildInputs = commonPackages ++ extraPackages;
 
-        buildInputs = with pkgs; [
-          # Kernel builds
-          autoconf
-          bc
-          binutils
-          bison
-          elfutils
-          fakeroot
-          flex
-          gcc
-          getopt
-          gnumake
-          libelf
-          ncurses
-          openssl
-          pahole
-          pkg-config
-          python-and-packages
-          xz
-          zlib
+        # Set up environment variables for cross compilation. We can't
+        # set CROSS_COMPILE because making the config is done without
+        # CROSS_COMPILE. Just do make
+        # CROSS_COMPILE=$LINUX_CROSS_COMPILE.
+        shellHook = ''
+          export ARCH=${crossSystem.arch}
+          export LINUX_CROSS_COMPILE=${crossSystem.triple}-
+        '';
+      };
+    in {
+      devShells.x86_64-linux = {
+        default = pkgs.mkShell {
+          # Needed for Rust builds
+          RUST_LIB_SRC = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
 
-          # Clang kernel builds
-          llvmPackages.clang
+          buildInputs = commonPackages ++ (with pkgs; [
+            # Clang kernel builds. Clang can cross-compile, so we can
+            # run it in our x86 shell.
+            llvmPackages.clang
 
-          # Rust. See https://www.kernel.org/doc/html/next/rust/quick-start.html
-          rustc
-          rust-bindgen
-          rustfmt
-          clippy
-          llvmPackages.bintools
+            # Rust. See https://www.kernel.org/doc/html/next/rust/quick-start.html
+            rustc
+            rust-bindgen
+            rustfmt
+            clippy
+            llvmPackages.bintools
 
-          # Non-standard build stuff
-          gmp # for a gcc plugin used by some staging module
-          libmpc # for a gcc plugin used by some staging module
-          mpfr # for a gcc plugin used by some staging module
+            # Non-standard build stuff for some random staging modules
+            gmp
+            libmpc
+            mpfr
 
-          # QEMU and dev scripts
-          qemu
-          debootstrap
-          parted
+            # gcc-arm-embedded works just fine
+            gcc-arm-embedded
+          ]);
+        };
 
-          # Use GNU screen to connect to serial port (e.g. sudo screen /dev/ttyUSB0 115200)
-          screen
+        arm64 = mkCrossShell {
+          arch = "arm64";
+          triple = "aarch64-unknown-linux-gnu";
+        } (with pkgs; [
+          pkgsCross.aarch64-multiplatform.buildPackages.gcc
+        ]);
 
-          # Cross-compilation to ARM. TODO: Move these to a different shell so
-          # we don't stuff up the main shell. These add all kinds of warnings to
-          # x86 kernel builds.
-          #
-          # pkgsCross.aarch64-multiplatform.buildPackages.gcc
-          # pkgsCross.armv7l-hf-multiplatform.buildPackages.gcc
-          # pkgsCross.armv7l-hf-multiplatform.glibc.static # For libm and libresolv for busybox
-          # gcc-arm-embedded
+        powerpc64 = mkCrossShell {
+          arch = "powerpc";
+          triple = "powerpc64-unknown-linux-gnu";
+        } (with pkgs; [
+          pkgsCross.ppc64.buildPackages.gcc
+        ]);
 
-          # busybox x86
-          # glibc.static # For libm and libresolv for busybox
+        mips = mkCrossShell {
+          arch = "mips";
+          triple = "mips-unknown-linux-gnu";
+        } (with pkgs; [
+          pkgsCross.mips-linux-gnu.buildPackages.gcc
+        ]);
 
-          # Kernel tools
-          coccinelle
-          cppcheck
-          sparse
-          #smatch
-          # qt5.full # for make xconfig
-          lz4
-
-          # buildroot
-          unzip
-
-          # b4 https://b4.docs.kernel.org/en/latest/
-          b4
-
-          # crosstool-ng
-          automake
-          help2man
-          ncurses
-          unzip
-          libtool
-
-          # stm32
-          stlink
-
-          # u-boot
-          swig
-          armTrustedFirmwareTools # for fiptool
-          ubootTools # mkimage
-          xxd
-
-          # DeviceTree tools
-          dtc
-          dt-schema
-
-          # For kernel docs
-          sphinx
-          python3Packages.pyyaml
-          texlive.combined.scheme-small
-          graphviz
-        ];
+        s390x = mkCrossShell {
+          arch = "s390";
+          triple = "s390x-unknown-linux-gnu";
+        } (with pkgs; [
+          pkgsCross.s390x.buildPackages.gcc
+        ]);
       };
 
       qemu-image = import ./nix-image/make-image.nix { inherit pkgs; };

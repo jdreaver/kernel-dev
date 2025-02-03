@@ -31,6 +31,17 @@ Here is a typical workflow with bells and whistles:
     optional, but it is useful for e.g. adding compiled, out-of-tree kernel
     modules.
 
+## Cross compilation
+
+Start a cross-compilation dev shell with `./cross-compile.sh <arch>`, reconfigure the kernel, and then run a build using the `$LINUX_CROSS_COMPILE` env var (`$ARCH`) is set in the shell:
+
+```
+$ ./cross-compile.sh arm64
+$ ./scripts/minimal-qemu-kernel-config.sh linux
+$ cd linux
+$ make CROSS_COMPILE=$LINUX_CROSS_COMPILE -j$(nproc)
+```
+
 ## Linux Kernel Language Server Protocol (LSP) Configuration
 
 The kernel has a script to generate a `compile-commands.json` usable with LSP:
