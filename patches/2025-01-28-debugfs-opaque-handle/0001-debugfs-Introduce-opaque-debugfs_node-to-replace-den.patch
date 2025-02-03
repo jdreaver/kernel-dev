@@ -1,4 +1,4 @@
-From 2c51c6d7ab499255bddaab25b0c26f84cd847fcd Mon Sep 17 00:00:00 2001
+From c6a23996663c5151e49d51d25cd5188f0e6e4aea Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 28 Jan 2025 13:53:41 -0800
 Subject: [RFC PATCH 1/4] debugfs: Introduce opaque debugfs_node to replace
@@ -23,7 +23,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  4 files changed, 327 insertions(+), 218 deletions(-)
 
 diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-index 69e9ddcb113d..327cea02761e 100644
+index 69e9ddcb113d..2abfb8459ace 100644
 --- a/fs/debugfs/file.c
 +++ b/fs/debugfs/file.c
 @@ -568,11 +568,12 @@ ssize_t debugfs_attr_write_signed(struct file *file, const char __user *buf,
@@ -35,12 +35,12 @@ index 69e9ddcb113d..327cea02761e 100644
 -					const struct file_operations *fops,
 -					const struct file_operations *fops_ro,
 -					const struct file_operations *fops_wo)
-+static struct debugfs_node
-+*debugfs_create_mode_unsafe(const char *name, umode_t mode,
-+			    struct debugfs_node *parent, void *value,
-+			    const struct file_operations *fops,
-+			    const struct file_operations *fops_ro,
-+			    const struct file_operations *fops_wo)
++static struct debugfs_node *
++debugfs_create_mode_unsafe(const char *name, umode_t mode,
++			   struct debugfs_node *parent, void *value,
++			   const struct file_operations *fops,
++			   const struct file_operations *fops_ro,
++			   const struct file_operations *fops_wo)
  {
  	/* if there are no write bits set, make read only */
  	if (!(mode & S_IWUGO))

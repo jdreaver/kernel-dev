@@ -1,6 +1,6 @@
-From 2d555124da63f2eb054275cb274cb0f6a3a943e1 Mon Sep 17 00:00:00 2001
+From 6b6739960e9325f257c6fafb794e7653ff706491 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 10:10:19 -0800
+Date: Mon, 3 Feb 2025 10:13:40 -0800
 Subject: [RFC PATCH 0/4] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,

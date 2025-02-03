@@ -1,4 +1,4 @@
-From c9814916630c432e90dddd573b99461dbe19e207 Mon Sep 17 00:00:00 2001
+From b801e65536bca98b0d63af77fd989155dc2774f6 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 29 Jan 2025 16:06:06 -0800
 Subject: [RFC PATCH 3/4] debugfs: Manual fixes for cases Coccinelle missed
