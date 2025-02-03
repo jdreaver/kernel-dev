@@ -1,4 +1,4 @@
-From 1add284a650b4e643f745056b99e71f75e63ac8b Mon Sep 17 00:00:00 2001
+From 502c309c0206e20693ffebca5195da4b0f02c410 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:06:45 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion of dentry to

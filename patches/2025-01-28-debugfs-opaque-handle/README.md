@@ -33,8 +33,6 @@ Different versions:
 
 ## Rework the series with a `#define`
 
-Move helper definitions in the second commit so they aren't needlessly moved again in the final commit.
-
 Make sure to change cover letter.
 
 Compile each commit to ensure every commit compiles.

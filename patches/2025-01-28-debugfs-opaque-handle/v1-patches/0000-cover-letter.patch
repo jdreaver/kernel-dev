@@ -1,6 +1,6 @@
-From 14fd54054be2afde4f3db33b5e91e82944d4c0e8 Mon Sep 17 00:00:00 2001
+From 348b060257e292664181f6d46b1e5dad37cb417a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 15:37:22 -0800
+Date: Mon, 3 Feb 2025 15:44:38 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -1421,7 +1421,7 @@ David Reaver (6):
  include/linux/ceph/osd_client.h               |   2 +-
  include/linux/clk-provider.h                  |   3 +-
  include/linux/closure.h                       |   2 +-
- include/linux/debugfs.h                       | 200 +++++++++------
+ include/linux/debugfs.h                       | 193 +++++++++------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
  include/linux/fault-inject.h                  |  11 +-
@@ -1588,7 +1588,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1115 files changed, 2924 insertions(+), 2638 deletions(-)
+ 1115 files changed, 2917 insertions(+), 2638 deletions(-)
 
 
 base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b

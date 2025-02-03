@@ -1,4 +1,4 @@
-From ee38b3b3b1b447f2e7bce7328c08813c711a90fc Mon Sep 17 00:00:00 2001
+From a6dff2bd61b0cbbd580615804e0eda3cd7302d46 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:25:34 -0800
 Subject: [RFC PATCH 2/6] debugfs: Add helper functions to encapsulate
@@ -75,14 +75,13 @@ index 75715d8877ee..6892538d9d49 100644
  {
  	struct dentry *dentry;
 diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index fa2568b4380d..78e9a902a970 100644
+index fa2568b4380d..093f29325f22 100644
 --- a/include/linux/debugfs.h
 +++ b/include/linux/debugfs.h
-@@ -81,6 +81,15 @@ struct dentry *debugfs_create_file_full(const char *name, umode_t mode,
- 					struct dentry *parent, void *data,
- 					const void *aux,
- 					const struct file_operations *fops);
-+
+@@ -77,10 +77,23 @@ struct debugfs_short_fops {
+ 
+ struct dentry *debugfs_lookup(const char *name, struct dentry *parent);
+ 
 +char *debugfs_node_path_raw(struct debugfs_node *node, char *buf, size_t buflen);
 +
 +struct debugfs_node *debugfs_node_get(struct debugfs_node *node);
@@ -91,21 +90,19 @@ index fa2568b4380d..78e9a902a970 100644
 +
 +struct inode *debugfs_node_inode(struct debugfs_node *);
 +
- struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
- 					 struct dentry *parent, void *data,
- 					 const void *aux,
-@@ -168,6 +177,10 @@ const void *debugfs_get_aux(const struct file *file);
- int debugfs_file_get(struct dentry *dentry);
- void debugfs_file_put(struct dentry *dentry);
- 
 +struct debugfs_node *debugfs_node_from_dentry(struct dentry *dentry);
 +
 +struct dentry *debugfs_node_dentry(struct debugfs_node *node);
 +
- ssize_t debugfs_attr_read(struct file *file, char __user *buf,
- 			size_t len, loff_t *ppos);
- ssize_t debugfs_attr_write(struct file *file, const char __user *buf,
-@@ -269,6 +282,25 @@ static inline struct dentry *debugfs_lookup(const char *name,
+ struct dentry *debugfs_create_file_full(const char *name, umode_t mode,
+ 					struct dentry *parent, void *data,
+ 					const void *aux,
+ 					const struct file_operations *fops);
++
+ struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
+ 					 struct dentry *parent, void *data,
+ 					 const void *aux,
+@@ -269,6 +282,35 @@ static inline struct dentry *debugfs_lookup(const char *name,
  	return ERR_PTR(-ENODEV);
  }
  
@@ -128,13 +125,6 @@ index fa2568b4380d..78e9a902a970 100644
 +	return ERR_PTR(-ENODEV);
 +}
 +
- static inline struct dentry *debugfs_create_file_aux(const char *name,
- 					umode_t mode, struct dentry *parent,
- 					void *data, void *aux,
-@@ -340,6 +372,16 @@ static inline int debugfs_file_get(struct dentry *dentry)
- static inline void debugfs_file_put(struct dentry *dentry)
- { }
- 
 +struct debugfs_node *debugfs_node_from_dentry(struct dentry *dentry)
 +{
 +	return ERR_PTR(-ENODEV);
@@ -145,6 +135,6 @@ index fa2568b4380d..78e9a902a970 100644
 +	return ERR_PTR(-ENODEV);
 +}
 +
- static inline ssize_t debugfs_attr_read(struct file *file, char __user *buf,
- 					size_t len, loff_t *ppos)
- {
+ static inline struct dentry *debugfs_create_file_aux(const char *name,
+ 					umode_t mode, struct dentry *parent,
+ 					void *data, void *aux,
