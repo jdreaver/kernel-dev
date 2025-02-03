@@ -26,10 +26,22 @@ git format-patch master...HEAD \
 
 # TODO
 
+## Rework the series with a `#define`
+
+Perform the update in this order so everything compiles:
+
+1. `#define debugfs_node dentry`
+2. Introduce helper functions that will be needed by later patches
+3. Run coccinelle
+4. Manual fixups
+5. Relay patch
+6. Remove define, add actual `struct debugfs_node`, rework internals.
+
+Make sure to change cover letter.
+
 ## Submitting, final checks
 
-- Send to Steve first?
-
+- Ensure all commits have change logs.
 - Actually go through testing again before submitting!
 - Update coccinelle script in cover letter!
 - Check for TODO items
