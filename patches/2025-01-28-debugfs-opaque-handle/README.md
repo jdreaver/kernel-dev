@@ -32,22 +32,19 @@ Different versions:
 
 ## Rework the series with a `#define`
 
-Perform the update in this order so everything compiles:
+Probably need to add `#define debugfs_node dentry` to a few important headers in a pre-factor step to avoid struct definition issues.
+- It might actually be easiest to do this in `dcache.h`, right next to `dentry`. We are going to remove it anyway.
 
-1. `#define debugfs_node dentry`
-2. Introduce helper functions that will be needed by later patches
-3. Run coccinelle
-4. Manual fixups
-5. Relay patch
-6. Remove define, add actual `struct debugfs_node`, rework internals.
+Move helper definitions in the second commit so they aren't needlessly moved again in the final commit.
 
 Make sure to change cover letter.
 
 ## Submitting, final checks
 
 - Ensure all commits have change logs.
+- Update coccinelle script in the change log of the commit that uses it.
+- Make sure each commit compiles!
 - Actually go through testing again before submitting!
-- Update coccinelle script in cover letter!
 - Check for TODO items
 - Use clang or a different nix-shell for cross-compilation (and add that I did that to test procedure)
   - At least try powerpc, s390, and mips
@@ -58,6 +55,8 @@ Make sure to change cover letter.
   - Consider a `->d_parent` -> new helper `debugfs_node_parent` and add to Coccinelle as well
 
 ## Coccinelle
+
+- Consider having coccinelle script rename variables named `dentry` and `dent` to `node`. Higher likelihood of merge conflicts though.
 
 - Clean up script. Pick either the old script or test the new script and see if that works.
 - Don't hard code all of the debugfs functions. They should be found with the regex. We might just need the macros, but even then the regex should catch those.
@@ -110,12 +109,7 @@ Make sure to change cover letter.
 
 - Consider removing the `all_function_calls` thing and replacing it with: `identifier f = {identifier wrapper_function_returns.wfr, identifier wrapper_function_args.wfa, ... };`
 
-- Sometimes `include/linux/debugfs.h` gets caught up in changes
-  - I had it pulled in once when I just ran against `drivers/scsi/lpfc/`
-  - I cannot for the life of me get this ignored
-
 - Manual stuff:
-  - Revert include/linux/fs.h changes (maybe we can exclude this file in the cocci script)
   - arch/s390 iterates through some array of debugfs dentries <https://github.com/jdreaver/linux/blob/05dbaf8dd8bf537d4b4eb3115ab42a5fb40ff1f5/arch/s390/kernel/debug.c#L671>
 
 ## Coccinelle automation

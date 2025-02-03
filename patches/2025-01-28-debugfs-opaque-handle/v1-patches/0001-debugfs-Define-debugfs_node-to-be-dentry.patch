@@ -1,0 +1,38 @@
+From 45ee2d01f460a1fbc1b860076e1c4ad730a7f205 Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Mon, 3 Feb 2025 13:13:09 -0800
+Subject: [RFC PATCH 1/6] debugfs: Define debugfs_node to be dentry
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+    Rafael J. Wysocki <rafael@kernel.org>,
+    Danilo Krummrich <dakr@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+    Christian Brauner <brauner@kernel.org>,
+    Alexander Viro <viro@zeniv.linux.org.uk>,
+    Tejun Heo <tj@kernel.org>,
+    linux-fsdevel@vger.kernel.org,
+    cocci@inria.fr,
+    linux-kernel@vger.kernel.org
+
+Add a #define debugfs_node dentry to support migrating all debugfs APIs
+from dentry to a new opaque descriptor called debugfs_node. Subsequent
+commits will apply a Coccinelle script and manual fixups to migrate the
+rest of the kernel before replacing this #define with a struct definition.
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+ include/linux/debugfs.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
+index fa2568b4380d..e6ee571e8c36 100644
+--- a/include/linux/debugfs.h
++++ b/include/linux/debugfs.h
+@@ -21,6 +21,8 @@
+ struct device;
+ struct file_operations;
+ 
++#define debugfs_node dentry
++
+ struct debugfs_blob_wrapper {
+ 	void *data;
+ 	unsigned long size;

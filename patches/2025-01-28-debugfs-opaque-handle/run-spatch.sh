@@ -27,3 +27,7 @@ for file in $files; do
       --in-place "$file" 2>&1 \
       | tee "$log_dir/$(echo "$file" | tr '/' '--').log"
 done
+
+# Undo the changes to the debugfs and fs.h files. The Coccinelle script
+# loves to modify these.
+git checkout -- include/linux/debugfs.h include/linux/fs.h fs/debugfs

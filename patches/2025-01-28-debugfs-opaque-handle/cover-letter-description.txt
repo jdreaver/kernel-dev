@@ -26,13 +26,14 @@ further context to understand its role as a debugfs dentry.
 About this patch series
 =======================
 
-This series is split into multiple commits for review but should be
-squashed into one commit when merged. Commits:
+The commits in this series do the following:
 
-1. Migrate fs/debugfs/ to debugfs_node.
-2. Run Coccinelle to update the rest of the kernel (see below).
-3. Manual fixes for cases Coccinelle missed.
-4. Update relay system to use debugfs_node instead of dentry.
+1. Add "#define debugfs_node dentry"
+2. Add a debugfs few helper functions used by the Coccinelle script
+3. Update relay system to use debugfs_node instead of dentry.
+4. Run Coccinelle to convert most of the kernel to debugfs_node
+5. Manual fixes for cases Coccinelle missed.
+6. Remove the #define and use struct debugfs_node in debugfs
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
@@ -48,16 +49,12 @@ of headers or function calls, code inside macros, etc.
 Relay changes
 =============
 
-The most intrusive change is in the relay system, which now uses
-debugfs_node instead of dentry. I put this change into a separate commit
-because it is more than just a fixup. (Note that the changes to relay.c
-and users of rchan_callbacks are much smaller and clearer once these
-commits are squashed.)
-
-The relay API passes around dentry pointers. While the relay API
-technically supports non-debugfs users, in practice, all relay users
-rely on debugfs. I replaced dentry pointers with debugfs_node, and I
-updated the documentation to reflect that.
+The most non-obvious change is in the relay system, which now uses
+debugfs_node instead of dentry. The relay API passes around dentry
+pointers. While the relay documentation hints at supporting non-debugfs
+users, in practice all relay users rely on debugfs. I replaced dentry
+pointers with debugfs_node, and I updated the documentation to reflect
+that.
 
 Coccinelle
 ==========
