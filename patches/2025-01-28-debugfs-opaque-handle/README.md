@@ -27,20 +27,21 @@ git format-patch master...HEAD \
 Different versions:
 
 - [v0-patches](./v0-patches) Before Steve's suggestion of starting with a `#define`. This was meant to be RFC-only and each commit didn't compile until the last couple of them.
+- [v1-patches](./v1-patches) Use `#define debugfs_node dentry` first so we can do subsequent transformations while still being able to compile each commit.
 
 # TODO
 
 ## Rework the series with a `#define`
 
-Probably need to add `#define debugfs_node dentry` to a few important headers in a pre-factor step to avoid struct definition issues.
-- It might actually be easiest to do this in `dcache.h`, right next to `dentry`. We are going to remove it anyway.
-
 Move helper definitions in the second commit so they aren't needlessly moved again in the final commit.
 
 Make sure to change cover letter.
 
+Compile each commit to ensure every commit compiles.
+
 ## Submitting, final checks
 
+- Reword cover letter with new `#define`-based strategy
 - Ensure all commits have change logs.
 - Update coccinelle script in the change log of the commit that uses it.
 - Make sure each commit compiles!

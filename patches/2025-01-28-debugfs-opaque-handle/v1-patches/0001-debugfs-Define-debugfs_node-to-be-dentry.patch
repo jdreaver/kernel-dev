@@ -1,4 +1,4 @@
-From 45ee2d01f460a1fbc1b860076e1c4ad730a7f205 Mon Sep 17 00:00:00 2001
+From dff28c4b9c21ec319f206be320fc33ba02b24cea Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:13:09 -0800
 Subject: [RFC PATCH 1/6] debugfs: Define debugfs_node to be dentry
@@ -18,21 +18,27 @@ from dentry to a new opaque descriptor called debugfs_node. Subsequent
 commits will apply a Coccinelle script and manual fixups to migrate the
 rest of the kernel before replacing this #define with a struct definition.
 
+This is done inside dcache.h so every user of dentry can see this #define.
+If this was in debugfs.h we would have to add tons of imports, or find all
+relevant forward defines of struct dentry; and add a struct debugfs_node;
+next to them. This is temporary anyway and is removed in the last commit in
+this series.
+
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- include/linux/debugfs.h | 2 ++
+ include/linux/dcache.h | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index fa2568b4380d..e6ee571e8c36 100644
---- a/include/linux/debugfs.h
-+++ b/include/linux/debugfs.h
-@@ -21,6 +21,8 @@
- struct device;
- struct file_operations;
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index 4afb60365675..4b0c11cd3d50 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -127,6 +127,8 @@ struct dentry {
+ 	} d_u;
+ };
  
 +#define debugfs_node dentry
 +
- struct debugfs_blob_wrapper {
- 	void *data;
- 	unsigned long size;
+ /*
+  * dentry->d_lock spinlock nesting subclasses:
+  *
