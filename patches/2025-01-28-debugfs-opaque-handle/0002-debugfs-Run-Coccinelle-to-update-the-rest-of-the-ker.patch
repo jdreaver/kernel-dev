@@ -1,4 +1,4 @@
-From 860d22a9f9a68409ae96c0ef2c3643bff22d89d0 Mon Sep 17 00:00:00 2001
+From f9f28b70b0f9401dc041d2b20916318ae858aa0b Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Sun, 2 Feb 2025 13:39:14 -0800
 Subject: [RFC PATCH 2/4] debugfs: Run Coccinelle to update the rest of the
@@ -17668,7 +17668,7 @@ index 51c52768132d..95afc6476429 100644
  	wait_queue_head_t recovery_event;
  
 diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index e0b91dbaa0ac..b368ec43ef77 100644
+index 8bb5022f3082..38db7fa01970 100644
 --- a/fs/ocfs2/super.c
 +++ b/fs/ocfs2/super.c
 @@ -64,7 +64,7 @@ static struct kmem_cache *ocfs2_inode_cachep;
@@ -19911,10 +19911,10 @@ index 109ef30fee11..59e6d8f11db3 100644
  {
  }
 diff --git a/mm/kfence/core.c b/mm/kfence/core.c
-index 67fc321db79b..d1dbe646a0f3 100644
+index 102048821c22..8f0256e84f80 100644
 --- a/mm/kfence/core.c
 +++ b/mm/kfence/core.c
-@@ -774,7 +774,7 @@ DEFINE_SEQ_ATTRIBUTE(objects);
+@@ -775,7 +775,7 @@ DEFINE_SEQ_ATTRIBUTE(objects);
  
  static int kfence_debugfs_init(void)
  {
@@ -20052,7 +20052,7 @@ index 16bfe1c694dd..92f595421fbf 100644
  	extfrag_debug_root = debugfs_create_dir("extfrag", NULL);
  
 diff --git a/mm/zsmalloc.c b/mm/zsmalloc.c
-index 817626a351f8..353a5a62474b 100644
+index 6d0e47f7ae33..c70978bb6951 100644
 --- a/mm/zsmalloc.c
 +++ b/mm/zsmalloc.c
 @@ -162,7 +162,7 @@ struct zs_size_stat {
