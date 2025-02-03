@@ -466,6 +466,8 @@ idexpression struct debugfs_node *e;
 + debugfs_node_path_raw
   (e, ...);
 
+---
+
 David Reaver (4):
   debugfs: Introduce opaque debugfs_node to replace dentry pointers
   debugfs: Automated conversion of dentry to debugfs_node
