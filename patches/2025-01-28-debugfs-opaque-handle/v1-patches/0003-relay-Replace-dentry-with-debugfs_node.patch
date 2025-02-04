@@ -11,7 +11,8 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     Tejun Heo <tj@kernel.org>,
     linux-fsdevel@vger.kernel.org,
     cocci@inria.fr,
-    linux-kernel@vger.kernel.org
+    linux-kernel@vger.kernel.org,
+    David Reaver <me@davidreaver.com>
 
 Although the relay documentation suggests support for multiple filesystems,
 in practice all existing users rely on debugfs. This commit updates the

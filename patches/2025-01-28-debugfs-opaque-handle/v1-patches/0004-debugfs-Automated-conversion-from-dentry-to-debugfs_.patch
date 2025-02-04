@@ -12,7 +12,8 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     Tejun Heo <tj@kernel.org>,
     linux-fsdevel@vger.kernel.org,
     cocci@inria.fr,
-    linux-kernel@vger.kernel.org
+    linux-kernel@vger.kernel.org,
+    David Reaver <me@davidreaver.com>
 
 This commit applies a Coccinelle script (inlined below) to update debugfs
 API calls across the kernel tree, replacing dentry with debugfs_node where

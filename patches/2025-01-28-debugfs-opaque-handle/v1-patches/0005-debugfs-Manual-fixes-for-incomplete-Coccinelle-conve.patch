@@ -12,7 +12,8 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     Tejun Heo <tj@kernel.org>,
     linux-fsdevel@vger.kernel.org,
     cocci@inria.fr,
-    linux-kernel@vger.kernel.org
+    linux-kernel@vger.kernel.org,
+    David Reaver <me@davidreaver.com>
 
 Fix incomplete or incorrect conversions from dentry to debugfs_node.
 

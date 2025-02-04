@@ -21,7 +21,8 @@ git format-patch master...HEAD \
       --cc 'Tejun Heo <tj@kernel.org>' \
       --cc 'linux-fsdevel@vger.kernel.org' \
       --cc 'cocci@inria.fr' \
-      --cc 'linux-kernel@vger.kernel.org'
+      --cc 'linux-kernel@vger.kernel.org' \
+      --cc 'David Reaver <me@davidreaver.com>'
 ```
 
 Different versions:
