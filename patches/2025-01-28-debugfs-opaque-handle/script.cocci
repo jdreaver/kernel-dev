@@ -259,7 +259,7 @@ struct struct_name {
 
 // Rewrite return types of helper functions that return a debugfs_node
 // now.
-@@
+@rewrite_helper_return_exp@
 identifier f;
 idexpression struct debugfs_node *e;
 @@
@@ -272,7 +272,7 @@ idexpression struct debugfs_node *e;
     ...
   }
 
-@@
+@rewrite_helper_return_ret@
 identifier fn;
 identifier function_calls.f;
 @@
@@ -286,6 +286,33 @@ struct
   return f(...);
   ...
 }
+
+//
+// Forward declarations of struct debugfs_node;
+//
+@forward_decl_exists@
+@@
+
+struct debugfs_node;
+
+@depends on
+  !forward_decl_exists and (
+    rewrite_wrapper_returns or
+    rewrite_wrapper_args or
+    change_decls or
+    change_function_arg_decls or
+    rewrite_fields or
+    obvious_debugfs_decls or
+    obvious_debugfs_fields or
+    obvious_debugfs_field_arrays or
+    rewrite_helper_return_exp or
+    rewrite_helper_return_ret
+  )
+@
+@@
+
+struct dentry;
++struct debugfs_node;
 
 //
 // Transform various helper functions

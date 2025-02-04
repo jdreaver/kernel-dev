@@ -39,4 +39,5 @@ git checkout -- \
   include/linux/kernfs.h \
   include/linux/mount.h \
   include/linux/security.h \
+  include/linux/statfs.h \
   fs/debugfs

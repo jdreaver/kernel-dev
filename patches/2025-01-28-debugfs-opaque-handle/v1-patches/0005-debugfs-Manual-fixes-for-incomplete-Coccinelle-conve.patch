@@ -1,4 +1,4 @@
-From 170fc3fb50a4578c35acc6d146b550d7513b74e1 Mon Sep 17 00:00:00 2001
+From 3c72f28696159b270c8fb190602f556731eb3570 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
@@ -116,7 +116,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/closure.h                       |   2 +-
  include/linux/fault-inject.h                  |   3 +-
  include/media/cec.h                           |   2 +-
- include/media/v4l2-async.h                    |   6 +-
+ include/media/v4l2-async.h                    |   5 +-
  include/net/mac80211.h                        |  12 +-
  include/soc/tegra/mc.h                        |   2 +-
  include/sound/soc-dapm.h                      |   3 +-
@@ -132,7 +132,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 109 files changed, 377 insertions(+), 356 deletions(-)
+ 109 files changed, 376 insertions(+), 356 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
 index e6f29101bb46..1f4ea53a6b7d 100644
@@ -252,10 +252,10 @@ index 61d1219a202f..e4a9f4583a83 100644
  
  /**
 diff --git a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
-index 16fdfb48b196..4d27e120e918 100644
+index 8d17077c5a39..bc4fc8543e2c 100644
 --- a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
 +++ b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
-@@ -39,13 +39,13 @@ struct adf_heartbeat {
+@@ -40,13 +40,13 @@ struct adf_heartbeat {
  		void *virt_addr;
  	} dma;
  	struct {
@@ -440,17 +440,17 @@ index a8b231ed4f4b..d524ed1990fd 100644
  		struct dss_debugfs_entry *dss;
  	} debugfs;
 diff --git a/drivers/gpu/drm/xe/xe_gsc_debugfs.h b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-index 48658b1af61b..3efd211a21f7 100644
+index 9a292200678d..bdba0ad754f1 100644
 --- a/drivers/gpu/drm/xe/xe_gsc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-@@ -8,7 +8,6 @@
- 
- #include <linux/debugfs.h>
+@@ -6,7 +6,6 @@
+ #ifndef _XE_GSC_DEBUGFS_H_
+ #define _XE_GSC_DEBUGFS_H_
  
 -struct dentry;
+ struct debugfs_node;
  struct xe_gsc;
  
- void xe_gsc_debugfs_register(struct xe_gsc *gsc, struct debugfs_node *parent);
 diff --git a/drivers/gpu/drm/xe/xe_gt_debugfs.c b/drivers/gpu/drm/xe/xe_gt_debugfs.c
 index 6e5cbb23d5c9..3bc631d11f9d 100644
 --- a/drivers/gpu/drm/xe/xe_gt_debugfs.c
@@ -539,34 +539,34 @@ index b0a32211d892..8ab4758a3ba6 100644
  	unsigned int vfid = extract_vfid(parent);
  	ssize_t ret;
 diff --git a/drivers/gpu/drm/xe/xe_guc_debugfs.h b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-index 2582a4a558f0..44e0692796c5 100644
+index 7a87a608dbf5..f15a6c5923ea 100644
 --- a/drivers/gpu/drm/xe/xe_guc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-@@ -8,7 +8,6 @@
- 
- #include <linux/debugfs.h>
+@@ -6,7 +6,6 @@
+ #ifndef _XE_GUC_DEBUGFS_H_
+ #define _XE_GUC_DEBUGFS_H_
  
 -struct dentry;
+ struct debugfs_node;
  struct xe_guc;
  
- void xe_guc_debugfs_register(struct xe_guc *guc, struct debugfs_node *parent);
 diff --git a/drivers/gpu/drm/xe/xe_huc_debugfs.h b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-index a89d4ad7e728..fea213f5678e 100644
+index 1dbf07be3921..1a5aca435bb0 100644
 --- a/drivers/gpu/drm/xe/xe_huc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-@@ -8,7 +8,6 @@
- 
- #include <linux/debugfs.h>
+@@ -6,7 +6,6 @@
+ #ifndef _XE_HUC_DEBUGFS_H_
+ #define _XE_HUC_DEBUGFS_H_
  
 -struct dentry;
+ struct debugfs_node;
  struct xe_huc;
  
- void xe_huc_debugfs_register(struct xe_huc *huc, struct debugfs_node *parent);
 diff --git a/drivers/gpu/host1x/dev.h b/drivers/gpu/host1x/dev.h
-index a5cd1fc6ca71..41647413c25f 100644
+index ce0a6c0c284f..c0c9f4575a35 100644
 --- a/drivers/gpu/host1x/dev.h
 +++ b/drivers/gpu/host1x/dev.h
-@@ -52,7 +52,7 @@ struct host1x_pushbuffer_ops {
+@@ -53,7 +53,7 @@ struct host1x_pushbuffer_ops {
  };
  
  struct host1x_debug_ops {
@@ -2048,10 +2048,10 @@ index 496dbbd2ad7e..77a1649e5586 100644
  
  /**
 diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index df3499eaa282..799363f73a2b 100644
+index 9f63215edaea..0bf522e27199 100644
 --- a/include/drm/drm_connector.h
 +++ b/include/drm/drm_connector.h
-@@ -1577,7 +1577,7 @@ struct drm_connector_funcs {
+@@ -1576,7 +1576,7 @@ struct drm_connector_funcs {
  	 *
  	 * Allows connectors to create connector-specific debugfs files.
  	 */
@@ -2074,7 +2074,7 @@ index 50845e231366..28384b37b841 100644
  
  /**
 diff --git a/include/drm/drm_panel.h b/include/drm/drm_panel.h
-index 10015891b056..33022c4b08ef 100644
+index b6bf2fa6f26d..8c22e618e4a9 100644
 --- a/include/drm/drm_panel.h
 +++ b/include/drm/drm_panel.h
 @@ -24,6 +24,7 @@
@@ -2085,7 +2085,7 @@ index 10015891b056..33022c4b08ef 100644
  #include <linux/err.h>
  #include <linux/errno.h>
  #include <linux/list.h>
-@@ -143,7 +144,7 @@ struct drm_panel_funcs {
+@@ -144,7 +145,7 @@ struct drm_panel_funcs {
  	 *
  	 * Allows panels to create panels-specific debugfs files.
  	 */
@@ -2095,7 +2095,7 @@ index 10015891b056..33022c4b08ef 100644
  
  struct drm_panel_follower_funcs {
 diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-index 2e6e603b7493..768938c6ae5f 100644
+index 600215d8f5d4..e38419722159 100644
 --- a/include/linux/clk-provider.h
 +++ b/include/linux/clk-provider.h
 @@ -6,6 +6,7 @@
@@ -2106,7 +2106,7 @@ index 2e6e603b7493..768938c6ae5f 100644
  #include <linux/of.h>
  #include <linux/of_clk.h>
  
-@@ -265,7 +266,7 @@ struct clk_ops {
+@@ -266,7 +267,7 @@ struct clk_ops {
  					  struct clk_duty *duty);
  	int		(*init)(struct clk_hw *hw);
  	void		(*terminate)(struct clk_hw *hw);
@@ -2129,7 +2129,7 @@ index 880fe85e35e9..b98b6067368a 100644
  struct closure_waitlist {
  	struct llist_head	list;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index 608e5204e3e6..6c919bc3a645 100644
+index a94d479f4982..ed32ca9d589a 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
 @@ -5,7 +5,6 @@
@@ -2137,9 +2137,9 @@ index 608e5204e3e6..6c919bc3a645 100644
  #include <linux/types.h>
  
 -struct dentry;
+ struct debugfs_node;
  struct kmem_cache;
  
- #ifdef CONFIG_FAULT_INJECTION
 @@ -34,7 +33,7 @@ struct fault_attr {
  
  	unsigned long count;
@@ -2163,19 +2163,18 @@ index 0c8e86115b6f..0c172c059927 100644
  	u32 sequence;
  
 diff --git a/include/media/v4l2-async.h b/include/media/v4l2-async.h
-index f26c323e9c96..a53436578a16 100644
+index df5c3a279cd6..a53436578a16 100644
 --- a/include/media/v4l2-async.h
 +++ b/include/media/v4l2-async.h
-@@ -11,7 +11,7 @@
+@@ -11,7 +11,6 @@
  #include <linux/list.h>
  #include <linux/mutex.h>
  
 -struct dentry;
-+struct debugfs_node;
+ struct debugfs_node;
  struct device;
  struct device_node;
- struct v4l2_device;
-@@ -140,9 +140,9 @@ struct v4l2_async_subdev_endpoint {
+@@ -141,9 +140,9 @@ struct v4l2_async_subdev_endpoint {
  /**
   * v4l2_async_debug_init - Initialize debugging tools.
   *

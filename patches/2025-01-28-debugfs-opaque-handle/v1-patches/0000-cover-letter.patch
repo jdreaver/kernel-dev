@@ -1,6 +1,6 @@
-From 7add457519bb264fe954e8d4ec7f578136060e5a Mon Sep 17 00:00:00 2001
+From f0ccc1cbfc2f40a6b2d40c6fab3aa2c569b6a4bd Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 4 Feb 2025 15:42:21 -0800
+Date: Tue, 4 Feb 2025 15:48:42 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -164,7 +164,7 @@ Link: https://lore.kernel.org/all/20240125104822.04a5ad44@gandalf.local.home/ [2
 Link: https://lore.kernel.org/all/20250128102744.1b94a789@gandalf.local.home/ [3]
 
 David Reaver (6):
-  debugfs: Add temporary "#define debugfs_node dentry" and includes
+  debugfs: Add temporary "#define debugfs_node dentry"
   debugfs: Add helper functions for debugfs_node encapsulation
   relay: Replace dentry with debugfs_node
   debugfs: Automated conversion from dentry to debugfs_node
@@ -247,7 +247,7 @@ David Reaver (6):
  drivers/accel/qaic/qaic_debugfs.c             |   4 +-
  drivers/acpi/acpi_dbg.c                       |   2 +-
  drivers/acpi/apei/apei-base.c                 |   4 +-
- drivers/acpi/apei/apei-internal.h             |   2 +-
+ drivers/acpi/apei/apei-internal.h             |   3 +-
  drivers/acpi/apei/einj-core.c                 |   2 +-
  drivers/acpi/debugfs.c                        |   2 +-
  drivers/acpi/ec_sys.c                         |   4 +-
@@ -297,7 +297,7 @@ David Reaver (6):
  drivers/crypto/caam/caamalg_qi2.h             |   2 +-
  drivers/crypto/caam/ctrl.c                    |   2 +-
  drivers/crypto/caam/debugfs.c                 |   2 +-
- drivers/crypto/caam/debugfs.h                 |   5 +-
+ drivers/crypto/caam/debugfs.h                 |   6 +-
  drivers/crypto/caam/intern.h                  |   2 +-
  drivers/crypto/cavium/nitrox/nitrox_debugfs.c |   2 +-
  drivers/crypto/cavium/nitrox/nitrox_dev.h     |   2 +-
@@ -315,9 +315,9 @@ David Reaver (6):
  drivers/crypto/intel/iaa/iaa_crypto_stats.c   |   2 +-
  .../intel/qat/qat_common/adf_accel_devices.h  |   8 +-
  drivers/crypto/intel/qat/qat_common/adf_cfg.h |   2 +-
- .../intel/qat/qat_common/adf_heartbeat.h      |  12 +-
+ .../intel/qat/qat_common/adf_heartbeat.h      |  13 +-
  .../qat/qat_common/adf_heartbeat_dbgfs.c      |   2 +-
- .../intel/qat/qat_common/adf_telemetry.h      |   2 +-
+ .../intel/qat/qat_common/adf_telemetry.h      |   3 +-
  .../intel/qat/qat_common/adf_tl_debugfs.c     |   6 +-
  .../qat/qat_common/adf_transport_debug.c      |   2 +-
  .../qat/qat_common/adf_transport_internal.h   |   8 +-
@@ -336,7 +336,7 @@ David Reaver (6):
  drivers/dma/amd/ptdma/ptdma-debugfs.c         |   2 +-
  drivers/dma/bcm-sba-raid.c                    |   2 +-
  drivers/dma/dmaengine.c                       |   2 +-
- drivers/dma/dmaengine.h                       |   4 +-
+ drivers/dma/dmaengine.h                       |   5 +-
  drivers/dma/dw-edma/dw-edma-v0-debugfs.c      |  15 +-
  drivers/dma/dw-edma/dw-hdma-v0-debugfs.c      |  17 +-
  drivers/dma/hisi_dma.c                        |   2 +-
@@ -405,7 +405,7 @@ David Reaver (6):
  drivers/gpu/drm/drm_debugfs.c                 |  32 +--
  drivers/gpu/drm/drm_debugfs_crc.c             |   2 +-
  drivers/gpu/drm/drm_drv.c                     |   2 +-
- drivers/gpu/drm/drm_internal.h                |   4 +-
+ drivers/gpu/drm/drm_internal.h                |   5 +-
  drivers/gpu/drm/i915/display/intel_alpm.c     |   2 +-
  .../drm/i915/display/intel_display_debugfs.c  |   4 +-
  .../display/intel_display_debugfs_params.c    |  10 +-
@@ -414,34 +414,36 @@ David Reaver (6):
  drivers/gpu/drm/i915/display/intel_pps.c      |   2 +-
  drivers/gpu/drm/i915/display/intel_psr.c      |   2 +-
  drivers/gpu/drm/i915/gt/intel_gt_debugfs.c    |   7 +-
- drivers/gpu/drm/i915/gt/intel_gt_debugfs.h    |   3 +-
+ drivers/gpu/drm/i915/gt/intel_gt_debugfs.h    |   2 +-
  .../drm/i915/gt/intel_gt_engines_debugfs.c    |   3 +-
- .../drm/i915/gt/intel_gt_engines_debugfs.h    |   3 +-
+ .../drm/i915/gt/intel_gt_engines_debugfs.h    |   4 +-
  drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.c |   3 +-
- drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.h |   3 +-
+ drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.h |   4 +-
  drivers/gpu/drm/i915/gt/intel_sseu_debugfs.c  |   3 +-
- drivers/gpu/drm/i915/gt/intel_sseu_debugfs.h  |   3 +-
+ drivers/gpu/drm/i915/gt/intel_sseu_debugfs.h  |   4 +-
  .../gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.c |   3 +-
- .../gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.h |   3 +-
+ .../gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.h |   4 +-
  drivers/gpu/drm/i915/gt/uc/intel_guc.h        |   2 +-
  .../gpu/drm/i915/gt/uc/intel_guc_debugfs.c    |   3 +-
- .../gpu/drm/i915/gt/uc/intel_guc_debugfs.h    |   5 +-
+ .../gpu/drm/i915/gt/uc/intel_guc_debugfs.h    |   4 +-
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |   8 +-
  .../drm/i915/gt/uc/intel_guc_log_debugfs.c    |   2 +-
- .../drm/i915/gt/uc/intel_guc_log_debugfs.h    |   2 +-
+ .../drm/i915/gt/uc/intel_guc_log_debugfs.h    |   3 +-
  .../gpu/drm/i915/gt/uc/intel_huc_debugfs.c    |   3 +-
- .../gpu/drm/i915/gt/uc/intel_huc_debugfs.h    |   3 +-
+ .../gpu/drm/i915/gt/uc/intel_huc_debugfs.h    |   4 +-
  drivers/gpu/drm/i915/gt/uc/intel_uc_debugfs.c |   5 +-
- drivers/gpu/drm/i915/gt/uc/intel_uc_debugfs.h |   3 +-
+ drivers/gpu/drm/i915/gt/uc/intel_uc_debugfs.h |   4 +-
  drivers/gpu/drm/i915/gvt/gvt.h                |   4 +-
  drivers/gpu/drm/i915/i915_debugfs_params.c    |  16 +-
- drivers/gpu/drm/i915/i915_debugfs_params.h    |   2 +-
+ drivers/gpu/drm/i915/i915_debugfs_params.h    |   3 +-
  drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.c  |   2 +-
+ drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h  |   1 +
  drivers/gpu/drm/imagination/pvr_debugfs.c     |   4 +-
+ drivers/gpu/drm/imagination/pvr_debugfs.h     |   1 +
  drivers/gpu/drm/imagination/pvr_fw_trace.c    |   3 +-
- drivers/gpu/drm/imagination/pvr_fw_trace.h    |   3 +-
+ drivers/gpu/drm/imagination/pvr_fw_trace.h    |   4 +-
  drivers/gpu/drm/imagination/pvr_params.c      |   2 +-
- drivers/gpu/drm/imagination/pvr_params.h      |   3 +-
+ drivers/gpu/drm/imagination/pvr_params.h      |   4 +-
  drivers/gpu/drm/loongson/lsdc_output_7a2000.c |   4 +-
  drivers/gpu/drm/loongson/lsdc_ttm.c           |   2 +-
  drivers/gpu/drm/msm/disp/dpu1/dpu_core_irq.h  |   2 +-
@@ -488,27 +490,27 @@ David Reaver (6):
  drivers/gpu/drm/tegra/hdmi.c                  |   2 +-
  drivers/gpu/drm/tegra/sor.c                   |   2 +-
  drivers/gpu/drm/ttm/ttm_device.c              |   2 +-
- drivers/gpu/drm/ttm/ttm_module.h              |   2 +-
+ drivers/gpu/drm/ttm/ttm_module.h              |   3 +-
  drivers/gpu/drm/ttm/ttm_resource.c            |   2 +-
  drivers/gpu/drm/vmwgfx/vmwgfx_drv.c           |   2 +-
  drivers/gpu/drm/vmwgfx/vmwgfx_gem.c           |   2 +-
  drivers/gpu/drm/xe/xe_debugfs.c               |   2 +-
  drivers/gpu/drm/xe/xe_gsc_debugfs.c           |   2 +-
- drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   5 +-
+ drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   4 +-
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   6 +-
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  40 +--
- drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h   |   6 +-
+ drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h   |   7 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c   |   9 +-
- drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h   |   3 +-
+ drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h   |   4 +-
  drivers/gpu/drm/xe/xe_guc_debugfs.c           |   2 +-
- drivers/gpu/drm/xe/xe_guc_debugfs.h           |   5 +-
+ drivers/gpu/drm/xe/xe_guc_debugfs.h           |   4 +-
  drivers/gpu/drm/xe/xe_huc_debugfs.c           |   2 +-
- drivers/gpu/drm/xe/xe_huc_debugfs.h           |   5 +-
+ drivers/gpu/drm/xe/xe_huc_debugfs.h           |   4 +-
  drivers/gpu/drm/xe/xe_uc_debugfs.c            |   4 +-
- drivers/gpu/drm/xe/xe_uc_debugfs.h            |   4 +-
+ drivers/gpu/drm/xe/xe_uc_debugfs.h            |   3 +-
  drivers/gpu/drm/xlnx/zynqmp_dp.c              |   4 +-
  drivers/gpu/host1x/debug.c                    |   2 +-
- drivers/gpu/host1x/dev.h                      |   7 +-
+ drivers/gpu/host1x/dev.h                      |   8 +-
  drivers/gpu/vga/vga_switcheroo.c              |   2 +-
  drivers/greybus/debugfs.c                     |   4 +-
  drivers/greybus/es2.c                         |   4 +-
@@ -624,14 +626,14 @@ David Reaver (6):
  drivers/media/platform/mediatek/vpu/mtk_vpu.c |   2 +-
  drivers/media/platform/nxp/dw100/dw100.c      |   2 +-
  drivers/media/platform/nxp/imx-mipi-csis.c    |   2 +-
- .../platform/nxp/imx8-isi/imx8-isi-core.h     |   2 +-
+ .../platform/nxp/imx8-isi/imx8-isi-core.h     |   3 +-
  drivers/media/platform/qcom/venus/core.h      |   2 +-
  .../media/platform/raspberrypi/rp1-cfe/cfe.c  |   2 +-
  .../media/platform/raspberrypi/rp1-cfe/csi2.c |   2 +-
  .../media/platform/raspberrypi/rp1-cfe/csi2.h |   2 +-
  .../platform/raspberrypi/rp1-cfe/pisp-fe.c    |   2 +-
  .../platform/raspberrypi/rp1-cfe/pisp-fe.h    |   2 +-
- .../platform/rockchip/rkisp1/rkisp1-common.h  |   2 +-
+ .../platform/rockchip/rkisp1/rkisp1-common.h  |   3 +-
  .../platform/rockchip/rkisp1/rkisp1-debug.c   |   2 +-
  .../platform/samsung/exynos4-is/fimc-is.h     |   2 +-
  drivers/media/platform/st/sti/bdisp/bdisp.h   |   2 +-
@@ -687,7 +689,7 @@ David Reaver (6):
  drivers/net/ethernet/brocade/bna/bnad.h       |   2 +-
  .../net/ethernet/brocade/bna/bnad_debugfs.c   |   2 +-
  drivers/net/ethernet/chelsio/cxgb3/adapter.h  |   2 +-
- drivers/net/ethernet/chelsio/cxgb4/cxgb4.h    |   2 +-
+ drivers/net/ethernet/chelsio/cxgb4/cxgb4.h    |   3 +-
  .../net/ethernet/chelsio/cxgb4/cxgb4_main.c   |   2 +-
  .../net/ethernet/chelsio/cxgb4vf/adapter.h    |   2 +-
  .../ethernet/chelsio/cxgb4vf/cxgb4vf_main.c   |   2 +-
@@ -728,9 +730,9 @@ David Reaver (6):
  .../mellanox/mlx5/core/en_accel/ktls_tx.c     |   2 +-
  .../net/ethernet/mellanox/mlx5/core/en_fs.c   |   8 +-
  .../net/ethernet/mellanox/mlx5/core/en_tc.c   |   4 +-
- .../ethernet/mellanox/mlx5/core/esw/bridge.h  |   2 +-
+ .../ethernet/mellanox/mlx5/core/esw/bridge.h  |   3 +-
  .../mellanox/mlx5/core/esw/bridge_priv.h      |   2 +-
- .../net/ethernet/mellanox/mlx5/core/eswitch.h |   2 +-
+ .../net/ethernet/mellanox/mlx5/core/eswitch.h |   3 +-
  .../ethernet/mellanox/mlx5/core/lag/debugfs.c |   4 +-
  .../net/ethernet/mellanox/mlx5/core/lag/lag.h |   2 +-
  .../net/ethernet/mellanox/mlx5/core/lib/sd.c  |   2 +-
@@ -745,7 +747,7 @@ David Reaver (6):
  .../microchip/vcap/vcap_api_debugfs.c         |   9 +-
  .../microchip/vcap/vcap_api_debugfs.h         |  14 +-
  .../net/ethernet/microsoft/mana/gdma_main.c   |   2 +-
- drivers/net/ethernet/netronome/nfp/nfp_main.h |   2 +-
+ drivers/net/ethernet/netronome/nfp/nfp_main.h |   3 +-
  drivers/net/ethernet/netronome/nfp/nfp_net.h  |  14 +-
  .../ethernet/netronome/nfp/nfp_net_debugfs.c  |  10 +-
  .../ethernet/netronome/nfp/nfp_netvf_main.c   |   2 +-
@@ -795,9 +797,9 @@ David Reaver (6):
  drivers/net/wireless/ath/wil6210/debugfs.c    |  30 +--
  drivers/net/wireless/ath/wil6210/wil6210.h    |   2 +-
  drivers/net/wireless/broadcom/b43/debugfs.c   |   2 +-
- drivers/net/wireless/broadcom/b43/debugfs.h   |   2 +-
+ drivers/net/wireless/broadcom/b43/debugfs.h   |   3 +-
  .../net/wireless/broadcom/b43legacy/debugfs.c |   2 +-
- .../net/wireless/broadcom/b43legacy/debugfs.h |   2 +-
+ .../net/wireless/broadcom/b43legacy/debugfs.h |   3 +-
  .../broadcom/brcm80211/brcmfmac/cfg80211.h    |   2 +-
  .../broadcom/brcm80211/brcmfmac/core.h        |   2 +-
  .../broadcom/brcm80211/brcmfmac/debug.c       |   2 +-
@@ -906,11 +908,11 @@ David Reaver (6):
  drivers/phy/realtek/phy-rtk-usb2.c            |   8 +-
  drivers/phy/realtek/phy-rtk-usb3.c            |   8 +-
  drivers/pinctrl/core.c                        |   4 +-
- drivers/pinctrl/core.h                        |   2 +-
+ drivers/pinctrl/core.h                        |   3 +-
  drivers/pinctrl/pinconf.c                     |   4 +-
- drivers/pinctrl/pinconf.h                     |   4 +-
+ drivers/pinctrl/pinconf.h                     |   5 +-
  drivers/pinctrl/pinmux.c                      |   4 +-
- drivers/pinctrl/pinmux.h                      |   4 +-
+ drivers/pinctrl/pinmux.h                      |   5 +-
  drivers/platform/chrome/cros_ec_debugfs.c     |   2 +-
  drivers/platform/chrome/wilco_ec/debugfs.c    |   2 +-
  drivers/platform/olpc/olpc-ec.c               |   8 +-
@@ -1057,7 +1059,7 @@ David Reaver (6):
  drivers/usb/typec/tcpm/fusb302.c              |   2 +-
  drivers/usb/typec/tcpm/tcpm.c                 |   2 +-
  drivers/usb/typec/ucsi/debugfs.c              |   2 +-
- drivers/usb/typec/ucsi/ucsi.h                 |   2 +-
+ drivers/usb/typec/ucsi/ucsi.h                 |   3 +-
  drivers/vdpa/mlx5/net/debug.c                 |   2 +-
  drivers/vdpa/mlx5/net/mlx5_vnet.h             |  12 +-
  drivers/vdpa/pds/aux_drv.h                    |   2 +-
@@ -1065,6 +1067,7 @@ David Reaver (6):
  drivers/vfio/debugfs.c                        |   4 +-
  .../vfio/pci/hisilicon/hisi_acc_vfio_pci.c    |   4 +-
  drivers/video/fbdev/omap2/omapfb/dss/core.c   |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss.h    |   1 +
  drivers/virtio/virtio_debug.c                 |   2 +-
  drivers/watchdog/bcm_kona_wdt.c               |   4 +-
  drivers/watchdog/dw_wdt.c                     |   2 +-
@@ -1099,17 +1102,17 @@ David Reaver (6):
  fs/xfs/xfs_super.c                            |   8 +-
  fs/xfs/xfs_super.h                            |   3 +-
  include/drm/drm_bridge.h                      |   2 +-
- include/drm/drm_connector.h                   |   5 +-
+ include/drm/drm_connector.h                   |   4 +-
  include/drm/drm_crtc.h                        |   2 +-
- include/drm/drm_debugfs.h                     |  14 +-
+ include/drm/drm_debugfs.h                     |  13 +-
  include/drm/drm_device.h                      |   2 +-
  include/drm/drm_drv.h                         |   5 +-
  include/drm/drm_encoder.h                     |   4 +-
  include/drm/drm_file.h                        |   4 +-
- include/drm/drm_panel.h                       |   3 +-
- include/drm/ttm/ttm_resource.h                |   3 +-
+ include/drm/drm_panel.h                       |   4 +-
+ include/drm/ttm/ttm_resource.h                |   2 +-
  include/kunit/test.h                          |   2 +-
- include/linux/backing-dev-defs.h              |   2 +-
+ include/linux/backing-dev-defs.h              |   3 +-
  include/linux/blk-mq.h                        |   4 +-
  include/linux/blkdev.h                        |   6 +-
  include/linux/blktrace_api.h                  |   2 +-
@@ -1117,7 +1120,7 @@ David Reaver (6):
  include/linux/ceph/libceph.h                  |   8 +-
  include/linux/ceph/mon_client.h               |   2 +-
  include/linux/ceph/osd_client.h               |   2 +-
- include/linux/clk-provider.h                  |   3 +-
+ include/linux/clk-provider.h                  |   4 +-
  include/linux/closure.h                       |   2 +-
  include/linux/debugfs.h                       | 192 +++++++++------
  include/linux/dmaengine.h                     |   2 +-
@@ -1135,7 +1138,7 @@ David Reaver (6):
  include/linux/iio/iio.h                       |   4 +-
  include/linux/intel_tpmi.h                    |   2 +-
  include/linux/iommu.h                         |   2 +-
- include/linux/irqdesc.h                       |   3 +-
+ include/linux/irqdesc.h                       |   2 +-
  include/linux/kvm_host.h                      |   5 +-
  include/linux/mfd/aat2870.h                   |   2 +-
  include/linux/mhi.h                           |   2 +-
@@ -1153,7 +1156,7 @@ David Reaver (6):
  include/linux/remoteproc.h                    |   2 +-
  include/linux/security.h                      |   6 +-
  include/linux/shrinker.h                      |   2 +-
- include/linux/soundwire/sdw.h                 |   4 +-
+ include/linux/soundwire/sdw.h                 |   5 +-
  include/linux/sunrpc/clnt.h                   |   2 +-
  include/linux/sunrpc/xprt.h                   |   2 +-
  include/linux/swiotlb.h                       |   2 +-
@@ -1163,9 +1166,10 @@ David Reaver (6):
  include/linux/virtio.h                        |   2 +-
  include/linux/wkup_m3_ipc.h                   |   2 +-
  include/linux/wwan.h                          |   8 +-
+ include/linux/xattr.h                         |   1 +
  include/media/cec.h                           |   2 +-
  include/media/v4l2-async.h                    |   6 +-
- include/media/v4l2-dev.h                      |   4 +-
+ include/media/v4l2-dev.h                      |   5 +-
  include/media/v4l2-dv-timings.h               |   8 +-
  include/net/6lowpan.h                         |   2 +-
  include/net/bluetooth/bluetooth.h             |   2 +-
@@ -1265,7 +1269,7 @@ David Reaver (6):
  sound/core/jack.c                             |   2 +-
  sound/core/sound.c                            |   2 +-
  sound/drivers/pcmtest.c                       |   2 +-
- sound/pci/hda/cs35l56_hda.h                   |   2 +-
+ sound/pci/hda/cs35l56_hda.h                   |   3 +-
  sound/soc/codecs/cs35l56.c                    |   2 +-
  sound/soc/fsl/fsl_ssi.h                       |   2 +-
  sound/soc/fsl/imx-audmux.c                    |   2 +-
@@ -1283,10 +1287,10 @@ David Reaver (6):
  sound/soc/sof/sof-client-probes.c             |   2 +-
  sound/soc/sof/sof-client-probes.h             |   4 +-
  sound/soc/sof/sof-client.c                    |   2 +-
- sound/soc/sof/sof-client.h                    |   2 +-
+ sound/soc/sof/sof-client.h                    |   3 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1115 files changed, 2928 insertions(+), 2640 deletions(-)
+ 1119 files changed, 2961 insertions(+), 2640 deletions(-)
 
 
 base-commit: 0de63bb7d91975e73338300a57c54b93d3cc151c

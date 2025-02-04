@@ -1,4 +1,4 @@
-From 6bad3919a1c05aa5cbb55b34c8b2734f01638eea Mon Sep 17 00:00:00 2001
+From 0997834c6bd9b273d5cde30d08728b1adceb368c Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:39:53 -0800
 Subject: [RFC PATCH 3/6] relay: Replace dentry with debugfs_node
