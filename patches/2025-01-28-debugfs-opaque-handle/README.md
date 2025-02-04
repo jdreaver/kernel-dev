@@ -32,6 +32,29 @@ Different versions:
 
 # TODO
 
+## Not seeing build errors
+
+If I remove `#include <linux/debugfs.h>` in `include/drm/drm_connector.h`, I see a build error when I do my QEMU minimal build, but not with `allmodconfig`.
+
+- Files compiled were `drivers/gpu/drm/drm_atomic.o` and `drivers/gpu/drm/drm_atomic_uapi.o`:
+
+```
+In file included from ./include/drm/drm_modes.h:33,
+                 from ./include/drm/drm_crtc.h:32,
+                 from ./include/drm/drm_atomic.h:31,
+                 from drivers/gpu/drm/drm_atomic_uapi.c:31:
+./include/drm/drm_connector.h:1579:70: error: ‘struct debugfs_node’ declared inside parameter list will not be visible outside of this definition or declaration [-Werror]
+ 1579 |         void (*debugfs_init)(struct drm_connector *connector, struct debugfs_node *root);
+      |
+```
+
+- Consider the following rule: if a _header_ file defines a function with `debugfs_struct` at all, then it needs `#include <linux/debugfs.h>`.
+  - We could check for this after running Coccinelle (maybe even also manual fixups) and then backport these `#include`s to an earlier commit.
+- If I don't see any errors in my latest mrproper build, undo one of the recent header changes (e.g. the `#include` in `include/drm/drm_connector.h`) and make sure the error triggers in a full build. If it doesn't, figure out why.
+  - Should I be using `allyesconfig` instead of `allmodconfig`? I wonder if we somehow aren't type checking when we are compiling standalone modules? (seems implausible to me)
+
+- Try removing `#define` in `dcache.h` and see how many other `#include`s I need to add.
+
 ## Submitting, final checks
 
 - (maybe not, Linus' tree is farther ahead) Rebase against `git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git`
