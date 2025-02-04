@@ -1,4 +1,4 @@
-From 4af254d77eae16db597a63e745d9f1ee5da79705 Mon Sep 17 00:00:00 2001
+From ec1b6aec70afd423f712a103180fd5771ffba0c7 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:25:34 -0800
 Subject: [RFC PATCH 2/6] debugfs: Add helper functions for debugfs_node
@@ -75,7 +75,7 @@ index 75715d8877ee..6892538d9d49 100644
  {
  	struct dentry *dentry;
 diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index e6ee571e8c36..3049a7396d01 100644
+index e6ee571e8c36..738a990f99cd 100644
 --- a/include/linux/debugfs.h
 +++ b/include/linux/debugfs.h
 @@ -79,6 +79,18 @@ struct debugfs_short_fops {
@@ -88,7 +88,7 @@ index e6ee571e8c36..3049a7396d01 100644
 +
 +void debugfs_node_put(struct debugfs_node *node);
 +
-+struct inode *debugfs_node_inode(struct debugfs_node *);
++struct inode *debugfs_node_inode(struct debugfs_node *node);
 +
 +struct debugfs_node *debugfs_node_from_dentry(struct dentry *dentry);
 +
@@ -115,7 +115,7 @@ index e6ee571e8c36..3049a7396d01 100644
 +void debugfs_node_put(struct debugfs_node *node)
 +{ }
 +
-+struct inode *debugfs_node_inode(struct debugfs_node *)
++struct inode *debugfs_node_inode(struct debugfs_node *node)
 +{
 +	return ERR_PTR(-ENODEV);
 +}

@@ -108,8 +108,8 @@ To catch any missed instances of dentry declarations related to debugfs,
 I ran the following ripgrep command and reviewed its output to ensure I
 didn't miss anything obvious:
 
-  rg 'struct dentry \*.*(debug|dbg)|(debug|dbg).*struct dentry \*' -g '*.{c,h}' \
-    -g '!fs/debugfs' -g '!include/linux/debugfs.h'
+  rg 'struct dentry \*.*(debug|dbg)|(debug|dbg).*struct dentry \*' \
+    -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
 
 Links
 =====

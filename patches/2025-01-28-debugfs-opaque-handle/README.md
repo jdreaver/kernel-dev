@@ -34,15 +34,15 @@ Different versions:
 ## Rework the series with a `#define`
 
 - Go over cover letter again
-- Compile each commit to ensure every commit compiles.
 
 ## Submitting, final checks
 
-- Ensure all commits have change logs.
+- Ensure all commits have change logs and signoffs.
 - Update coccinelle script in the change log of the commit that uses it.
-- Make sure each commit compiles!
+- Make sure each commit compiles, not just the last one.
 - Actually go through testing again before submitting!
 - Check for TODO items
+- Run checkpatch.pl
 - Use clang or a different nix-shell for cross-compilation (and add that I did that to test procedure)
   - At least try powerpc, s390, and mips
 

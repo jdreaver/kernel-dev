@@ -1,6 +1,6 @@
-From a0ba0000168401768d07e2685f3aff73b4914d45 Mon Sep 17 00:00:00 2001
+From ced63fa42ad776ddc2780cf1940ad36e73e7ed2d Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 19:02:02 -0800
+Date: Mon, 3 Feb 2025 19:08:12 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -122,8 +122,8 @@ To catch any missed instances of dentry declarations related to debugfs,
 I ran the following ripgrep command and reviewed its output to ensure I
 didn't miss anything obvious:
 
-  rg 'struct dentry \*.*(debug|dbg)|(debug|dbg).*struct dentry \*' -g '*.{c,h}' \
-    -g '!fs/debugfs' -g '!include/linux/debugfs.h'
+  rg 'struct dentry \*.*(debug|dbg)|(debug|dbg).*struct dentry \*' \
+    -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h'
 
 Links
 =====
