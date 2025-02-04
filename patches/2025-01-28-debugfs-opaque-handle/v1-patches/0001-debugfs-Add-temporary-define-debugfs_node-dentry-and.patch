@@ -1,4 +1,4 @@
-From bbe93ba7b8e3309adfc6d4a55893c0bda435bd0b Mon Sep 17 00:00:00 2001
+From 8a88578ddfc87a44d01bd6165985611598eaf648 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:13:09 -0800
 Subject: [RFC PATCH 1/6] debugfs: Add temporary "#define debugfs_node dentry"
@@ -14,13 +14,14 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
-Add "#define debugfs_node dentry" and a few #include<linux/debugfs.h> to
-support migrating all debugfs APIs from dentry to a new opaque descriptor
-called debugfs_node. Subsequent commits will apply a Coccinelle script and
-manual fixups to migrate the rest of the kernel before replacing this
+Add a temporary "#define debugfs_node dentry" to facilitate migrating
+debugfs APIs from dentry to a new opaque descriptor, debugfs_node.
+This change allows subsequent commits to apply a Coccinelle script and
+manual fixups before replacing the #define with an actual struct
+declaration.
 
-The #define is duplicated in dcache.h (right under the definition of
-"struct dentry") to reduce the number of #includes that need adding.
+To minimize the number of additional #include statements, the #define is
+also placed in dcache.h, right below the definition of struct dentry.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---

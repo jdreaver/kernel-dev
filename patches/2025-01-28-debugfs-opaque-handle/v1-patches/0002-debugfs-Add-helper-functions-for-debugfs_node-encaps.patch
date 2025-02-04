@@ -1,8 +1,8 @@
-From ea45ff0ee7b1a1100a8426026da0205317d65def Mon Sep 17 00:00:00 2001
+From 4af254d77eae16db597a63e745d9f1ee5da79705 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:25:34 -0800
-Subject: [RFC PATCH 2/6] debugfs: Add helper functions to encapsulate
- debugfs_node
+Subject: [RFC PATCH 2/6] debugfs: Add helper functions for debugfs_node
+ encapsulation
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>
@@ -14,16 +14,16 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
-When debugfs_node becomes a struct, users will need a few various helper
-functions since they won't be able to access to underlying dentry. This
-commit adds these helpers, which are then used in the automated Coccinelle
-conversion commit.
+Once debugfs_node becomes a struct, users will need helper functions since
+direct access to the underlying dentry will no longer be possible. This
+commit introduces these helpers, which will be used in the automated
+Coccinelle conversion.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
- fs/debugfs/inode.c      | 38 +++++++++++++++++++++++++++++++++++++
- include/linux/debugfs.h | 42 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 80 insertions(+)
+ fs/debugfs/inode.c      | 38 ++++++++++++++++++++++++++++++++++++++
+ include/linux/debugfs.h | 41 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 79 insertions(+)
 
 diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
 index 75715d8877ee..6892538d9d49 100644
@@ -75,10 +75,10 @@ index 75715d8877ee..6892538d9d49 100644
  {
  	struct dentry *dentry;
 diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index e6ee571e8c36..33b4c3c9a5a9 100644
+index e6ee571e8c36..3049a7396d01 100644
 --- a/include/linux/debugfs.h
 +++ b/include/linux/debugfs.h
-@@ -79,10 +79,23 @@ struct debugfs_short_fops {
+@@ -79,6 +79,18 @@ struct debugfs_short_fops {
  
  struct dentry *debugfs_lookup(const char *name, struct dentry *parent);
  
@@ -97,12 +97,7 @@ index e6ee571e8c36..33b4c3c9a5a9 100644
  struct dentry *debugfs_create_file_full(const char *name, umode_t mode,
  					struct dentry *parent, void *data,
  					const void *aux,
- 					const struct file_operations *fops);
-+
- struct dentry *debugfs_create_file_short(const char *name, umode_t mode,
- 					 struct dentry *parent, void *data,
- 					 const void *aux,
-@@ -271,6 +284,35 @@ static inline struct dentry *debugfs_lookup(const char *name,
+@@ -271,6 +283,35 @@ static inline struct dentry *debugfs_lookup(const char *name,
  	return ERR_PTR(-ENODEV);
  }
  

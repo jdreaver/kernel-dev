@@ -1,7 +1,7 @@
-From ea186c87780f07088ee9c24e9c2998c2d7fb6adf Mon Sep 17 00:00:00 2001
+From f2d3a312d0a1c8fb83c2c57f18949e885f47b226 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:39:53 -0800
-Subject: [RFC PATCH 3/6] relay: Use debugfs_node instead of dentry
+Subject: [RFC PATCH 3/6] relay: Replace dentry with debugfs_node
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>
@@ -13,17 +13,17 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
     cocci@inria.fr,
     linux-kernel@vger.kernel.org
 
-The relay documentation hints at supporting different filesystems, but in
-practice all users use debugfs. This commit migrates relay to use
-debugfs_node instead of dentry in its API so subsequently converting users
-of relay to debugfs_node is smoother.
+Although the relay documentation suggests support for multiple filesystems,
+in practice all existing users rely on debugfs. This commit updates the
+relay API and documentation to use debugfs_node instead of dentry, making
+the subsequent migration of relay users to debugfs_node smoother.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
  Documentation/filesystems/relay.rst | 32 +++++------
- include/linux/relay.h               | 20 +++----
+ include/linux/relay.h               | 19 ++++---
  kernel/relay.c                      | 88 ++++++++++++++---------------
- 3 files changed, 69 insertions(+), 71 deletions(-)
+ 3 files changed, 69 insertions(+), 70 deletions(-)
 
 diff --git a/Documentation/filesystems/relay.rst b/Documentation/filesystems/relay.rst
 index 04ad083cfe62..b0ee7dcab8e7 100644
@@ -106,7 +106,7 @@ index 04ad083cfe62..b0ee7dcab8e7 100644
  	    return 0;
      }
 diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 72b876dd5cb8..b86c22deff2a 100644
+index 72b876dd5cb8..75d5a147ea9e 100644
 --- a/include/linux/relay.h
 +++ b/include/linux/relay.h
 @@ -22,6 +22,7 @@
@@ -189,11 +189,6 @@ index 72b876dd5cb8..b86c22deff2a 100644
  extern void relay_close(struct rchan *chan);
  extern void relay_flush(struct rchan *chan);
  extern void relay_subbufs_consumed(struct rchan *chan,
-@@ -284,4 +285,3 @@ int relay_prepare_cpu(unsigned int cpu);
- #endif
- 
- #endif /* _LINUX_RELAY_H */
--
 diff --git a/kernel/relay.c b/kernel/relay.c
 index a8ae436dc77e..16cf9098d697 100644
 --- a/kernel/relay.c
