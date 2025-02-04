@@ -12,43 +12,42 @@ Purpose/Background
 
 debugfs currently relies on dentry to represent its filesystem
 hierarchy, and its API directly exposes dentry pointers to users. This
-tight coupling makes it difficult to modify debugfs internals without
-impacting external users. A dentry and inode should exist only when
-needed, rather than being persistently tied to debugfs. Some kernel
-developers have proposed using an opaque handle for debugfs nodes
-instead of dentry pointers [1][2][3].
+tight coupling makes it difficult to modify debugfs internals. A dentry
+and inode should exist only when needed, rather than being persistently
+tied to debugfs. Some kernel developers have proposed using an opaque
+handle for debugfs nodes instead of dentry pointers [1][2][3].
 
 Replacing dentry with debugfs_node simplifies future migrations away
-from dentry. Additionally, debugfs_node makes code more self-explanatory
--- its purpose is immediately clear, unlike dentry, which requires
-further context to understand its role as a debugfs dentry.
+from dentry. Additionally, a declaration with debugfs_node is more
+self-explanatory -- its purpose is immediately clear, unlike dentry,
+which requires further context to understand its role as a debugfs
+dentry.
 
 About this patch series
 =======================
 
-The commits in this series do the following:
+This series makes the following changes:
 
 1. Add a temporary "#define debugfs_node dentry".
-2. Add a few debugfs helper functions used by the Coccinelle script.
-3. Update the relay system to use debugfs_node instead of dentry.
-4. Run Coccinelle to convert most of the kernel to debugfs_node.
-5. Manual fixes for cases Coccinelle missed.
-6. Remove the #define and use struct debugfs_node in debugfs.
+2. Introduce debugfs helper functions used by Coccinelle rules.
+3. Update relay to use debugfs_node instead of dentry.
+4. Use Coccinelle to convert most of the kernel to debugfs_node.
+5. Apply manual fixes for cases Coccinelle missed.
+6. Remove the #define and introduce struct debugfs_node.
 
-I put the #define in _both_ debugfs.h and dentry.h so I didn't have to
-poke around and add more #include<linux/debugfs.h> lines just to remove
-them in the last commit. (I still had to add a few.)
+The #define is placed in both debugfs.h and dentry.h to avoid
+unnecessary #include <linux/debugfs.h> additions that would be removed
+in the final commit.
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
-between the two as needed. I only had to add a few trivial helper
-functions for a small number of debugfs users. Huge thanks to Al Viro,
-who recently refactored this code, which simplified parts of this
-change.
+between the two as needed. I introduced a few trivial helper functions
+for specific debugfs users. Thanks to Al Viro's recent refactoring,
+parts of this change were simplified.
 
-Most changes outside of fs/debugfs/ were mechanical, and thankfully
-Coccinelle could handle them. I had to manually fix situations that
-Coccinelle couldn't handle, like dentry declarations nested in layers of
+Most changes outside of fs/debugfs/ were mechanical and handled by
+Coccinelle. Manual fixes were needed in cases where Coccinelle couldn't
+fully convert the code, like dentry declarations nested in layers of
 headers or function calls, code inside macros, etc.
 
 Relay changes
@@ -56,14 +55,14 @@ Relay changes
 
 The most non-obvious change is in the relay system. While the relay
 documentation suggests support for non-debugfs users, in practice all
-relay users rely on debugfs. I replaced dentry pointers with
-debugfs_node and I updated the documentation to reflect this change.
+relay users rely on debugfs. I updated relay to use debugfs_node revised
+the documentation.
 
 Coccinelle
 ==========
 
-I wrote a Coccinelle script to automate most of the conversion. I've
-inlined the script at the bottom of the commit message where it was run.
+I wrote a Coccinelle script to automate most of the conversion. The
+script is inlined at the bottom of the commit message where it was run.
 This is my first time using Coccinelle, so any feedback is welcome!
 
 The script does the following:
