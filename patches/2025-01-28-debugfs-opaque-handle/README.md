@@ -37,6 +37,9 @@ Different versions:
 If I remove `#include <linux/debugfs.h>` in `include/drm/drm_connector.h`, I see a build error when I do my QEMU minimal build, but not with `allmodconfig`.
 
 - Files compiled were `drivers/gpu/drm/drm_atomic.o` and `drivers/gpu/drm/drm_atomic_uapi.o`:
+  - Compile these directly under different configs
+  - Diff my minimal config, allyesconfig, and allmodconfg .config files
+  - I think this is an allyesconfig vs allmodconfig thing. drm_atomic.o is under drm-y
 
 ```
 In file included from ./include/drm/drm_modes.h:33,
@@ -69,8 +72,11 @@ In file included from ./include/drm/drm_modes.h:33,
 - Make sure each commit compiles, not just the last one. This runs a build for each commit on the branch (since `master` is the base branch):
 
   ```
-  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allmodconfig && time make -s -j16 && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && time make -s -j16 && echo Success!' master
   ```
+
+  - Also compile with debugfs disabled.
+  - Also consider compiling with both `allmodconfig` and `allyesconfig`
 
 ## Non-coccinelle changes
 
