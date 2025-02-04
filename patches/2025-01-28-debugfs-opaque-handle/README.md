@@ -46,7 +46,7 @@ Different versions:
 - Make sure each commit compiles, not just the last one. This runs a build for each commit on the branch (since `master` is the base branch):
 
   ```
-  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && time make -s -j16 && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allmodconfig && time make -s -j16 && echo Success!' master
   ```
 
 ## Non-coccinelle changes

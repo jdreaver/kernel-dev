@@ -1,6 +1,6 @@
-From ced63fa42ad776ddc2780cf1940ad36e73e7ed2d Mon Sep 17 00:00:00 2001
+From 7add457519bb264fe954e8d4ec7f578136060e5a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 4 Feb 2025 07:18:58 -0800
+Date: Tue, 4 Feb 2025 07:54:47 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -114,8 +114,8 @@ Testing
 =======
 
 This was tested by building every commit in this series on an x86_64
-machine with allmodconfig. I also loaded a more minimal kernel into QEMU
-and ran:
+machine with allmodconfig, including an mrproper before each build. I
+also loaded a more minimal kernel into QEMU and ran:
 
   find /sys/kernel/debug -type f -exec stat {} +
 
@@ -384,7 +384,7 @@ David Reaver (6):
  drivers/gpu/drm/i915/display/intel_pps.c      |   2 +-
  drivers/gpu/drm/i915/display/intel_psr.c      |   2 +-
  drivers/gpu/drm/i915/gt/intel_gt_debugfs.c    |   7 +-
- drivers/gpu/drm/i915/gt/intel_gt_debugfs.h    |   2 +-
+ drivers/gpu/drm/i915/gt/intel_gt_debugfs.h    |   3 +-
  .../drm/i915/gt/intel_gt_engines_debugfs.c    |   3 +-
  .../drm/i915/gt/intel_gt_engines_debugfs.h    |   3 +-
  drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.c |   3 +-
@@ -1069,7 +1069,7 @@ David Reaver (6):
  fs/xfs/xfs_super.c                            |   8 +-
  fs/xfs/xfs_super.h                            |   3 +-
  include/drm/drm_bridge.h                      |   2 +-
- include/drm/drm_connector.h                   |   4 +-
+ include/drm/drm_connector.h                   |   5 +-
  include/drm/drm_crtc.h                        |   2 +-
  include/drm/drm_debugfs.h                     |  14 +-
  include/drm/drm_device.h                      |   2 +-
@@ -1077,7 +1077,7 @@ David Reaver (6):
  include/drm/drm_encoder.h                     |   4 +-
  include/drm/drm_file.h                        |   4 +-
  include/drm/drm_panel.h                       |   3 +-
- include/drm/ttm/ttm_resource.h                |   2 +-
+ include/drm/ttm/ttm_resource.h                |   3 +-
  include/kunit/test.h                          |   2 +-
  include/linux/backing-dev-defs.h              |   2 +-
  include/linux/blk-mq.h                        |   4 +-
@@ -1256,7 +1256,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1115 files changed, 2925 insertions(+), 2640 deletions(-)
+ 1115 files changed, 2928 insertions(+), 2640 deletions(-)
 
 
 base-commit: 0de63bb7d91975e73338300a57c54b93d3cc151c

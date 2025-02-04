@@ -1,4 +1,4 @@
-From 6650c28bd30b57963633bd966229e10fbd8b1b28 Mon Sep 17 00:00:00 2001
+From 170fc3fb50a4578c35acc6d146b550d7513b74e1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
@@ -2048,10 +2048,10 @@ index 496dbbd2ad7e..77a1649e5586 100644
  
  /**
 diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 9f63215edaea..0bf522e27199 100644
+index df3499eaa282..799363f73a2b 100644
 --- a/include/drm/drm_connector.h
 +++ b/include/drm/drm_connector.h
-@@ -1576,7 +1576,7 @@ struct drm_connector_funcs {
+@@ -1577,7 +1577,7 @@ struct drm_connector_funcs {
  	 *
  	 * Allows connectors to create connector-specific debugfs files.
  	 */

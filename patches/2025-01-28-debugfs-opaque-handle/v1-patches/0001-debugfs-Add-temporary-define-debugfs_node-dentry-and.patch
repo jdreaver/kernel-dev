@@ -1,4 +1,4 @@
-From 8a88578ddfc87a44d01bd6165985611598eaf648 Mon Sep 17 00:00:00 2001
+From 760af13d9f075e8fb14288bdbef5aa576a4e4a6f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:13:09 -0800
 Subject: [RFC PATCH 1/6] debugfs: Add temporary "#define debugfs_node dentry"
@@ -26,18 +26,33 @@ also placed in dcache.h, right below the definition of struct dentry.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
+ drivers/gpu/drm/i915/gt/intel_gt_debugfs.h     | 1 +
  drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h | 2 ++
  drivers/gpu/drm/xe/xe_gsc_debugfs.h            | 2 ++
  drivers/gpu/drm/xe/xe_guc_debugfs.h            | 2 ++
  drivers/gpu/drm/xe/xe_huc_debugfs.h            | 2 ++
  drivers/gpu/drm/xe/xe_uc_debugfs.h             | 2 ++
+ include/drm/drm_connector.h                    | 1 +
  include/drm/drm_debugfs.h                      | 1 +
+ include/drm/ttm/ttm_resource.h                 | 1 +
  include/linux/dcache.h                         | 2 ++
  include/linux/debugfs.h                        | 2 ++
  include/linux/fault-inject.h                   | 1 +
  include/linux/irqdesc.h                        | 1 +
- 10 files changed, 17 insertions(+)
+ 13 files changed, 20 insertions(+)
 
+diff --git a/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h b/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
+index e4110eebf093..c1df9a8a74f1 100644
+--- a/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
++++ b/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
+@@ -6,6 +6,7 @@
+ #ifndef INTEL_GT_DEBUGFS_H
+ #define INTEL_GT_DEBUGFS_H
+ 
++#include <linux/debugfs.h>
+ #include <linux/file.h>
+ 
+ struct intel_gt;
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h b/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h
 index 424c26665cf1..7a7b722cf106 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h
@@ -103,6 +118,18 @@ index a13382df2bd7..c37319a9e249 100644
  struct dentry;
  struct xe_uc;
  
+diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
+index f13d597370a3..fde30e8672e4 100644
+--- a/include/drm/drm_connector.h
++++ b/include/drm/drm_connector.h
+@@ -28,6 +28,7 @@
+ #include <linux/ctype.h>
+ #include <linux/hdmi.h>
+ #include <linux/notifier.h>
++#include <linux/debugfs.h>
+ #include <drm/drm_mode_object.h>
+ #include <drm/drm_util.h>
+ #include <drm/drm_property.h>
 diff --git a/include/drm/drm_debugfs.h b/include/drm/drm_debugfs.h
 index cf06cee4343f..14eaccccf283 100644
 --- a/include/drm/drm_debugfs.h
@@ -115,6 +142,18 @@ index cf06cee4343f..14eaccccf283 100644
  
  #include <drm/drm_gpuvm.h>
  
+diff --git a/include/drm/ttm/ttm_resource.h b/include/drm/ttm/ttm_resource.h
+index ee688d0c029b..bc97996320ec 100644
+--- a/include/drm/ttm/ttm_resource.h
++++ b/include/drm/ttm/ttm_resource.h
+@@ -30,6 +30,7 @@
+ #include <linux/mutex.h>
+ #include <linux/iosys-map.h>
+ #include <linux/dma-fence.h>
++#include <linux/debugfs.h>
+ 
+ #include <drm/drm_print.h>
+ #include <drm/ttm/ttm_caching.h>
 diff --git a/include/linux/dcache.h b/include/linux/dcache.h
 index 4afb60365675..4b0c11cd3d50 100644
 --- a/include/linux/dcache.h

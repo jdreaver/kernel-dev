@@ -1,4 +1,4 @@
-From f6a41cd92aa860125ce9dc5c3763d5a0983920eb Mon Sep 17 00:00:00 2001
+From 7e8d24514fb73db3df29ae19cef52bacc7abe5e9 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:06:45 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
@@ -5826,10 +5826,10 @@ index 4dc23b8d3aa2..245a63568a8a 100644
  				     unsigned long count, void *data)
  {
 diff --git a/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h b/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
-index e4110eebf093..82475823a7e4 100644
+index c1df9a8a74f1..c86fc034ea3a 100644
 --- a/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
-@@ -42,7 +42,7 @@ struct intel_gt_debugfs_file {
+@@ -43,7 +43,7 @@ struct intel_gt_debugfs_file {
  	bool (*eval)(void *data);
  };
  
@@ -18151,10 +18151,10 @@ index d92d7a07ea89..4b88c9b4d135 100644
  	/* Apparently we're expected to ignore error returns?? */
  	child = debugfs_create_dir(name, parent);
 diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index f13d597370a3..9f63215edaea 100644
+index fde30e8672e4..df3499eaa282 100644
 --- a/include/drm/drm_connector.h
 +++ b/include/drm/drm_connector.h
-@@ -2180,7 +2180,7 @@ struct drm_connector {
+@@ -2181,7 +2181,7 @@ struct drm_connector {
  	u8 real_edid_checksum;
  
  	/** @debugfs_entry: debugfs directory for this connector */
@@ -18279,10 +18279,10 @@ index ef817926cddd..6cb6144dc9e1 100644
  
  /**
 diff --git a/include/drm/ttm/ttm_resource.h b/include/drm/ttm/ttm_resource.h
-index ee688d0c029b..b76ed399621f 100644
+index bc97996320ec..f27900a63d43 100644
 --- a/include/drm/ttm/ttm_resource.h
 +++ b/include/drm/ttm/ttm_resource.h
-@@ -504,6 +504,6 @@ void ttm_kmap_iter_linear_io_fini(struct ttm_kmap_iter_linear_io *iter_io,
+@@ -505,6 +505,6 @@ void ttm_kmap_iter_linear_io_fini(struct ttm_kmap_iter_linear_io *iter_io,
  				  struct ttm_resource *mem);
  
  void ttm_resource_manager_create_debugfs(struct ttm_resource_manager *man,
