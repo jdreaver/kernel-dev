@@ -32,10 +32,6 @@ Different versions:
 
 # TODO
 
-## Rework the series with a `#define`
-
-- Go over cover letter again
-
 ## Submitting, final checks
 
 - Ensure all commits have change logs and signoffs.
@@ -56,29 +52,10 @@ Different versions:
 
 - Consider having coccinelle script rename variables named `dentry` and `dent` to `node`. Higher likelihood of merge conflicts though.
 
-- Clean up script. Pick either the old script or test the new script and see if that works.
-- Don't hard code all of the debugfs functions. They should be found with the regex. We might just need the macros, but even then the regex should catch those.
-
-- Investigate wrapper functions not getting transformed in `drivers/cxl/cxlmem.h` and `drivers/cxl/mem.c`
-- `scmi_raw_mode_init` has declaration arg type changed, but not header prototype
 - Pretty simple case not getting handled: `struct dentry *direct = blah->foo;` where `foo` was just migrated from dentry to debugfs_node. `direct` remains `dentry`
-
-- Inversion idea from slide 195 here: <https://www.lrz.de/services/compute/courses/x_lecturenotes/hspc1w19.pdf>
-  1. Find all declarations of type `struct dentry *`, record their position (maybe record if they are a field or not?)
-  2. See if any of these are used in our debugfs-like functions (including wrappers)
-  3. Change the types of any of the declarations that matched in function usage. We use the identifier/position from the first rule, and we just "depend on" the second rule
-  4. We can also do our wrapper rewrites and stuff, easy peasy
-     - Ensure we don't overconstrain rewriting wrappers as depending on matching a dentry.
-     - Could do multiple passes. I think rewriting wrappers in the first pass
-     - I think we can rewrite return values with a dedicated rule, and function args can be handled like other declarations. Then we don't need to specially rewrite wrappers
 
 - `sound/soc/soc-pcm.c` isn't working (only file I think). It interesting because there is no dentry declaration in the actual file (but there is debugfs usage)
   - (old TODO) `include/sound/soc.h` has a `struct dentry *debugfs_dpcm_root;` field that refuses to get matches. I think all the `#define`s in the file are screwing with Coccinelle, because it works when I move that struct to my test file.
-
-- Make a `cocci-test` directory in this subdirectory with multiple headers and C files to try and repro issues I see
-
-- Split up coccinelle file, primarily for ease of understanding, but also some other benefits
-  - It would be simpler if we did a first pass of rewriting helper functions with "debugfs" in the name, and a second pass without using regexes. In the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
 - Test more complex assignments like `hb->dbgfs.base_dir = debugfs_create_dir("heartbeat", accel_dev->debugfs_dir);` in test file
 
