@@ -98,8 +98,9 @@ manual fixups.
 Testing
 =======
 
-This was tested by building the kernel on an x86_64 machine with
-allmodconfig. I also loaded this kernel into a QEMU system and ran:
+This was tested by building every commit in this series on an x86_64
+machine with allmodconfig. I also loaded a more minimal kernel into QEMU
+and ran:
 
   find /sys/kernel/debug -type f -exec stat {} +
 

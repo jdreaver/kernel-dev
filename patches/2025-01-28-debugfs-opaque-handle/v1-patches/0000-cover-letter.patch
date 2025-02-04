@@ -1,6 +1,6 @@
 From ced63fa42ad776ddc2780cf1940ad36e73e7ed2d Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 19:23:58 -0800
+Date: Tue, 4 Feb 2025 07:18:58 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -113,8 +113,9 @@ manual fixups.
 Testing
 =======
 
-This was tested by building the kernel on an x86_64 machine with
-allmodconfig. I also loaded this kernel into a QEMU system and ran:
+This was tested by building every commit in this series on an x86_64
+machine with allmodconfig. I also loaded a more minimal kernel into QEMU
+and ran:
 
   find /sys/kernel/debug -type f -exec stat {} +
 

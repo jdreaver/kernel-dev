@@ -34,14 +34,20 @@ Different versions:
 
 ## Submitting, final checks
 
+- (maybe not, Linus' tree is farther ahead) Rebase against `git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git`
 - Ensure all commits have change logs and signoffs.
 - Update coccinelle script in the change log of the commit that uses it.
-- Make sure each commit compiles, not just the last one.
 - Actually go through testing again before submitting!
-- Check for TODO items
+- Check for TODO items in patches
+- Ensure I have latest cover letter (run `git format-patch`)
 - Run checkpatch.pl
 - Use clang or a different nix-shell for cross-compilation (and add that I did that to test procedure)
-  - At least try powerpc, s390, and mips
+  - At least try arm, powerpc, s390, and mips
+- Make sure each commit compiles, not just the last one. This runs a build for each commit on the branch (since `master` is the base branch):
+
+  ```
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && time make -s -j16 && echo Success!' master
+  ```
 
 ## Non-coccinelle changes
 
