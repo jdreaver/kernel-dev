@@ -1,4 +1,4 @@
-From 393c1e5f5ba62915b01f1fd260015d991372db2c Mon Sep 17 00:00:00 2001
+From c28616aa29610709793540ded8166fa0a25c65e2 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for cases Coccinelle missed
@@ -21,6 +21,7 @@ now be intentional and necessary.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
+ arch/arm/mach-omap2/pm-debug.c                |   2 +-
  arch/powerpc/include/asm/kvm_ppc.h            |   2 +-
  arch/powerpc/include/asm/vas.h                |   2 +-
  arch/powerpc/sysdev/xive/xive-internal.h      |   2 +-
@@ -129,8 +130,21 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 108 files changed, 376 insertions(+), 355 deletions(-)
+ 109 files changed, 377 insertions(+), 356 deletions(-)
 
+diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
+index e6f29101bb46..1f4ea53a6b7d 100644
+--- a/arch/arm/mach-omap2/pm-debug.c
++++ b/arch/arm/mach-omap2/pm-debug.c
+@@ -187,7 +187,7 @@ static int __init pwrdms_setup(struct powerdomain *pwrdm, void *dir)
+ 	if (strncmp(pwrdm->name, "dpll", 4) == 0)
+ 		return 0;
+ 
+-	d = debugfs_create_dir(pwrdm->name, (struct dentry *)dir);
++	d = debugfs_create_dir(pwrdm->name, (struct debugfs_node *)dir);
+ 	debugfs_create_file("suspend", S_IRUGO|S_IWUSR, d, pwrdm,
+ 			    &pwrdm_suspend_fops);
+ 
 diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
 index ca3829d47ab7..a1ed51f3ba57 100644
 --- a/arch/powerpc/include/asm/kvm_ppc.h

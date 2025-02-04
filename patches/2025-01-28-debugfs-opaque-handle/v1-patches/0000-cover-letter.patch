@@ -1,6 +1,6 @@
-From 880bd11d6098069bde1e5e1fe96160db7f9f092e Mon Sep 17 00:00:00 2001
+From 1c68a51777037af6f52d9ae23ded1eb9bee233f1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 17:02:30 -0800
+Date: Mon, 3 Feb 2025 17:57:46 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -478,7 +478,7 @@ David Reaver (6):
 
  Documentation/filesystems/relay.rst           |  32 ++-
  arch/arm/mach-omap1/pm.c                      |   2 +-
- arch/arm/mach-omap2/pm-debug.c                |   4 +-
+ arch/arm/mach-omap2/pm-debug.c                |   6 +-
  arch/loongarch/kernel/kdebugfs.c              |   2 +-
  arch/microblaze/include/asm/processor.h       |   2 +-
  arch/microblaze/kernel/setup.c                |   2 +-
@@ -1591,7 +1591,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1115 files changed, 2925 insertions(+), 2640 deletions(-)
+ 1115 files changed, 2926 insertions(+), 2641 deletions(-)
 
 
 base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b

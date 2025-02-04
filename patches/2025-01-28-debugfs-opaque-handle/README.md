@@ -33,15 +33,11 @@ Different versions:
 
 ## Rework the series with a `#define`
 
-Compile last commit to make sure everything works.
-
-Make sure to change cover letter.
-
-Compile each commit to ensure every commit compiles.
+- Go over cover letter again
+- Compile each commit to ensure every commit compiles.
 
 ## Submitting, final checks
 
-- Reword cover letter with new `#define`-based strategy
 - Ensure all commits have change logs.
 - Update coccinelle script in the change log of the commit that uses it.
 - Make sure each commit compiles!
@@ -66,7 +62,6 @@ Compile each commit to ensure every commit compiles.
 - `scmi_raw_mode_init` has declaration arg type changed, but not header prototype
 - Pretty simple case not getting handled: `struct dentry *direct = blah->foo;` where `foo` was just migrated from dentry to debugfs_node. `direct` remains `dentry`
 
-
 - Inversion idea from slide 195 here: <https://www.lrz.de/services/compute/courses/x_lecturenotes/hspc1w19.pdf>
   1. Find all declarations of type `struct dentry *`, record their position (maybe record if they are a field or not?)
   2. See if any of these are used in our debugfs-like functions (including wrappers)
@@ -85,13 +80,6 @@ Compile each commit to ensure every commit compiles.
   - It would be simpler if we did a first pass of rewriting helper functions with "debugfs" in the name, and a second pass without using regexes. In the second pass we can match for any functions with `debugfs_node *` as a return type or argument instead of a regex
 
 - Test more complex assignments like `hb->dbgfs.base_dir = debugfs_create_dir("heartbeat", accel_dev->debugfs_dir);` in test file
-
-- Use this style for putting type on different line from function def (not pointer `*` position):
-
-  ```
-  static struct debugfs_node *
-  create_buf_file_callback(const char *filename, ...
-  ```
 
 - Nested structs like
 
