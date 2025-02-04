@@ -30,54 +30,53 @@ The commits in this series do the following:
 
 1. Add a temporary "#define debugfs_node dentry".
 2. Add a few debugfs helper functions used by the Coccinelle script.
-3. Update relay system to use debugfs_node instead of dentry.
+3. Update the relay system to use debugfs_node instead of dentry.
 4. Run Coccinelle to convert most of the kernel to debugfs_node.
 5. Manual fixes for cases Coccinelle missed.
 6. Remove the #define and use struct debugfs_node in debugfs.
 
 I put the #define in _both_ debugfs.h and dentry.h so I didn't have to
-poke around and add tons of #include<linux/debugfs.h> just to remove
-them in the last commit.
+poke around and add more #include<linux/debugfs.h> lines just to remove
+them in the last commit. (I still had to add a few.)
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
 between the two as needed. I only had to add a few trivial helper
-functions for a small number of debugfs users. Also, huge thanks to Al
-Viro, who recently refactored this code, which simplified this change.
+functions for a small number of debugfs users. Huge thanks to Al Viro,
+who recently refactored this code, which simplified parts of this
+change.
 
 Most changes outside of fs/debugfs/ were mechanical, and thankfully
 Coccinelle could handle them. I had to manually fix situations that
-Coccinelle couldn't handle, like variable definitions nested in layers
-of headers or function calls, code inside macros, etc.
+Coccinelle couldn't handle, like dentry declarations nested in layers of
+headers or function calls, code inside macros, etc.
 
 Relay changes
 =============
 
-The most non-obvious change is in the relay system, which now uses
-debugfs_node instead of dentry. The relay API passes around dentry
-pointers. While the relay documentation hints at supporting non-debugfs
-users, in practice all relay users rely on debugfs. I replaced dentry
-pointers with debugfs_node, and I updated the documentation to reflect
-that.
+The most non-obvious change is in the relay system. While the relay
+documentation hints at supporting non-debugfs users, in practice all
+relay users rely on debugfs. I replaced dentry pointers with
+debugfs_node and I updated the documentation to reflect this change.
 
 Coccinelle
 ==========
 
 I wrote a Coccinelle script to automate most of the conversion. I've
-inlined the script at the bottom of this cover letter. This is my first
-time using Coccinelle, so any feedback is welcome!
+inlined the script at the bottom of the commit message where it was run.
+This is my first time using Coccinelle, so any feedback is welcome!
 
-The script attempts to do the following:
+The script does the following:
 
 - Find all dentry identifiers that are arguments to or return values of
   a debugfs_* function. This step detects both debugfs.h functions and
   various wrapper functions defined outside of debugfs proper.
 
-- Updates relevant declarations, struct fields, and function signatures
-  to use debugfs_node instead of dentry.
+- Update relevant declarations and function signatures to use
+  debugfs_node instead of dentry.
 
-- Perform further fixups. For example, replace d_inode() or ->d_inode
-  with debugfs_node_inode() where appropriate.
+- Perform further fixups where appropriate. For example, replace
+  d_inode() or ->d_inode with debugfs_node_inode().
 
 Challenges I encountered:
 

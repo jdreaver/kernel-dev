@@ -1,6 +1,6 @@
-From 8d34f2e563f0d2fe958737cc16f6f4034d413e8c Mon Sep 17 00:00:00 2001
+From 880bd11d6098069bde1e5e1fe96160db7f9f092e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Mon, 3 Feb 2025 15:55:56 -0800
+Date: Mon, 3 Feb 2025 17:02:30 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -44,54 +44,53 @@ The commits in this series do the following:
 
 1. Add a temporary "#define debugfs_node dentry".
 2. Add a few debugfs helper functions used by the Coccinelle script.
-3. Update relay system to use debugfs_node instead of dentry.
+3. Update the relay system to use debugfs_node instead of dentry.
 4. Run Coccinelle to convert most of the kernel to debugfs_node.
 5. Manual fixes for cases Coccinelle missed.
 6. Remove the #define and use struct debugfs_node in debugfs.
 
 I put the #define in _both_ debugfs.h and dentry.h so I didn't have to
-poke around and add tons of #include<linux/debugfs.h> just to remove
-them in the last commit.
+poke around and add more #include<linux/debugfs.h> lines just to remove
+them in the last commit. (I still had to add a few.)
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
 between the two as needed. I only had to add a few trivial helper
-functions for a small number of debugfs users. Also, huge thanks to Al
-Viro, who recently refactored this code, which simplified this change.
+functions for a small number of debugfs users. Huge thanks to Al Viro,
+who recently refactored this code, which simplified parts of this
+change.
 
 Most changes outside of fs/debugfs/ were mechanical, and thankfully
 Coccinelle could handle them. I had to manually fix situations that
-Coccinelle couldn't handle, like variable definitions nested in layers
-of headers or function calls, code inside macros, etc.
+Coccinelle couldn't handle, like dentry declarations nested in layers of
+headers or function calls, code inside macros, etc.
 
 Relay changes
 =============
 
-The most non-obvious change is in the relay system, which now uses
-debugfs_node instead of dentry. The relay API passes around dentry
-pointers. While the relay documentation hints at supporting non-debugfs
-users, in practice all relay users rely on debugfs. I replaced dentry
-pointers with debugfs_node, and I updated the documentation to reflect
-that.
+The most non-obvious change is in the relay system. While the relay
+documentation hints at supporting non-debugfs users, in practice all
+relay users rely on debugfs. I replaced dentry pointers with
+debugfs_node and I updated the documentation to reflect this change.
 
 Coccinelle
 ==========
 
 I wrote a Coccinelle script to automate most of the conversion. I've
-inlined the script at the bottom of this cover letter. This is my first
-time using Coccinelle, so any feedback is welcome!
+inlined the script at the bottom of the commit message where it was run.
+This is my first time using Coccinelle, so any feedback is welcome!
 
-The script attempts to do the following:
+The script does the following:
 
 - Find all dentry identifiers that are arguments to or return values of
   a debugfs_* function. This step detects both debugfs.h functions and
   various wrapper functions defined outside of debugfs proper.
 
-- Updates relevant declarations, struct fields, and function signatures
-  to use debugfs_node instead of dentry.
+- Update relevant declarations and function signatures to use
+  debugfs_node instead of dentry.
 
-- Perform further fixups. For example, replace d_inode() or ->d_inode
-  with debugfs_node_inode() where appropriate.
+- Perform further fixups where appropriate. For example, replace
+  d_inode() or ->d_inode with debugfs_node_inode().
 
 Challenges I encountered:
 
@@ -470,7 +469,7 @@ idexpression struct debugfs_node *e;
 ---
 
 David Reaver (6):
-  debugfs: Add temporary "#define debugfs_node dentry"
+  debugfs: Add temporary "#define debugfs_node dentry" and includes
   debugfs: Add helper functions to encapsulate debugfs_node
   relay: Use debugfs_node instead of dentry
   debugfs: Automated conversion of dentry to debugfs_node
@@ -731,7 +730,7 @@ David Reaver (6):
  .../gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.h |   3 +-
  drivers/gpu/drm/i915/gt/uc/intel_guc.h        |   2 +-
  .../gpu/drm/i915/gt/uc/intel_guc_debugfs.c    |   3 +-
- .../gpu/drm/i915/gt/uc/intel_guc_debugfs.h    |   3 +-
+ .../gpu/drm/i915/gt/uc/intel_guc_debugfs.h    |   5 +-
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |   8 +-
  .../drm/i915/gt/uc/intel_guc_log_debugfs.c    |   2 +-
  .../drm/i915/gt/uc/intel_guc_log_debugfs.h    |   2 +-
@@ -800,18 +799,18 @@ David Reaver (6):
  drivers/gpu/drm/vmwgfx/vmwgfx_gem.c           |   2 +-
  drivers/gpu/drm/xe/xe_debugfs.c               |   2 +-
  drivers/gpu/drm/xe/xe_gsc_debugfs.c           |   2 +-
- drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   4 +-
+ drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   5 +-
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   6 +-
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  40 +--
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h   |   6 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c   |   9 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h   |   3 +-
  drivers/gpu/drm/xe/xe_guc_debugfs.c           |   2 +-
- drivers/gpu/drm/xe/xe_guc_debugfs.h           |   4 +-
+ drivers/gpu/drm/xe/xe_guc_debugfs.h           |   5 +-
  drivers/gpu/drm/xe/xe_huc_debugfs.c           |   2 +-
- drivers/gpu/drm/xe/xe_huc_debugfs.h           |   4 +-
+ drivers/gpu/drm/xe/xe_huc_debugfs.h           |   5 +-
  drivers/gpu/drm/xe/xe_uc_debugfs.c            |   4 +-
- drivers/gpu/drm/xe/xe_uc_debugfs.h            |   2 +-
+ drivers/gpu/drm/xe/xe_uc_debugfs.h            |   4 +-
  drivers/gpu/drm/xlnx/zynqmp_dp.c              |   4 +-
  drivers/gpu/host1x/debug.c                    |   2 +-
  drivers/gpu/host1x/dev.h                      |   7 +-
@@ -1407,7 +1406,7 @@ David Reaver (6):
  include/drm/drm_bridge.h                      |   2 +-
  include/drm/drm_connector.h                   |   4 +-
  include/drm/drm_crtc.h                        |   2 +-
- include/drm/drm_debugfs.h                     |  13 +-
+ include/drm/drm_debugfs.h                     |  14 +-
  include/drm/drm_device.h                      |   2 +-
  include/drm/drm_drv.h                         |   5 +-
  include/drm/drm_encoder.h                     |   4 +-
@@ -1428,7 +1427,7 @@ David Reaver (6):
  include/linux/debugfs.h                       | 193 +++++++++------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
- include/linux/fault-inject.h                  |  11 +-
+ include/linux/fault-inject.h                  |  12 +-
  include/linux/firmware/cirrus/cs_dsp.h        |   5 +-
  include/linux/fsl/ptp_qoriq.h                 |   2 +-
  include/linux/greybus.h                       |   2 +-
@@ -1441,7 +1440,7 @@ David Reaver (6):
  include/linux/iio/iio.h                       |   4 +-
  include/linux/intel_tpmi.h                    |   2 +-
  include/linux/iommu.h                         |   2 +-
- include/linux/irqdesc.h                       |   2 +-
+ include/linux/irqdesc.h                       |   3 +-
  include/linux/kvm_host.h                      |   5 +-
  include/linux/mfd/aat2870.h                   |   2 +-
  include/linux/mhi.h                           |   2 +-
@@ -1592,7 +1591,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   2 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1115 files changed, 2917 insertions(+), 2638 deletions(-)
+ 1115 files changed, 2925 insertions(+), 2640 deletions(-)
 
 
 base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b

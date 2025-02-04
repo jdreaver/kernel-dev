@@ -33,6 +33,8 @@ Different versions:
 
 ## Rework the series with a `#define`
 
+Compile last commit to make sure everything works.
+
 Make sure to change cover letter.
 
 Compile each commit to ensure every commit compiles.

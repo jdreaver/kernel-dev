@@ -1,4 +1,4 @@
-From abbe596dd168e9e28a6083bdaeed0b9d448a676f Mon Sep 17 00:00:00 2001
+From c2c374e361393413d9a040b055d9fe94e8d64557 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:06:45 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion of dentry to
@@ -5978,10 +5978,10 @@ index 7269eb0bbedf..3858a48755e3 100644
  	static const struct intel_gt_debugfs_file files[] = {
  		{ "guc_info", &guc_info_fops, NULL },
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h b/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h
-index 424c26665cf1..9c73967af21b 100644
+index 7a7b722cf106..08519aaf270b 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h
-@@ -9,6 +9,7 @@
+@@ -11,6 +11,7 @@
  struct intel_guc;
  struct dentry;
  
@@ -7093,10 +7093,10 @@ index 461d7e99c2b3..ba9cc3aaa15a 100644
  	struct drm_minor *minor = gsc_to_xe(gsc)->drm.primary;
  	struct drm_info_list *local;
 diff --git a/drivers/gpu/drm/xe/xe_gsc_debugfs.h b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-index c2e2645dc705..9099da88b398 100644
+index 3261158c9a8d..48658b1af61b 100644
 --- a/drivers/gpu/drm/xe/xe_gsc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-@@ -9,6 +9,6 @@
+@@ -11,6 +11,6 @@
  struct dentry;
  struct xe_gsc;
  
@@ -7312,10 +7312,10 @@ index 995b306aced7..9f86eb6848df 100644
  	struct drm_minor *minor = guc_to_xe(guc)->drm.primary;
  	struct drm_info_list *local;
 diff --git a/drivers/gpu/drm/xe/xe_guc_debugfs.h b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-index 4756dff26fca..3befd9fe3bcf 100644
+index b03f64592a70..2582a4a558f0 100644
 --- a/drivers/gpu/drm/xe/xe_guc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-@@ -9,6 +9,6 @@
+@@ -11,6 +11,6 @@
  struct dentry;
  struct xe_guc;
  
@@ -7337,10 +7337,10 @@ index 3a888a40188b..5329c72ef3f7 100644
  	struct drm_minor *minor = huc_to_xe(huc)->drm.primary;
  	struct drm_info_list *local;
 diff --git a/drivers/gpu/drm/xe/xe_huc_debugfs.h b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-index ec58f1818804..d1d3d439cd7f 100644
+index 562069ee5363..a89d4ad7e728 100644
 --- a/drivers/gpu/drm/xe/xe_huc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-@@ -9,6 +9,6 @@
+@@ -11,6 +11,6 @@
  struct dentry;
  struct xe_huc;
  
@@ -7365,10 +7365,10 @@ index 24a4209051ee..4d25127c3da5 100644
  	root = debugfs_create_dir("uc", parent);
  	if (IS_ERR(root)) {
 diff --git a/drivers/gpu/drm/xe/xe_uc_debugfs.h b/drivers/gpu/drm/xe/xe_uc_debugfs.h
-index a13382df2bd7..5e32d73ca312 100644
+index c37319a9e249..82c4e09377d6 100644
 --- a/drivers/gpu/drm/xe/xe_uc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_uc_debugfs.h
-@@ -9,6 +9,6 @@
+@@ -11,6 +11,6 @@
  struct dentry;
  struct xe_uc;
  
@@ -18180,10 +18180,10 @@ index 8b48a1974da3..7ad9ff451311 100644
  	/**
  	 * @crc:
 diff --git a/include/drm/drm_debugfs.h b/include/drm/drm_debugfs.h
-index cf06cee4343f..e795aa93a132 100644
+index 14eaccccf283..6eedf32736db 100644
 --- a/include/drm/drm_debugfs.h
 +++ b/include/drm/drm_debugfs.h
-@@ -92,7 +92,7 @@ struct drm_info_node {
+@@ -93,7 +93,7 @@ struct drm_info_node {
  	const struct drm_info_list *info_ent;
  	/* private: */
  	struct list_head list;
@@ -18192,7 +18192,7 @@ index cf06cee4343f..e795aa93a132 100644
  };
  
  /**
-@@ -140,10 +140,11 @@ struct drm_debugfs_entry {
+@@ -141,10 +141,11 @@ struct drm_debugfs_entry {
  
  #if defined(CONFIG_DEBUG_FS)
  void drm_debugfs_create_files(const struct drm_info_list *files,
@@ -18206,7 +18206,7 @@ index cf06cee4343f..e795aa93a132 100644
  
  void drm_debugfs_add_file(struct drm_device *dev, const char *name,
  			  int (*show)(struct seq_file*, void*), void *data);
-@@ -155,12 +156,14 @@ int drm_debugfs_gpuva_info(struct seq_file *m,
+@@ -156,12 +157,14 @@ int drm_debugfs_gpuva_info(struct seq_file *m,
  			   struct drm_gpuvm *gpuvm);
  #else
  static inline void drm_debugfs_create_files(const struct drm_info_list *files,
@@ -18450,10 +18450,10 @@ index b4ee8961e623..35b3bec64c6a 100644
  	bool fake_inject_ue;
  	u16 fake_inject_count;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index 8c829d28dcf3..e5bfc36b35e2 100644
+index 750c9dc42f59..608e5204e3e6 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
-@@ -79,13 +79,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
+@@ -80,13 +80,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
  
  #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
  
@@ -18654,10 +18654,10 @@ index 38c65e92ecd0..93358fb7bebc 100644
  #else
  static inline void iommu_debugfs_setup(void) {}
 diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
-index fd091c35d572..cd8fed847ac3 100644
+index 549d930407fd..373a390fc0f2 100644
 --- a/include/linux/irqdesc.h
 +++ b/include/linux/irqdesc.h
-@@ -103,7 +103,7 @@ struct irq_desc {
+@@ -104,7 +104,7 @@ struct irq_desc {
  	struct proc_dir_entry	*dir;
  #endif
  #ifdef CONFIG_GENERIC_IRQ_DEBUGFS

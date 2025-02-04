@@ -1,4 +1,4 @@
-From dbee15d74482b6308c41738e32dd15473978dedd Mon Sep 17 00:00:00 2001
+From 0ce2cb502a6a6fb4773ae7d810b29a311669384e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:25:34 -0800
 Subject: [RFC PATCH 2/6] debugfs: Add helper functions to encapsulate

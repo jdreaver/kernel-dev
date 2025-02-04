@@ -1,4 +1,4 @@
-From 8d34f2e563f0d2fe958737cc16f6f4034d413e8c Mon Sep 17 00:00:00 2001
+From 880bd11d6098069bde1e5e1fe96160db7f9f092e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:27:04 -0800
 Subject: [RFC PATCH 6/6] debugfs: Replace debugfs_node define with struct

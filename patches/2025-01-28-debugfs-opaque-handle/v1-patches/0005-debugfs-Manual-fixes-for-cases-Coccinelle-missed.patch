@@ -1,4 +1,4 @@
-From 19f3372111f80401170ff059448b117a5b35efa0 Mon Sep 17 00:00:00 2001
+From 393c1e5f5ba62915b01f1fd260015d991372db2c Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for cases Coccinelle missed
@@ -39,11 +39,11 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../gpu/drm/nouveau/include/nvkm/subdev/gsp.h |  10 +-
  .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |   8 +-
  drivers/gpu/drm/omapdrm/dss/dss.h             |   2 +-
- drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   2 +
+ drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   1 -
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   2 +-
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  22 +-
- drivers/gpu/drm/xe/xe_guc_debugfs.h           |   2 +
- drivers/gpu/drm/xe/xe_huc_debugfs.h           |   2 +-
+ drivers/gpu/drm/xe/xe_guc_debugfs.h           |   1 -
+ drivers/gpu/drm/xe/xe_huc_debugfs.h           |   1 -
  drivers/gpu/host1x/dev.h                      |   2 +-
  drivers/hwmon/asus_atk0110.c                  |   2 +-
  drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
@@ -129,7 +129,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 108 files changed, 381 insertions(+), 353 deletions(-)
+ 108 files changed, 376 insertions(+), 355 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
 index ca3829d47ab7..a1ed51f3ba57 100644
@@ -424,18 +424,17 @@ index a8b231ed4f4b..d524ed1990fd 100644
  		struct dss_debugfs_entry *dss;
  	} debugfs;
 diff --git a/drivers/gpu/drm/xe/xe_gsc_debugfs.h b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-index 9099da88b398..48658b1af61b 100644
+index 48658b1af61b..3efd211a21f7 100644
 --- a/drivers/gpu/drm/xe/xe_gsc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-@@ -6,6 +6,8 @@
- #ifndef _XE_GSC_DEBUGFS_H_
- #define _XE_GSC_DEBUGFS_H_
+@@ -8,7 +8,6 @@
  
-+#include <linux/debugfs.h>
-+
- struct dentry;
+ #include <linux/debugfs.h>
+ 
+-struct dentry;
  struct xe_gsc;
  
+ void xe_gsc_debugfs_register(struct xe_gsc *gsc, struct debugfs_node *parent);
 diff --git a/drivers/gpu/drm/xe/xe_gt_debugfs.c b/drivers/gpu/drm/xe/xe_gt_debugfs.c
 index 6e5cbb23d5c9..3bc631d11f9d 100644
 --- a/drivers/gpu/drm/xe/xe_gt_debugfs.c
@@ -524,28 +523,26 @@ index b0a32211d892..8ab4758a3ba6 100644
  	unsigned int vfid = extract_vfid(parent);
  	ssize_t ret;
 diff --git a/drivers/gpu/drm/xe/xe_guc_debugfs.h b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-index 3befd9fe3bcf..2582a4a558f0 100644
+index 2582a4a558f0..44e0692796c5 100644
 --- a/drivers/gpu/drm/xe/xe_guc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-@@ -6,6 +6,8 @@
- #ifndef _XE_GUC_DEBUGFS_H_
- #define _XE_GUC_DEBUGFS_H_
+@@ -8,7 +8,6 @@
  
-+#include <linux/debugfs.h>
-+
- struct dentry;
- struct xe_guc;
- 
-diff --git a/drivers/gpu/drm/xe/xe_huc_debugfs.h b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-index d1d3d439cd7f..1a5aca435bb0 100644
---- a/drivers/gpu/drm/xe/xe_huc_debugfs.h
-+++ b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-@@ -6,7 +6,7 @@
- #ifndef _XE_HUC_DEBUGFS_H_
- #define _XE_HUC_DEBUGFS_H_
+ #include <linux/debugfs.h>
  
 -struct dentry;
-+struct debugfs_node;
+ struct xe_guc;
+ 
+ void xe_guc_debugfs_register(struct xe_guc *guc, struct debugfs_node *parent);
+diff --git a/drivers/gpu/drm/xe/xe_huc_debugfs.h b/drivers/gpu/drm/xe/xe_huc_debugfs.h
+index a89d4ad7e728..fea213f5678e 100644
+--- a/drivers/gpu/drm/xe/xe_huc_debugfs.h
++++ b/drivers/gpu/drm/xe/xe_huc_debugfs.h
+@@ -8,7 +8,6 @@
+ 
+ #include <linux/debugfs.h>
+ 
+-struct dentry;
  struct xe_huc;
  
  void xe_huc_debugfs_register(struct xe_huc *huc, struct debugfs_node *parent);
@@ -2116,7 +2113,7 @@ index 880fe85e35e9..b98b6067368a 100644
  struct closure_waitlist {
  	struct llist_head	list;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index e5bfc36b35e2..f7e5d2463713 100644
+index 608e5204e3e6..6c919bc3a645 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
 @@ -5,7 +5,6 @@
@@ -2127,7 +2124,7 @@ index e5bfc36b35e2..f7e5d2463713 100644
  struct kmem_cache;
  
  #ifdef CONFIG_FAULT_INJECTION
-@@ -33,7 +32,7 @@ struct fault_attr {
+@@ -34,7 +33,7 @@ struct fault_attr {
  
  	unsigned long count;
  	struct ratelimit_state ratelimit_state;
