@@ -35,9 +35,10 @@ This series makes the following changes:
 5. Apply manual fixes for cases Coccinelle missed.
 6. Remove the #define and introduce struct debugfs_node.
 
-The #define is placed in both debugfs.h and dentry.h to avoid
-unnecessary #include <linux/debugfs.h> additions that would be removed
-in the final commit.
+(TODO: maybe wrong now)
+The #define is placed in both debugfs.h and
+dcache.h to avoid unnecessary #include <linux/debugfs.h> additions or
+forward declarations that would be removed in the final commit.
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
@@ -94,6 +95,35 @@ edge case, balancing script complexity with effectiveness. The script
 performs pretty well -- most of this patch set was generated from it.
 All clever attempts I made to add new rules resulted in needing more
 manual fixups.
+
+Forward declarations and #include <linux/debugfs.h>
+===================================================
+
+TODO describe how I sovled this
+
+I had been testing this patch set by compiling every commit with
+allyesconfig, assuming that would uncover any potential compilation
+errors. The first time I tried defconfig, I found an error about an
+implicit declaration of struct debugfs_node, and realized I opened a can
+of worms.
+
+struct dentry is implictly included in much of the kernel, usually
+transitively through <linux/fs.h>. Also, many files provide forward
+declarations of struct debugfs. Figuring out where to add
+#include <linux/debugfs.h> and forward declarations of struct
+debugfs_node was error-prone, but I had some heuristics that helped.
+
+The Coccinelle script attempts to add "struct debugfs_node;" wherever
+there is a "struct dentry;" in files it modifies. I also modified the
+kernel build to produce .i files, and I wrote a script to find any usage
+of debugfs_node before a forward declaration. This led me to a couple
+high-leverage #includes in core header files that I think solved the
+problem.
+
+Suggestions for solving this problem without peppering forward
+declarations everywhere is welcome. I'm worried _some_ kernel
+configuration out there will break because some implicit include is
+missing.
 
 Testing
 =======

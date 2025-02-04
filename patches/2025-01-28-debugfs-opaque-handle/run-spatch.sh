@@ -28,6 +28,15 @@ for file in $files; do
       | tee "$log_dir/$(echo "$file" | tr '/' '--').log"
 done
 
-# Undo the changes to the debugfs and fs.h files. The Coccinelle script
-# loves to modify these.
-git checkout -- include/linux/debugfs.h include/linux/fs.h fs/debugfs
+# Undo the changes to some files. The Coccinelle script loves to modify
+# these.
+git checkout -- \
+  include/linux/capability.h \
+  include/linux/debugfs.h \
+  include/linux/file.h \
+  include/linux/fs.h \
+  include/linux/fs_context.h \
+  include/linux/kernfs.h \
+  include/linux/mount.h \
+  include/linux/security.h \
+  fs/debugfs

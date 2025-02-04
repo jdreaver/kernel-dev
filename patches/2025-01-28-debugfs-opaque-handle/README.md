@@ -34,10 +34,59 @@ Different versions:
 
 ## Not seeing build errors
 
+Files I added `struct debugfs_node;` to:
+- `include/linux/shrinker.h`
+- `drivers/usb/host/ohci-dbg.c`
+- `drivers/gpu/drm/imagination/pvr_params.h`
+
+Facts:
+- If I remove `#include <linux/debugfs.h>` in `include/drm/drm_connector.h`, then `make drivers/gpu/drm/drm_atomic_uapi.o` causes a compilation error with `defconfig`, but not `allyesconfig` or `allmodconfig`
+- This only happens on the last commit, where I replace the `#define` with a real struct
+
+Potential conclusions:
+- I think what happens is make allyesconfig has more forward-defined `struct debugfs_node` entries. They get imported before implicit declarations of `debugfs_node` inside function callbacks. This is confirmed with compiling `make drivers/gpu/drm/drm_atomic_uapi.i` and comparing.
+  - I think I need to find all places where `struct debugfs_node` is used as a _function_ parameter, and ensure I `#include <linux/debugfs.h>`
+
+I should probably remove the `#define` in `dcache.h` as well so I really know where to add these `#include`s.
+
+Cocinelle idea: make a cleanup step where we remove `struct dentry;` forward decls if a file no longer uses `dentry` (check for `debugfs_node` to find files that used to use `dentry`)
+
+In run-spatch.sh, revert these files that added a forward decl:
+- include/linux/file.h
+- include/linux/fs_context.h
+- include/linux/capability.h
+- include/linux/kernfs.h
+- include/linux/mount.h
+- include/linux/security.h
+- include/linux/statfs.h
+
+How to generate all `.i` files:
+- Add `KBUILD_CFLAGS += -save-temps=obj` to Makefile
+- (hacky, doesn't quite work) `rg -l 'debugfs_node' -g "*.c" | sed 's/\.c$/.i/' | xargs make -k -j$(nproc)`
+
+rg command that finds similar situations as drm_connector.h:
+
+```
+rg -l '\(\*[a-z]+.*struct debugfs_node' -g '*.h' | xargs rg --files-without-match '<linux/debugfs.h>'
+```
+
+
+Once I figure this out: move the extra includes to the commits where I actually change debugfs_node. Some of these are in the manual fixup commit, like the drm header files!
+
+- Use `make drivers/gpu/drm/drm_atomic_uapi.i` to see headers getting loaded
+
+Try this:
+
+```
+rm drivers/gpu/drm/drm_atomic_uapi.o && make KCFLAGS="-H" drivers/gpu/drm/drm_atomic_uapi.o > ../allyesconfig-flags.log 2>&1
+```
+
 If I remove `#include <linux/debugfs.h>` in `include/drm/drm_connector.h`, I see a build error when I do my QEMU minimal build, but not with `allmodconfig`.
 
 - Files compiled were `drivers/gpu/drm/drm_atomic.o` and `drivers/gpu/drm/drm_atomic_uapi.o`:
   - Compile these directly under different configs
+    - I don't see different `-I` options. Something else is happening.
+  - Compile with extra verbosity to see the difference when compiling these files. Maybe another directory is being included.
   - Diff my minimal config, allyesconfig, and allmodconfg .config files
   - I think this is an allyesconfig vs allmodconfig thing. drm_atomic.o is under drm-y
 
@@ -56,7 +105,6 @@ In file included from ./include/drm/drm_modes.h:33,
 - If I don't see any errors in my latest mrproper build, undo one of the recent header changes (e.g. the `#include` in `include/drm/drm_connector.h`) and make sure the error triggers in a full build. If it doesn't, figure out why.
   - Should I be using `allyesconfig` instead of `allmodconfig`? I wonder if we somehow aren't type checking when we are compiling standalone modules? (seems implausible to me)
 
-- Try removing `#define` in `dcache.h` and see how many other `#include`s I need to add.
 
 ## Submitting, final checks
 
@@ -73,10 +121,9 @@ In file included from ./include/drm/drm_modes.h:33,
 
   ```
   time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && time make -s -j16 && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && ./scripts/config --set-val CONFIG_DEBUGFS n && make oldconfig && time make -s -j16 && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s defconfig && time make -s -j16 && echo Success!' master
   ```
-
-  - Also compile with debugfs disabled.
-  - Also consider compiling with both `allmodconfig` and `allyesconfig`
 
 ## Non-coccinelle changes
 
@@ -84,6 +131,8 @@ In file included from ./include/drm/drm_modes.h:33,
   - Consider a `->d_parent` -> new helper `debugfs_node_parent` and add to Coccinelle as well
 
 ## Coccinelle
+
+- In `include/media/v4l2-async.{c,h}`, `v4l2_async_debug_init` is getting transformed in the .c file, but not in the .h file.
 
 - Consider having coccinelle script rename variables named `dentry` and `dent` to `node`. Higher likelihood of merge conflicts though.
 
