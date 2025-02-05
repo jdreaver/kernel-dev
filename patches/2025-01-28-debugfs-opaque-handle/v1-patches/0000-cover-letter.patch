@@ -1,6 +1,6 @@
-From e82ab3fdda0d2c6ef134ee5c10507755d85ed45c Mon Sep 17 00:00:00 2001
+From ae54c4f12bca13f56537315770b16f13ccc1d8aa Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 4 Feb 2025 16:34:26 -0800
+Date: Tue, 4 Feb 2025 18:55:12 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -21,6 +21,14 @@ an opaque wrapper struct:
 	struct debugfs_node {
 		struct dentry dentry;
 	};
+
+Open Questions
+==============
+
+These are my primary concerns with the patch series, hence the RFC:
+
+1. This change touches over 1100 files. Is that okay?
+2. I could only automate 75% of the migration.
 
 Purpose/Background
 ==================
@@ -50,10 +58,9 @@ This series makes the following changes:
 5. Apply manual fixes for cases Coccinelle missed.
 6. Remove the #define and introduce struct debugfs_node.
 
-(TODO: maybe wrong now)
-The #define is placed in both debugfs.h and
-dcache.h to avoid unnecessary #include <linux/debugfs.h> additions or
-forward declarations that would be removed in the final commit.
+The #define is placed in both debugfs.h and dcache.h to avoid
+unnecessary #include <linux/debugfs.h> additions or forward declarations
+that would be removed in the final commit.
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
@@ -114,10 +121,8 @@ manual fixups.
 Forward declarations and #include <linux/debugfs.h>
 ===================================================
 
-TODO describe how I sovled this
-
 I had been testing this patch set by compiling every commit with
-allyesconfig, assuming that would uncover any potential compilation
+allyesconfig, assuming that would uncover all potential compilation
 errors. The first time I tried defconfig, I found an error about an
 implicit declaration of struct debugfs_node, and realized I opened a can
 of worms.

@@ -1,4 +1,4 @@
-From 8c6cb12094f5fedd163c0ff30474b74fb746ced6 Mon Sep 17 00:00:00 2001
+From 1120c5999f0e06163522fa3c01ddb6487d28161f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle

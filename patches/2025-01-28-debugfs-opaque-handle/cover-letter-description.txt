@@ -7,6 +7,14 @@ an opaque wrapper struct:
 		struct dentry dentry;
 	};
 
+Open Questions
+==============
+
+These are my primary concerns with the patch series, hence the RFC:
+
+1. This change touches over 1100 files. Is that okay?
+2. I could only automate 75% of the migration.
+
 Purpose/Background
 ==================
 
@@ -35,10 +43,9 @@ This series makes the following changes:
 5. Apply manual fixes for cases Coccinelle missed.
 6. Remove the #define and introduce struct debugfs_node.
 
-(TODO: maybe wrong now)
-The #define is placed in both debugfs.h and
-dcache.h to avoid unnecessary #include <linux/debugfs.h> additions or
-forward declarations that would be removed in the final commit.
+The #define is placed in both debugfs.h and dcache.h to avoid
+unnecessary #include <linux/debugfs.h> additions or forward declarations
+that would be removed in the final commit.
 
 The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
@@ -99,10 +106,8 @@ manual fixups.
 Forward declarations and #include <linux/debugfs.h>
 ===================================================
 
-TODO describe how I sovled this
-
 I had been testing this patch set by compiling every commit with
-allyesconfig, assuming that would uncover any potential compilation
+allyesconfig, assuming that would uncover all potential compilation
 errors. The first time I tried defconfig, I found an error about an
 implicit declaration of struct debugfs_node, and realized I opened a can
 of worms.

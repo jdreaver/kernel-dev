@@ -1,6 +1,6 @@
-From 1901c1387c8dc84adbda0405420b114d2f14cd4e Mon Sep 17 00:00:00 2001
+From 2e0292dc6e804f8d4541833986fadd946514dfdf Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 4 Feb 2025 15:35:21 -0800
+Date: Tue, 4 Feb 2025 18:54:57 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
  debugfs_node
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
