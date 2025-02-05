@@ -288,31 +288,19 @@ struct
 }
 
 //
-// Forward declarations of struct debugfs_node;
+// Add #define debugfs_node dentry
 //
-@debugfs_node_exists@
+@define_exists@
 @@
 
-(
-  #include <linux/debugfs.h>
-|
-  #define debugfs_node dentry;
-)
+#define debugfs_node dentry
 
-@depends on
-  !debugfs_node_exists and (
-    rewrite_wrapper_returns or
-    rewrite_wrapper_args or
-    change_decls or
-    change_function_arg_decls or
-    rewrite_fields or
-    obvious_debugfs_decls or
-    obvious_debugfs_fields or
-    obvious_debugfs_field_arrays or
-    rewrite_helper_return_exp or
-    rewrite_helper_return_ret
-  )
-@
+@any_debugfs_node_usage type@
+@@
+
+struct debugfs_node
+
+@depends on !define_exists and any_debugfs_node_usage@
 @@
 
 struct dentry;

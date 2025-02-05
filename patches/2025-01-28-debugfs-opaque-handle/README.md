@@ -34,6 +34,25 @@ Different versions:
 
 ## Not seeing build errors
 
+Files that didn't get the `#define` (figure out why):
+- `drivers/crypto/intel/qat/qat_common/adf_heartbeat.h`
+- `drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h`
+- `drivers/video/fbdev/omap2/omapfb/dss/dss.h`
+- `include/media/v4l2-async.h`
+
+Modify the cleanup script to just replace the define with a forward decl, not remove the dentry decl
+- I can do a manual scan and remove any forward decls where #include <linux/debugfs.h> exists. Can't automate because I found some cases where the #include is in the "wrong" #ifdef branch for it to be used.
+
+Using `#define` in .cocci script
+- Some missing. Running against `drivers/crypto/caam/debugfs.h` should add a #define but it didn't last time I ran it. I think it is because that file was already modified by `drivers/crypto/caam/ctrl.c`
+  - Ah, an `#include <linux/debugfs.h>` exists in the .c file and the .h file
+  - Did I add the check for an existing `#include` after I ran spatch last? It might be correct
+- Seeing duplicates, e.g. drivers/net/ethernet/netronome/nfp/nfp_main.h
+
+(might be done with my new `type` rule) Try changing .cocci rule for adding #define to be standalone, just checking if `struct dentry;`  and `debugfs_node` is _anywhere_ in the file. (Not sure if this is possible...)
+- Maybe I could do this with `sed` on all modified files...
+- Make sure this is necessary. It is if you e.g. run drivers/acpi by itself.
+
 Try removing the commit adding the #includes again (requires re-running spatch!)
 - I think I could remove it from fault-inject.h, but I'm not so sure about irqdesc.h. It has an implicit definition of struct dentry (not a forward declaration).
 

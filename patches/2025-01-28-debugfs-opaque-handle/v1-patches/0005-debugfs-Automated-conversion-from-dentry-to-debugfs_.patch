@@ -1,6 +1,6 @@
-From 57c5b6b9fabe33357377a72bd7dca489cd4cd449 Mon Sep 17 00:00:00 2001
+From 88b00daf7bfb689f490d3a9d67085446cc5cc4b2 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 4 Feb 2025 18:54:57 -0800
+Date: Wed, 5 Feb 2025 09:36:24 -0800
 Subject: [RFC PATCH 5/7] debugfs: Automated conversion from dentry to
  debugfs_node
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -17,7 +17,8 @@ Cc: Steven Rostedt <rostedt@goodmis.org>,
 
 This commit applies a Coccinelle script (inlined below) to update debugfs
 API calls across the kernel tree, replacing dentry with debugfs_node where
-applicable.
+applicable. spatch was run file-by-file with a bash script (also inlined
+below).
 
 Some cases require manual fixups, which are handled in the next commit.
 
@@ -314,31 +315,17 @@ struct
 }
 
 //
-// Forward declarations of struct debugfs_node;
+// Add #define debugfs_node dentry
 //
-@debugfs_node_exists@
+@define_exists@
 @@
 
-(
-  #include <linux/debugfs.h>
-|
-  #define debugfs_node dentry;
-)
+@any_debugfs_node_usage type@
+@@
 
-@depends on
-  !debugfs_node_exists and (
-    rewrite_wrapper_returns or
-    rewrite_wrapper_args or
-    change_decls or
-    change_function_arg_decls or
-    rewrite_fields or
-    obvious_debugfs_decls or
-    obvious_debugfs_fields or
-    obvious_debugfs_field_arrays or
-    rewrite_helper_return_exp or
-    rewrite_helper_return_ret
-  )
-@
+struct debugfs_node
+
+@depends on !define_exists and any_debugfs_node_usage@
 @@
 
 struct dentry;
@@ -382,6 +369,54 @@ idexpression struct debugfs_node *e;
 - dentry_path_raw
 + debugfs_node_path_raw
   (e, ...);
+
+---
+
+set -euo pipefail
+
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+log_dir=/tmp/cocci-logs
+rm -rf "$log_dir"
+mkdir -p "$log_dir"
+
+files=$(rg --files-with-matches 'debugfs|dentry' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h' -g '!include/linux/fs.h' | sort)
+
+counter=1
+total_files=$(echo "$files" | wc -l)
+for file in $files; do
+    echo "($counter/$total_files) $file"
+    counter=$((counter+1))
+
+    time spatch "$script_dir/script.cocci" \
+      --all-includes --include-headers --patch . \
+      --ignore include/linux/fs.h \
+      --ignore include/linux/debugfs.h \
+      --ignore fs/debugfs \
+      --in-place "$file" 2>&1 \
+      | tee "$log_dir/$(echo "$file" | tr '/' '--').log"
+done
+
+git checkout -- \
+  fs/bcachefs/xattr.h \
+  fs/btrfs/export.h \
+  fs/btrfs/ioctl.h \
+  fs/btrfs/transaction.h \
+  fs/btrfs/tree-log.h \
+  fs/debugfs \
+  fs/ntfs3/ntfs_fs.h \
+  fs/udf/udfdecl.h \
+  include/linux/capability.h \
+  include/linux/debugfs.h \
+  include/linux/exportfs.h \
+  include/linux/file.h \
+  include/linux/fs.h \
+  include/linux/fs_context.h \
+  include/linux/kernfs.h \
+  include/linux/mount.h \
+  include/linux/path.h \
+  include/linux/security.h \
+  include/linux/statfs.h
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
@@ -523,7 +558,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/crypto/intel/iaa/iaa_crypto_stats.c   |  2 +-
  .../intel/qat/qat_common/adf_accel_devices.h  |  8 +-
  drivers/crypto/intel/qat/qat_common/adf_cfg.h |  2 +-
- .../intel/qat/qat_common/adf_heartbeat.h      |  1 +
  .../qat/qat_common/adf_heartbeat_dbgfs.c      |  2 +-
  .../intel/qat/qat_common/adf_telemetry.h      |  3 +-
  .../intel/qat/qat_common/adf_tl_debugfs.c     |  6 +-
@@ -641,7 +675,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/gpu/drm/i915/i915_debugfs_params.c    | 16 ++--
  drivers/gpu/drm/i915/i915_debugfs_params.h    |  3 +-
  drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.c  |  2 +-
- drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h  |  1 +
  drivers/gpu/drm/imagination/pvr_debugfs.c     |  4 +-
  drivers/gpu/drm/imagination/pvr_debugfs.h     |  1 +
  drivers/gpu/drm/imagination/pvr_fw_trace.c    |  3 +-
@@ -1246,7 +1279,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/vfio/debugfs.c                        |  4 +-
  .../vfio/pci/hisilicon/hisi_acc_vfio_pci.c    |  4 +-
  drivers/video/fbdev/omap2/omapfb/dss/core.c   |  2 +-
- drivers/video/fbdev/omap2/omapfb/dss/dss.h    |  1 +
  drivers/virtio/virtio_debug.c                 |  2 +-
  drivers/watchdog/bcm_kona_wdt.c               |  4 +-
  drivers/watchdog/dw_wdt.c                     |  2 +-
@@ -1294,7 +1326,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/clk-provider.h                  |  1 +
  include/linux/dmaengine.h                     |  2 +-
  include/linux/edac.h                          |  2 +-
- include/linux/fault-inject.h                  |  8 +-
+ include/linux/fault-inject.h                  |  9 ++-
  include/linux/firmware/cirrus/cs_dsp.h        |  5 +-
  include/linux/fsl/ptp_qoriq.h                 |  2 +-
  include/linux/greybus.h                       |  2 +-
@@ -1334,7 +1366,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/wkup_m3_ipc.h                   |  2 +-
  include/linux/wwan.h                          |  8 +-
  include/linux/xattr.h                         |  1 +
- include/media/v4l2-async.h                    |  1 +
  include/media/v4l2-dev.h                      |  5 +-
  include/media/v4l2-dv-timings.h               |  8 +-
  include/net/6lowpan.h                         |  2 +-
@@ -1451,7 +1482,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  3 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  8 +-
- 1066 files changed, 2188 insertions(+), 2002 deletions(-)
+ 1062 files changed, 2185 insertions(+), 2002 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -3863,18 +3894,6 @@ index 2afa6f0d15c5..c107a9d42794 100644
  	struct rw_semaphore lock;
  };
  
-diff --git a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
-index 16fdfb48b196..be1c72215a2d 100644
---- a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
-+++ b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
-@@ -8,6 +8,7 @@
- 
- struct adf_accel_dev;
- struct dentry;
-+#define debugfs_node dentry
- 
- #define ADF_CFG_HB_TIMER_MIN_MS 200
- #define ADF_CFG_HB_TIMER_DEFAULT_MS 500
 diff --git a/drivers/crypto/intel/qat/qat_common/adf_heartbeat_dbgfs.c b/drivers/crypto/intel/qat/qat_common/adf_heartbeat_dbgfs.c
 index cccdff24b48d..5599d333fb03 100644
 --- a/drivers/crypto/intel/qat/qat_common/adf_heartbeat_dbgfs.c
@@ -6298,18 +6317,6 @@ index e07c5b380789..b2dcdc4061dd 100644
  
  	if (!intel_pxp_is_supported(pxp))
  		return;
-diff --git a/drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h b/drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h
-index 299382b59e66..74024d815e2c 100644
---- a/drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h
-+++ b/drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h
-@@ -8,6 +8,7 @@
- 
- struct intel_pxp;
- struct dentry;
-+#define debugfs_node dentry
- 
- #ifdef CONFIG_DRM_I915_PXP
- void intel_pxp_debugfs_register(struct intel_pxp *pxp);
 diff --git a/drivers/gpu/drm/imagination/pvr_debugfs.c b/drivers/gpu/drm/imagination/pvr_debugfs.c
 index 6b77c9b4bde8..31719e932278 100644
 --- a/drivers/gpu/drm/imagination/pvr_debugfs.c
@@ -17891,18 +17898,6 @@ index 55b640f2f245..9cc011e8596e 100644
  
  static void dss_initialize_debugfs(void)
  {
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.h b/drivers/video/fbdev/omap2/omapfb/dss/dss.h
-index a33a43f26829..7f7ce807f70c 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.h
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.h
-@@ -319,6 +319,7 @@ static inline void sdi_uninit_port(struct device_node *port)
- #ifdef CONFIG_FB_OMAP2_DSS_DSI
- 
- struct dentry;
-+#define debugfs_node dentry
- struct file_operations;
- 
- int dsi_init_platform_driver(void) __init;
 diff --git a/drivers/virtio/virtio_debug.c b/drivers/virtio/virtio_debug.c
 index 95c8fc7705bb..832e3d4493ed 100644
 --- a/drivers/virtio/virtio_debug.c
@@ -18743,10 +18738,18 @@ index b4ee8961e623..35b3bec64c6a 100644
  	bool fake_inject_ue;
  	u16 fake_inject_count;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index ab7ddd6fdc47..0166c831cbe7 100644
+index ab7ddd6fdc47..cf35012ba550 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
-@@ -80,13 +80,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
+@@ -7,6 +7,7 @@
+ #include <linux/debugfs.h>
+ 
+ struct dentry;
++#define debugfs_node dentry
+ struct kmem_cache;
+ 
+ #ifdef CONFIG_FAULT_INJECTION
+@@ -80,13 +81,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
  
  #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
  
@@ -19392,18 +19395,6 @@ index 86b0d47984a1..2acfcfa25c44 100644
  
  static inline bool is_posix_acl_xattr(const char *name)
  {
-diff --git a/include/media/v4l2-async.h b/include/media/v4l2-async.h
-index f26c323e9c96..85fcca794211 100644
---- a/include/media/v4l2-async.h
-+++ b/include/media/v4l2-async.h
-@@ -12,6 +12,7 @@
- #include <linux/mutex.h>
- 
- struct dentry;
-+#define debugfs_node dentry
- struct device;
- struct device_node;
- struct v4l2_device;
 diff --git a/include/media/v4l2-dev.h b/include/media/v4l2-dev.h
 index 1b6222fab24e..f4a53b8dd96f 100644
 --- a/include/media/v4l2-dev.h

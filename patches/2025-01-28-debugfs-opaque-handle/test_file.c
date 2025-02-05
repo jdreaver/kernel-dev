@@ -1,6 +1,8 @@
-#include <linux/debugfs.h>
+//#include <linux/debugfs.h>
 
 #include "test.h"
+
+struct dentry;
 
 static struct dentry *test;
 static struct dentry *debugfs_unused;
