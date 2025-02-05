@@ -34,42 +34,15 @@ Different versions:
 
 ## Not seeing build errors
 
-Bizarre error for fault injection. The files involved appear to include debugfs.h. I have no idea what is going on:
-- If I add an `#include <linux/debugfs.h>` to fault-inject.h, it works. Ugh.
-
-```
-drivers/ufs/core/ufs-fault-injection.c: In function ‘ufs_fault_inject_hba_init’:
-drivers/ufs/core/ufs-fault-injection.c:69:59: error: passing argument 2 of ‘fault_create_debugfs_attr’ from incompatible pointer type [-Werror=incompatible-pointer-types]
-   69 |         fault_create_debugfs_attr("trigger_eh_inject", hba->debugfs_root, &hba->trigger_eh_attr);
-      |                                                        ~~~^~~~~~~~~~~~~~
-      |                                                           |
-      |                                                           struct dentry *
-In file included from drivers/ufs/core/ufs-fault-injection.c:5:
-./include/linux/fault-inject.h:84:46: note: expected ‘struct debugfs_node *’ but argument is of type ‘struct dentry *’
-   84 |                         struct debugfs_node *parent, struct fault_attr *attr);
-      |                         ~~~~~~~~~~~~~~~~~~~~~^~~~~~
-drivers/ufs/core/ufs-fault-injection.c:70:56: error: passing argument 2 of ‘fault_create_debugfs_attr’ from incompatible pointer type [-Werror=incompatible-pointer-types]
-   70 |         fault_create_debugfs_attr("timeout_inject", hba->debugfs_root, &hba->timeout_attr);
-      |                                                     ~~~^~~~~~~~~~~~~~
-      |                                                        |
-      |                                                        struct dentry *
-./include/linux/fault-inject.h:84:46: note: expected ‘struct debugfs_node *’ but argument is of type ‘struct dentry *’
-   84 |                         struct debugfs_node *parent, struct fault_attr *attr);
-```
+Try removing the commit adding the #includes again (requires re-running spatch!)
+- I think I could remove it from fault-inject.h, but I'm not so sure about irqdesc.h. It has an implicit definition of struct dentry (not a forward declaration).
 
 Continue trying to find files that might not be defining debugfs_node:
+- If I do this, call it out in cover letter.
 - Run with the augmented Makefile and then run my script (do this on EC2)
 - Think about Coccinelle improvements. I think adding `struct debugfs_node;` after _any_ top-level struct if dentry isn't there is fine?
 - rg for any .h files with debugfs_node that do not have a `struct debugfs_node;`
   - A more interesting case is specifically searching for files that have `struct debugfs_node` not at the beginning of a line, because it is probably a struct definition or function arg: '\s+.*struct debugfs_node '
-
-Files I added `struct debugfs_node;` to:
-- `include/linux/shrinker.h`
-- `drivers/usb/host/ohci-dbg.c`
-
-Facts:
-- If I remove `#include <linux/debugfs.h>` in `include/drm/drm_connector.h`, then `make drivers/gpu/drm/drm_atomic_uapi.o` causes a compilation error with `defconfig`, but not `allyesconfig` or `allmodconfig`
-- This only happens on the last commit, where I replace the `#define` with a real struct
 
 I should probably remove the `#define` in `dcache.h` as well so I really know where to add these `#include`s.
 
@@ -88,10 +61,12 @@ rm drivers/gpu/drm/drm_atomic_uapi.o && make KCFLAGS="-H" drivers/gpu/drm/drm_at
 ## Submitting, final checks
 
 - (maybe not, Linus' tree is farther ahead) Rebase against `git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git`
-- Ensure all commits have change logs and signoffs.
-- Ensure there aren't two `struct debugfs;` forward decls in any file (write a script for this)
+- Rerun the Coccinelle commit to make sure it is accurate.
 - Update coccinelle script in the change log of the commit that uses it.
+- Remove stuff in cleanup commit that just does something trivial, like remove `struct dentry;`. Don't add extra cleanups.
 - Actually go through testing again before submitting!
+- Ensure all commits have change logs and signoffs.
+- Ensure `remove-dentry-define.sh` is run again
 - Check for TODO items in patches
 - Ensure I have latest cover letter (run `git format-patch`)
 - Run checkpatch.pl

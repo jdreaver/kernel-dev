@@ -1,4 +1,4 @@
-From ced2c7a956bb97f889a3aa92e4ff36eb21223273 Mon Sep 17 00:00:00 2001
+From 2f97366581118f642976a7b6017a58f56a532317 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:25:34 -0800
 Subject: [RFC PATCH 3/7] debugfs: Add helper functions for debugfs_node

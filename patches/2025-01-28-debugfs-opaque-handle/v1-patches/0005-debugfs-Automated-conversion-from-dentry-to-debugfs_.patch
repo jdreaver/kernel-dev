@@ -1,4 +1,4 @@
-From a7b4bd4331dc5379cd3bb9e0631c8f7acab15bf3 Mon Sep 17 00:00:00 2001
+From 57c5b6b9fabe33357377a72bd7dca489cd4cd449 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 4 Feb 2025 18:54:57 -0800
 Subject: [RFC PATCH 5/7] debugfs: Automated conversion from dentry to
@@ -316,13 +316,17 @@ struct
 //
 // Forward declarations of struct debugfs_node;
 //
-@forward_decl_exists@
+@debugfs_node_exists@
 @@
 
-struct debugfs_node;
+(
+  #include <linux/debugfs.h>
+|
+  #define debugfs_node dentry;
+)
 
 @depends on
-  !forward_decl_exists and (
+  !debugfs_node_exists and (
     rewrite_wrapper_returns or
     rewrite_wrapper_args or
     change_decls or
@@ -338,7 +342,7 @@ struct debugfs_node;
 @@
 
 struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
 
 //
 // Transform various helper functions
@@ -2612,7 +2616,7 @@ index 9c84f3da7c09..ab96bb1c1b24 100644
  	if (!dapei)
  		dapei = debugfs_create_dir("apei", NULL);
 diff --git a/drivers/acpi/apei/apei-internal.h b/drivers/acpi/apei/apei-internal.h
-index cd2766c69d78..8dc0059e6506 100644
+index cd2766c69d78..360bfab92ebb 100644
 --- a/drivers/acpi/apei/apei-internal.h
 +++ b/drivers/acpi/apei/apei-internal.h
 @@ -118,7 +118,8 @@ int apei_exec_collect_resources(struct apei_exec_context *ctx,
@@ -2620,7 +2624,7 @@ index cd2766c69d78..8dc0059e6506 100644
  
  struct dentry;
 -struct dentry *apei_get_debugfs_dir(void);
-+struct debugfs_node;
++#define debugfs_node dentry
 +struct debugfs_node *apei_get_debugfs_dir(void);
  
  static inline u32 cper_estatus_len(struct acpi_hest_generic_status *estatus)
@@ -3517,14 +3521,14 @@ index 6358d3cabf57..702212ce4fbd 100644
  	/*
  	 * FIXME: needs better naming distinction, as some amalgamation of
 diff --git a/drivers/crypto/caam/debugfs.h b/drivers/crypto/caam/debugfs.h
-index 8b5d1acd21a7..12cb335f0de4 100644
+index 8b5d1acd21a7..b39d45b70903 100644
 --- a/drivers/crypto/caam/debugfs.h
 +++ b/drivers/crypto/caam/debugfs.h
 @@ -5,16 +5,18 @@
  #define CAAM_DEBUGFS_H
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct caam_drv_private;
  struct caam_perfmon;
  
@@ -3860,14 +3864,14 @@ index 2afa6f0d15c5..c107a9d42794 100644
  };
  
 diff --git a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
-index 16fdfb48b196..8d17077c5a39 100644
+index 16fdfb48b196..be1c72215a2d 100644
 --- a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
 +++ b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
 @@ -8,6 +8,7 @@
  
  struct adf_accel_dev;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  #define ADF_CFG_HB_TIMER_MIN_MS 200
  #define ADF_CFG_HB_TIMER_DEFAULT_MS 500
@@ -3885,14 +3889,14 @@ index cccdff24b48d..5599d333fb03 100644
  		inject_error = debugfs_create_file("inject_error", 0200,
  						   hb->dbgfs.base_dir, accel_dev,
 diff --git a/drivers/crypto/intel/qat/qat_common/adf_telemetry.h b/drivers/crypto/intel/qat/qat_common/adf_telemetry.h
-index e54a406cc1b4..cd567ed2c82d 100644
+index e54a406cc1b4..078e8be4ee43 100644
 --- a/drivers/crypto/intel/qat/qat_common/adf_telemetry.h
 +++ b/drivers/crypto/intel/qat/qat_common/adf_telemetry.h
 @@ -13,6 +13,7 @@
  struct adf_accel_dev;
  struct adf_tl_dbg_counter;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  #define ADF_TL_SL_CNT_COUNT		\
  	(sizeof(struct icp_qat_fw_init_admin_slice_cnt) / sizeof(__u8))
@@ -4165,7 +4169,7 @@ index c1357d7f3dc6..04115654b4e8 100644
  static void dmaengine_debug_register(struct dma_device *dma_dev)
  {
 diff --git a/drivers/dma/dmaengine.h b/drivers/dma/dmaengine.h
-index 53f16d3f0029..6e51fd821330 100644
+index 53f16d3f0029..f3c4b3747fa7 100644
 --- a/drivers/dma/dmaengine.h
 +++ b/drivers/dma/dmaengine.h
 @@ -185,13 +185,14 @@ struct dma_chan *dma_get_any_slave_channel(struct dma_device *device);
@@ -4180,7 +4184,7 @@ index 53f16d3f0029..6e51fd821330 100644
  #else
  struct dentry;
 -static inline struct dentry *
-+struct debugfs_node;
++#define debugfs_node dentry
 +static inline struct debugfs_node *
  dmaengine_get_debugfs_root(struct dma_device *dma_dev)
  {
@@ -5711,14 +5715,14 @@ index 3cf440eee8a2..91400d84fadb 100644
  DEFINE_STATIC_SRCU(drm_unplug_srcu);
  
 diff --git a/drivers/gpu/drm/drm_internal.h b/drivers/gpu/drm/drm_internal.h
-index b2b6a8e49dda..7c440b0d40bc 100644
+index b2b6a8e49dda..087950b52596 100644
 --- a/drivers/gpu/drm/drm_internal.h
 +++ b/drivers/gpu/drm/drm_internal.h
 @@ -36,6 +36,7 @@
  #define DRM_IF_VERSION(maj, min) (maj << 16 | min)
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct dma_buf;
  struct iosys_map;
  struct drm_connector;
@@ -5923,14 +5927,14 @@ index 3aa1d014c14d..b9a1bba36342 100644
  	static const struct intel_gt_debugfs_file files[] = {
  		{ "engines", &engines_fops },
 diff --git a/drivers/gpu/drm/i915/gt/intel_gt_engines_debugfs.h b/drivers/gpu/drm/i915/gt/intel_gt_engines_debugfs.h
-index dda113452da9..ac51807768cc 100644
+index dda113452da9..1347d896d7a3 100644
 --- a/drivers/gpu/drm/i915/gt/intel_gt_engines_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/intel_gt_engines_debugfs.h
 @@ -8,7 +8,9 @@
  
  struct intel_gt;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
 -void intel_gt_engines_debugfs_register(struct intel_gt *gt, struct dentry *root);
 +void intel_gt_engines_debugfs_register(struct intel_gt *gt,
@@ -5952,14 +5956,14 @@ index b635aa2820d9..33a9734c7ab3 100644
  	static const struct intel_gt_debugfs_file files[] = {
  		{ "drpc", &drpc_fops, NULL },
 diff --git a/drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.h b/drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.h
-index 0ace8c2da0ac..be9b61afde21 100644
+index 0ace8c2da0ac..c34d595bba56 100644
 --- a/drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.h
 @@ -8,9 +8,11 @@
  
  struct intel_gt;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct drm_printer;
  
 -void intel_gt_pm_debugfs_register(struct intel_gt *gt, struct dentry *root);
@@ -5983,14 +5987,14 @@ index c2ee5e1826b5..15cdc42365b9 100644
  	static const struct intel_gt_debugfs_file files[] = {
  		{ "sseu_status", &sseu_status_fops, NULL },
 diff --git a/drivers/gpu/drm/i915/gt/intel_sseu_debugfs.h b/drivers/gpu/drm/i915/gt/intel_sseu_debugfs.h
-index 73f001589e90..c9ac2aeee5e9 100644
+index 73f001589e90..8eb79cb148b3 100644
 --- a/drivers/gpu/drm/i915/gt/intel_sseu_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/intel_sseu_debugfs.h
 @@ -9,9 +9,11 @@
  
  struct intel_gt;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct seq_file;
  
  int intel_sseu_status(struct seq_file *m, struct intel_gt *gt);
@@ -6014,14 +6018,14 @@ index 5baacd822a1c..c3f0b1f5cd8a 100644
  	static const struct intel_gt_debugfs_file files[] = {
  		{ "gsc_info", &gsc_info_fops, NULL },
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.h b/drivers/gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.h
-index 3415ad39aabb..f31b4b96d41a 100644
+index 3415ad39aabb..f5678acf77c3 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/uc/intel_gsc_uc_debugfs.h
 @@ -8,7 +8,9 @@
  
  struct intel_gsc_uc;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
 -void intel_gsc_uc_debugfs_register(struct intel_gsc_uc *gsc, struct dentry *root);
 +void intel_gsc_uc_debugfs_register(struct intel_gsc_uc *gsc,
@@ -6056,14 +6060,14 @@ index 7269eb0bbedf..3858a48755e3 100644
  	static const struct intel_gt_debugfs_file files[] = {
  		{ "guc_info", &guc_info_fops, NULL },
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h b/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h
-index 424c26665cf1..714eb9fcb21c 100644
+index 424c26665cf1..c9a5ea91a43b 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/uc/intel_guc_debugfs.h
 @@ -8,7 +8,9 @@
  
  struct intel_guc;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
 -void intel_guc_debugfs_register(struct intel_guc *guc, struct dentry *root);
 +void intel_guc_debugfs_register(struct intel_guc *guc,
@@ -6114,14 +6118,14 @@ index ddfbe334689f..1d50ac53b965 100644
  	static const struct intel_gt_debugfs_file files[] = {
  		{ "guc_log_dump", &guc_log_dump_fops, NULL },
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_guc_log_debugfs.h b/drivers/gpu/drm/i915/gt/uc/intel_guc_log_debugfs.h
-index e8900e3d74ea..083925010061 100644
+index e8900e3d74ea..44c81d40e692 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_guc_log_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/uc/intel_guc_log_debugfs.h
 @@ -8,8 +8,9 @@
  
  struct intel_guc_log;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  void intel_guc_log_debugfs_register(struct intel_guc_log *log,
 -				    struct dentry *root);
@@ -6143,14 +6147,14 @@ index 15998963b863..0fab388b3b75 100644
  	static const struct intel_gt_debugfs_file files[] = {
  		{ "huc_info", &huc_info_fops, NULL },
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_huc_debugfs.h b/drivers/gpu/drm/i915/gt/uc/intel_huc_debugfs.h
-index be79e992f976..16c7f3f6f900 100644
+index be79e992f976..3120bc60e1aa 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_huc_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/uc/intel_huc_debugfs.h
 @@ -8,7 +8,9 @@
  
  struct intel_huc;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
 -void intel_huc_debugfs_register(struct intel_huc *huc, struct dentry *root);
 +void intel_huc_debugfs_register(struct intel_huc *huc,
@@ -6178,14 +6182,14 @@ index 6d541c866edb..1ab1e56c519c 100644
  	if (!gt_root)
  		return;
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_uc_debugfs.h b/drivers/gpu/drm/i915/gt/uc/intel_uc_debugfs.h
-index 010ce250d223..80ce3289827c 100644
+index 010ce250d223..b6d56a1d1b77 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_uc_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/uc/intel_uc_debugfs.h
 @@ -8,7 +8,9 @@
  
  struct intel_uc;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
 -void intel_uc_debugfs_register(struct intel_uc *uc, struct dentry *gt_root);
 +void intel_uc_debugfs_register(struct intel_uc *uc,
@@ -6267,14 +6271,14 @@ index 33d2dcb0de65..e71d3917bdd0 100644
  	dir = debugfs_create_dir("i915_params", minor->debugfs_root);
  	if (IS_ERR(dir))
 diff --git a/drivers/gpu/drm/i915/i915_debugfs_params.h b/drivers/gpu/drm/i915/i915_debugfs_params.h
-index 66567076546b..10b89c55521c 100644
+index 66567076546b..a64cf27ece5d 100644
 --- a/drivers/gpu/drm/i915/i915_debugfs_params.h
 +++ b/drivers/gpu/drm/i915/i915_debugfs_params.h
 @@ -7,8 +7,9 @@
  #define __I915_DEBUGFS_PARAMS__
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct drm_i915_private;
  
 -struct dentry *i915_debugfs_params(struct drm_i915_private *i915);
@@ -6295,14 +6299,14 @@ index e07c5b380789..b2dcdc4061dd 100644
  	if (!intel_pxp_is_supported(pxp))
  		return;
 diff --git a/drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h b/drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h
-index 299382b59e66..407265339cd0 100644
+index 299382b59e66..74024d815e2c 100644
 --- a/drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h
 +++ b/drivers/gpu/drm/i915/pxp/intel_pxp_debugfs.h
 @@ -8,6 +8,7 @@
  
  struct intel_pxp;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  #ifdef CONFIG_DRM_I915_PXP
  void intel_pxp_debugfs_register(struct intel_pxp *pxp);
@@ -6326,14 +6330,14 @@ index 6b77c9b4bde8..31719e932278 100644
  		dir = debugfs_create_dir(entry->name, root);
  		if (IS_ERR(dir)) {
 diff --git a/drivers/gpu/drm/imagination/pvr_debugfs.h b/drivers/gpu/drm/imagination/pvr_debugfs.h
-index ebacbd13b84a..359f9f42c8a8 100644
+index ebacbd13b84a..dab4b40bd0ea 100644
 --- a/drivers/gpu/drm/imagination/pvr_debugfs.h
 +++ b/drivers/gpu/drm/imagination/pvr_debugfs.h
 @@ -13,6 +13,7 @@ struct pvr_device;
  
  /* Forward declaration from <linux/dcache.h>. */
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  struct pvr_debugfs_entry {
  	const char *name;
@@ -6352,14 +6356,14 @@ index 73707daa4e52..f70215421012 100644
  	struct pvr_fw_trace *fw_trace = &pvr_dev->fw_dev.fw_trace;
  	u32 thread_nr;
 diff --git a/drivers/gpu/drm/imagination/pvr_fw_trace.h b/drivers/gpu/drm/imagination/pvr_fw_trace.h
-index 0074d2b18da0..5b53d5a80a5e 100644
+index 0074d2b18da0..0f088f7d4715 100644
 --- a/drivers/gpu/drm/imagination/pvr_fw_trace.h
 +++ b/drivers/gpu/drm/imagination/pvr_fw_trace.h
 @@ -68,11 +68,13 @@ void pvr_fw_trace_fini(struct pvr_device *pvr_dev);
  #if defined(CONFIG_DEBUG_FS)
  /* Forward declaration from <linux/dcache.h>. */
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  void pvr_fw_trace_mask_update(struct pvr_device *pvr_dev, u32 old_mask,
  			      u32 new_mask);
@@ -6384,14 +6388,14 @@ index b91759f362c5..24bcac11a4af 100644
  #define X_MODE(mode_) X_MODE_##mode_
  #define X_MODE_RO 0400
 diff --git a/drivers/gpu/drm/imagination/pvr_params.h b/drivers/gpu/drm/imagination/pvr_params.h
-index 5807915b456b..372fe4c63823 100644
+index 5807915b456b..a186e5da0849 100644
 --- a/drivers/gpu/drm/imagination/pvr_params.h
 +++ b/drivers/gpu/drm/imagination/pvr_params.h
 @@ -65,8 +65,10 @@ struct pvr_device;
  
  /* Forward declaration from <linux/dcache.h>. */
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
 -void pvr_params_debugfs_init(struct pvr_device *pvr_dev, struct dentry *dir);
 +void pvr_params_debugfs_init(struct pvr_device *pvr_dev,
@@ -7136,14 +7140,14 @@ index 02e797fd1891..7ca046ee41a2 100644
  static void ttm_global_release(void)
  {
 diff --git a/drivers/gpu/drm/ttm/ttm_module.h b/drivers/gpu/drm/ttm/ttm_module.h
-index 767fe22aed48..e74fa76b8912 100644
+index 767fe22aed48..a33f48f7bc29 100644
 --- a/drivers/gpu/drm/ttm/ttm_module.h
 +++ b/drivers/gpu/drm/ttm/ttm_module.h
 @@ -34,9 +34,10 @@
  #define TTM_PFX "[TTM] "
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct ttm_device;
  
 -extern struct dentry *ttm_debugfs_root;
@@ -7217,14 +7221,14 @@ index 461d7e99c2b3..ba9cc3aaa15a 100644
  	struct drm_minor *minor = gsc_to_xe(gsc)->drm.primary;
  	struct drm_info_list *local;
 diff --git a/drivers/gpu/drm/xe/xe_gsc_debugfs.h b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-index c2e2645dc705..9a292200678d 100644
+index c2e2645dc705..02f14eca14b8 100644
 --- a/drivers/gpu/drm/xe/xe_gsc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
 @@ -7,8 +7,9 @@
  #define _XE_GSC_DEBUGFS_H_
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct xe_gsc;
  
 -void xe_gsc_debugfs_register(struct xe_gsc *gsc, struct dentry *parent);
@@ -7363,14 +7367,14 @@ index b2521dd6ec42..b0a32211d892 100644
  		pf_add_config_attrs(gt, vfdentry, VFID(n));
  		debugfs_create_file("control", 0600, vfdentry, NULL, &control_ops);
 diff --git a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h
-index 038cc8ddc244..11b0e8d01b11 100644
+index 038cc8ddc244..3f8be90e1494 100644
 --- a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h
 @@ -8,11 +8,14 @@
  
  struct xe_gt;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  #ifdef CONFIG_PCI_IOV
 -void xe_gt_sriov_pf_debugfs_register(struct xe_gt *gt, struct dentry *root);
@@ -7416,14 +7420,14 @@ index 2ed5b6780d30..a91525a6c8c0 100644
  	drm_debugfs_create_files(vf_info, ARRAY_SIZE(vf_info), vfdentry, minor);
  }
 diff --git a/drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h b/drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h
-index b2cff7ef5c78..bce428e10a83 100644
+index b2cff7ef5c78..f772717cb19f 100644
 --- a/drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h
 @@ -8,7 +8,9 @@
  
  struct xe_gt;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
 -void xe_gt_sriov_vf_debugfs_register(struct xe_gt *gt, struct dentry *root);
 +void xe_gt_sriov_vf_debugfs_register(struct xe_gt *gt,
@@ -7444,14 +7448,14 @@ index 995b306aced7..9f86eb6848df 100644
  	struct drm_minor *minor = guc_to_xe(guc)->drm.primary;
  	struct drm_info_list *local;
 diff --git a/drivers/gpu/drm/xe/xe_guc_debugfs.h b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-index 4756dff26fca..7a87a608dbf5 100644
+index 4756dff26fca..89b0ad43bdbd 100644
 --- a/drivers/gpu/drm/xe/xe_guc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_guc_debugfs.h
 @@ -7,8 +7,9 @@
  #define _XE_GUC_DEBUGFS_H_
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct xe_guc;
  
 -void xe_guc_debugfs_register(struct xe_guc *guc, struct dentry *parent);
@@ -7472,14 +7476,14 @@ index 3a888a40188b..5329c72ef3f7 100644
  	struct drm_minor *minor = huc_to_xe(huc)->drm.primary;
  	struct drm_info_list *local;
 diff --git a/drivers/gpu/drm/xe/xe_huc_debugfs.h b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-index ec58f1818804..1dbf07be3921 100644
+index ec58f1818804..7fc23627c305 100644
 --- a/drivers/gpu/drm/xe/xe_huc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_huc_debugfs.h
 @@ -7,8 +7,9 @@
  #define _XE_HUC_DEBUGFS_H_
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct xe_huc;
  
 -void xe_huc_debugfs_register(struct xe_huc *huc, struct dentry *parent);
@@ -7503,14 +7507,14 @@ index 24a4209051ee..4d25127c3da5 100644
  	root = debugfs_create_dir("uc", parent);
  	if (IS_ERR(root)) {
 diff --git a/drivers/gpu/drm/xe/xe_uc_debugfs.h b/drivers/gpu/drm/xe/xe_uc_debugfs.h
-index a13382df2bd7..7f31fa8634c0 100644
+index a13382df2bd7..7373c5c97774 100644
 --- a/drivers/gpu/drm/xe/xe_uc_debugfs.h
 +++ b/drivers/gpu/drm/xe/xe_uc_debugfs.h
 @@ -7,8 +7,9 @@
  #define _XE_UC_DEBUGFS_H_
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct xe_uc;
  
 -void xe_uc_debugfs_register(struct xe_uc *uc, struct dentry *parent);
@@ -7548,14 +7552,14 @@ index a18cc8d8caf5..e9171bde1bc7 100644
  	/* Store the created entry */
  	host1x->debugfs = de;
 diff --git a/drivers/gpu/host1x/dev.h b/drivers/gpu/host1x/dev.h
-index d3855a1c6b47..ce0a6c0c284f 100644
+index d3855a1c6b47..afd56f7ec84c 100644
 --- a/drivers/gpu/host1x/dev.h
 +++ b/drivers/gpu/host1x/dev.h
 @@ -28,6 +28,7 @@ struct host1x_job;
  struct push_buffer;
  struct output;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  struct host1x_channel_ops {
  	int (*init)(struct host1x_channel *channel, struct host1x *host,
@@ -9396,14 +9400,14 @@ index 29523bb84d95..2fe970cad753 100644
  		bool enable;
  		u32 hs_settle;
 diff --git a/drivers/media/platform/nxp/imx8-isi/imx8-isi-core.h b/drivers/media/platform/nxp/imx8-isi/imx8-isi-core.h
-index 9c7fe9e5f941..b4918662536f 100644
+index 9c7fe9e5f941..43b14290e948 100644
 --- a/drivers/media/platform/nxp/imx8-isi/imx8-isi-core.h
 +++ b/drivers/media/platform/nxp/imx8-isi/imx8-isi-core.h
 @@ -28,6 +28,7 @@
  
  struct clk_bulk_data;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct device;
  struct media_intf_devnode;
  struct regmap;
@@ -9469,14 +9473,14 @@ index 05762b1be2bc..b81468c04890 100644
  	int ret;
  
 diff --git a/drivers/media/platform/rockchip/rkisp1/rkisp1-common.h b/drivers/media/platform/rockchip/rkisp1/rkisp1-common.h
-index ca952fd0829b..38e94b7955d5 100644
+index ca952fd0829b..97f2c02585d2 100644
 --- a/drivers/media/platform/rockchip/rkisp1/rkisp1-common.h
 +++ b/drivers/media/platform/rockchip/rkisp1/rkisp1-common.h
 @@ -24,6 +24,7 @@
  #include "rkisp1-regs.h"
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct regmap;
  
  /*
@@ -10419,14 +10423,14 @@ index 9d11e55981a0..c3417b3826bf 100644
  	struct mutex mdio_lock;
  	spinlock_t stats_lock;
 diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4.h b/drivers/net/ethernet/chelsio/cxgb4/cxgb4.h
-index c7c2c15a1815..b5d77cced286 100644
+index c7c2c15a1815..3c656370aed1 100644
 --- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4.h
 +++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4.h
 @@ -698,6 +698,7 @@ struct port_info {
  };
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct work_struct;
  
  enum {                                 /* adapter flags */
@@ -11260,14 +11264,14 @@ index 9ba99609999f..615f912b143d 100644
  	if (IS_ERR_OR_NULL(dfs_root))
  		return;
 diff --git a/drivers/net/ethernet/mellanox/mlx5/core/esw/bridge.h b/drivers/net/ethernet/mellanox/mlx5/core/esw/bridge.h
-index d6f539161993..f3473e2a788f 100644
+index d6f539161993..b092a94f68b5 100644
 --- a/drivers/net/ethernet/mellanox/mlx5/core/esw/bridge.h
 +++ b/drivers/net/ethernet/mellanox/mlx5/core/esw/bridge.h
 @@ -11,6 +11,7 @@
  #include "eswitch.h"
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct mlx5_flow_table;
  struct mlx5_flow_group;
  
@@ -11294,14 +11298,14 @@ index 7c251af566c6..814bcfccea51 100644
  	struct list_head fdb_list;
  	struct rhashtable fdb_ht;
 diff --git a/drivers/net/ethernet/mellanox/mlx5/core/eswitch.h b/drivers/net/ethernet/mellanox/mlx5/core/eswitch.h
-index 8573d36785f4..7abeeef362d7 100644
+index 8573d36785f4..adf2870db071 100644
 --- a/drivers/net/ethernet/mellanox/mlx5/core/eswitch.h
 +++ b/drivers/net/ethernet/mellanox/mlx5/core/eswitch.h
 @@ -330,6 +330,7 @@ enum {
  };
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct mlx5_qos_domain;
  
  struct mlx5_eswitch {
@@ -11551,14 +11555,14 @@ index be95336ce089..ddb676c85f23 100644
  static u32 mana_gd_r32(struct gdma_context *g, u64 offset)
  {
 diff --git a/drivers/net/ethernet/netronome/nfp/nfp_main.h b/drivers/net/ethernet/netronome/nfp/nfp_main.h
-index 14a751bfe1fe..83ea5565dee4 100644
+index 14a751bfe1fe..61cbd85bd992 100644
 --- a/drivers/net/ethernet/netronome/nfp/nfp_main.h
 +++ b/drivers/net/ethernet/netronome/nfp/nfp_main.h
 @@ -17,6 +17,7 @@
  #include <net/devlink.h>
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct device;
  struct pci_dev;
  
@@ -12573,14 +12577,14 @@ index 5a49970afc8c..773afddb8010 100644
  struct b43_debugfs_fops {
  	ssize_t (*read)(struct b43_wldev *dev, char *buf, size_t bufsize);
 diff --git a/drivers/net/wireless/broadcom/b43/debugfs.h b/drivers/net/wireless/broadcom/b43/debugfs.h
-index 6f6b500b8881..d9f4011f5419 100644
+index 6f6b500b8881..762cdb114a3d 100644
 --- a/drivers/net/wireless/broadcom/b43/debugfs.h
 +++ b/drivers/net/wireless/broadcom/b43/debugfs.h
 @@ -21,6 +21,7 @@ enum b43_dyndbg {		/* Dynamic debugging features */
  #ifdef CONFIG_B43_DEBUG
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  #define B43_NR_LOGGED_TXSTATUS	100
  
@@ -12607,14 +12611,14 @@ index 5d04bcc216e5..de9754ebaaeb 100644
  struct b43legacy_debugfs_fops {
  	ssize_t (*read)(struct b43legacy_wldev *dev, char *buf, size_t bufsize);
 diff --git a/drivers/net/wireless/broadcom/b43legacy/debugfs.h b/drivers/net/wireless/broadcom/b43legacy/debugfs.h
-index 924130880dfe..c02cb4297852 100644
+index 924130880dfe..350f3b4c40f6 100644
 --- a/drivers/net/wireless/broadcom/b43legacy/debugfs.h
 +++ b/drivers/net/wireless/broadcom/b43legacy/debugfs.h
 @@ -18,6 +18,7 @@ enum b43legacy_dyndbg { /* Dynamic debugging features */
  #ifdef CONFIG_B43LEGACY_DEBUG
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  #define B43legacy_NR_LOGGED_TXSTATUS	100
  
@@ -14670,14 +14674,14 @@ index 4bdbf6bb26e2..2283946acf6c 100644
  
  	if (pctldev->desc->name &&
 diff --git a/drivers/pinctrl/core.h b/drivers/pinctrl/core.h
-index d6c24978e708..a02a78c22f87 100644
+index d6c24978e708..718582f840bb 100644
 --- a/drivers/pinctrl/core.h
 +++ b/drivers/pinctrl/core.h
 @@ -17,6 +17,7 @@
  #include <linux/pinctrl/machine.h>
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct device;
  struct device_node;
  struct module;
@@ -14706,14 +14710,14 @@ index dca963633b5d..3ed291970ddf 100644
  	debugfs_create_file("pinconf-pins", 0444,
  			    devroot, pctldev, &pinconf_pins_fops);
 diff --git a/drivers/pinctrl/pinconf.h b/drivers/pinctrl/pinconf.h
-index a14c950bc700..2438e599b447 100644
+index a14c950bc700..d041365f2b6b 100644
 --- a/drivers/pinctrl/pinconf.h
 +++ b/drivers/pinctrl/pinconf.h
 @@ -13,6 +13,7 @@
  #include <linux/errno.h>
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct device_node;
  struct seq_file;
  
@@ -14751,14 +14755,14 @@ index 0743190da59e..24f2688f0136 100644
  	debugfs_create_file("pinmux-functions", 0444,
  			    devroot, pctldev, &pinmux_functions_fops);
 diff --git a/drivers/pinctrl/pinmux.h b/drivers/pinctrl/pinmux.h
-index 2965ec20b77f..878f8d6198ed 100644
+index 2965ec20b77f..ceae33f3e637 100644
 --- a/drivers/pinctrl/pinmux.h
 +++ b/drivers/pinctrl/pinmux.h
 @@ -13,6 +13,7 @@
  #include <linux/types.h>
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct seq_file;
  
  struct pinctrl_dev;
@@ -17727,14 +17731,14 @@ index 83ff23086d79..09ebe48a867a 100644
  static int ucsi_cmd(void *data, u64 val)
  {
 diff --git a/drivers/usb/typec/ucsi/ucsi.h b/drivers/usb/typec/ucsi/ucsi.h
-index 82735eb34f0e..a4569a00bd7b 100644
+index 82735eb34f0e..83f5fdf52f96 100644
 --- a/drivers/usb/typec/ucsi/ucsi.h
 +++ b/drivers/usb/typec/ucsi/ucsi.h
 @@ -20,6 +20,7 @@ struct ucsi;
  struct ucsi_altmode;
  struct ucsi_connector;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  /* UCSI offsets (Bytes) */
  #define UCSI_VERSION			0
@@ -17888,14 +17892,14 @@ index 55b640f2f245..9cc011e8596e 100644
  static void dss_initialize_debugfs(void)
  {
 diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.h b/drivers/video/fbdev/omap2/omapfb/dss/dss.h
-index a33a43f26829..9af98085be92 100644
+index a33a43f26829..7f7ce807f70c 100644
 --- a/drivers/video/fbdev/omap2/omapfb/dss/dss.h
 +++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.h
 @@ -319,6 +319,7 @@ static inline void sdi_uninit_port(struct device_node *port)
  #ifdef CONFIG_FB_OMAP2_DSS_DSI
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct file_operations;
  
  int dsi_init_platform_driver(void) __init;
@@ -18539,14 +18543,14 @@ index ef817926cddd..6cb6144dc9e1 100644
  
  /**
 diff --git a/include/drm/drm_panel.h b/include/drm/drm_panel.h
-index 10015891b056..b6bf2fa6f26d 100644
+index 10015891b056..4030eae6ee90 100644
 --- a/include/drm/drm_panel.h
 +++ b/include/drm/drm_panel.h
 @@ -31,6 +31,7 @@
  
  struct backlight_device;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct device_node;
  struct drm_connector;
  struct drm_device;
@@ -18576,14 +18580,14 @@ index 58dbab60f853..8688cd1ce8f1 100644
  	int suite_init_err;
  	bool is_init;
 diff --git a/include/linux/backing-dev-defs.h b/include/linux/backing-dev-defs.h
-index 2ad261082bba..a7ab65f0ce6d 100644
+index 2ad261082bba..03c80b739a1a 100644
 --- a/include/linux/backing-dev-defs.h
 +++ b/include/linux/backing-dev-defs.h
 @@ -17,6 +17,7 @@
  struct page;
  struct device;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  /*
   * Bits in bdi_writeback.state
@@ -18701,14 +18705,14 @@ index d55b30057a45..a867483aaae6 100644
  
  	mempool_t              *req_mempool;
 diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-index 2e6e603b7493..600215d8f5d4 100644
+index 2e6e603b7493..d543a20bc150 100644
 --- a/include/linux/clk-provider.h
 +++ b/include/linux/clk-provider.h
 @@ -37,6 +37,7 @@ struct clk;
  struct clk_hw;
  struct clk_core;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  /**
   * struct clk_rate_request - Structure encoding the clk constraints that
@@ -18943,10 +18947,10 @@ index 38c65e92ecd0..93358fb7bebc 100644
  #else
  static inline void iommu_debugfs_setup(void) {}
 diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
-index fd091c35d572..cd8fed847ac3 100644
+index 549d930407fd..373a390fc0f2 100644
 --- a/include/linux/irqdesc.h
 +++ b/include/linux/irqdesc.h
-@@ -103,7 +103,7 @@ struct irq_desc {
+@@ -104,7 +104,7 @@ struct irq_desc {
  	struct proc_dir_entry	*dir;
  #endif
  #ifdef CONFIG_GENERIC_IRQ_DEBUGFS
@@ -19220,14 +19224,14 @@ index 1a00be90d93a..a7298da00fa9 100644
  	/* objs pending delete, per node */
  	atomic_long_t *nr_deferred;
 diff --git a/include/linux/soundwire/sdw.h b/include/linux/soundwire/sdw.h
-index 2d6c30317792..c8e7a77201d0 100644
+index 2d6c30317792..2da002eb5767 100644
 --- a/include/linux/soundwire/sdw.h
 +++ b/include/linux/soundwire/sdw.h
 @@ -17,6 +17,7 @@
  #include <sound/sdca.h>
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct fwnode_handle;
  
  struct sdw_bus;
@@ -19377,38 +19381,38 @@ index a4d6cc0c9f68..b5ac78c37fbc 100644
  
  #endif /* __WWAN_H */
 diff --git a/include/linux/xattr.h b/include/linux/xattr.h
-index 86b0d47984a1..b86834dc3ff4 100644
+index 86b0d47984a1..2acfcfa25c44 100644
 --- a/include/linux/xattr.h
 +++ b/include/linux/xattr.h
 @@ -25,6 +25,7 @@
  
  struct inode;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  static inline bool is_posix_acl_xattr(const char *name)
  {
 diff --git a/include/media/v4l2-async.h b/include/media/v4l2-async.h
-index f26c323e9c96..df5c3a279cd6 100644
+index f26c323e9c96..85fcca794211 100644
 --- a/include/media/v4l2-async.h
 +++ b/include/media/v4l2-async.h
 @@ -12,6 +12,7 @@
  #include <linux/mutex.h>
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  struct device;
  struct device_node;
  struct v4l2_device;
 diff --git a/include/media/v4l2-dev.h b/include/media/v4l2-dev.h
-index 1b6222fab24e..49dd66fcf746 100644
+index 1b6222fab24e..f4a53b8dd96f 100644
 --- a/include/media/v4l2-dev.h
 +++ b/include/media/v4l2-dev.h
 @@ -63,6 +63,7 @@ struct video_device;
  struct v4l2_device;
  struct v4l2_ctrl_handler;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  /**
   * enum v4l2_video_device_flags - Flags used by &struct video_device
@@ -21190,14 +21194,14 @@ index 72378f354fd0..804bba1007b5 100644
  module_param(index, int, 0444);
  MODULE_PARM_DESC(index, "Index value for pcmtest soundcard");
 diff --git a/sound/pci/hda/cs35l56_hda.h b/sound/pci/hda/cs35l56_hda.h
-index 38d94fb213a5..61ad06aafc68 100644
+index 38d94fb213a5..f1db0ee219aa 100644
 --- a/sound/pci/hda/cs35l56_hda.h
 +++ b/sound/pci/hda/cs35l56_hda.h
 @@ -18,6 +18,7 @@
  #include <sound/cs35l56.h>
  
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  struct cs35l56_hda {
  	struct cs35l56_base base;
@@ -21457,14 +21461,14 @@ index 4c7951338c66..1c40d0d555bb 100644
  	return cdev->sdev->debugfs_root;
  }
 diff --git a/sound/soc/sof/sof-client.h b/sound/soc/sof/sof-client.h
-index b6ccc2cd69e5..bc6c7f3b399b 100644
+index b6ccc2cd69e5..d38b7329b587 100644
 --- a/sound/soc/sof/sof-client.h
 +++ b/sound/soc/sof/sof-client.h
 @@ -12,6 +12,7 @@ struct sof_ipc_fw_version;
  struct sof_ipc_cmd_hdr;
  struct snd_sof_dev;
  struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  struct sof_ipc4_fw_module;
  

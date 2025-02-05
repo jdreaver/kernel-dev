@@ -296,7 +296,7 @@ struct
 (
   #include <linux/debugfs.h>
 |
-  struct debugfs_node;
+  #define debugfs_node dentry;
 )
 
 @depends on
@@ -316,7 +316,7 @@ struct
 @@
 
 struct dentry;
-+struct debugfs_node;
++#define debugfs_node dentry
 
 //
 // Transform various helper functions

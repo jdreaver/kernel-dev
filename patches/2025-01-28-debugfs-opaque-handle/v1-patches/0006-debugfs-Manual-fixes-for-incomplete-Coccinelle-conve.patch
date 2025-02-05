@@ -1,4 +1,4 @@
-From 76aa5b2712f94b4333cce4d5d9f0412b5badf972 Mon Sep 17 00:00:00 2001
+From ef3535ee2cda9c02f87470bde6883a3079506ea2 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 6/7] debugfs: Manual fixes for incomplete Coccinelle
@@ -43,11 +43,8 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../gpu/drm/nouveau/include/nvkm/subdev/gsp.h |  10 +-
  .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |   8 +-
  drivers/gpu/drm/omapdrm/dss/dss.h             |   2 +-
- drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   1 -
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   2 +-
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  22 +-
- drivers/gpu/drm/xe/xe_guc_debugfs.h           |   1 -
- drivers/gpu/drm/xe/xe_huc_debugfs.h           |   1 -
  drivers/gpu/host1x/dev.h                      |   2 +-
  drivers/hwmon/asus_atk0110.c                  |   2 +-
  drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
@@ -120,7 +117,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/closure.h                       |   2 +-
  include/linux/fault-inject.h                  |   2 +-
  include/media/cec.h                           |   2 +-
- include/media/v4l2-async.h                    |   5 +-
+ include/media/v4l2-async.h                    |   4 +-
  include/net/mac80211.h                        |  12 +-
  include/soc/tegra/mc.h                        |   2 +-
  include/sound/soc-dapm.h                      |   3 +-
@@ -136,7 +133,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 113 files changed, 382 insertions(+), 355 deletions(-)
+ 110 files changed, 382 insertions(+), 351 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
 index e6f29101bb46..1f4ea53a6b7d 100644
@@ -256,7 +253,7 @@ index 61d1219a202f..e4a9f4583a83 100644
  
  /**
 diff --git a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
-index 8d17077c5a39..bc4fc8543e2c 100644
+index be1c72215a2d..7546882ca1e5 100644
 --- a/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
 +++ b/drivers/crypto/intel/qat/qat_common/adf_heartbeat.h
 @@ -40,13 +40,13 @@ struct adf_heartbeat {
@@ -455,18 +452,6 @@ index a8b231ed4f4b..d524ed1990fd 100644
  		struct dss_debugfs_entry *clk;
  		struct dss_debugfs_entry *dss;
  	} debugfs;
-diff --git a/drivers/gpu/drm/xe/xe_gsc_debugfs.h b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-index 9a292200678d..bdba0ad754f1 100644
---- a/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-+++ b/drivers/gpu/drm/xe/xe_gsc_debugfs.h
-@@ -6,7 +6,6 @@
- #ifndef _XE_GSC_DEBUGFS_H_
- #define _XE_GSC_DEBUGFS_H_
- 
--struct dentry;
- struct debugfs_node;
- struct xe_gsc;
- 
 diff --git a/drivers/gpu/drm/xe/xe_gt_debugfs.c b/drivers/gpu/drm/xe/xe_gt_debugfs.c
 index 6e5cbb23d5c9..3bc631d11f9d 100644
 --- a/drivers/gpu/drm/xe/xe_gt_debugfs.c
@@ -554,32 +539,8 @@ index b0a32211d892..8ab4758a3ba6 100644
  	struct xe_gt *gt = extract_gt(parent);
  	unsigned int vfid = extract_vfid(parent);
  	ssize_t ret;
-diff --git a/drivers/gpu/drm/xe/xe_guc_debugfs.h b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-index 7a87a608dbf5..f15a6c5923ea 100644
---- a/drivers/gpu/drm/xe/xe_guc_debugfs.h
-+++ b/drivers/gpu/drm/xe/xe_guc_debugfs.h
-@@ -6,7 +6,6 @@
- #ifndef _XE_GUC_DEBUGFS_H_
- #define _XE_GUC_DEBUGFS_H_
- 
--struct dentry;
- struct debugfs_node;
- struct xe_guc;
- 
-diff --git a/drivers/gpu/drm/xe/xe_huc_debugfs.h b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-index 1dbf07be3921..1a5aca435bb0 100644
---- a/drivers/gpu/drm/xe/xe_huc_debugfs.h
-+++ b/drivers/gpu/drm/xe/xe_huc_debugfs.h
-@@ -6,7 +6,6 @@
- #ifndef _XE_HUC_DEBUGFS_H_
- #define _XE_HUC_DEBUGFS_H_
- 
--struct dentry;
- struct debugfs_node;
- struct xe_huc;
- 
 diff --git a/drivers/gpu/host1x/dev.h b/drivers/gpu/host1x/dev.h
-index ce0a6c0c284f..c0c9f4575a35 100644
+index afd56f7ec84c..5deea78f8c6f 100644
 --- a/drivers/gpu/host1x/dev.h
 +++ b/drivers/gpu/host1x/dev.h
 @@ -53,7 +53,7 @@ struct host1x_pushbuffer_ops {
@@ -2123,7 +2084,7 @@ index 6cb6144dc9e1..824cb3326ff1 100644
  struct drm_file;
  struct drm_device;
 diff --git a/include/drm/drm_panel.h b/include/drm/drm_panel.h
-index b6bf2fa6f26d..8c22e618e4a9 100644
+index 4030eae6ee90..47aa6c0b2853 100644
 --- a/include/drm/drm_panel.h
 +++ b/include/drm/drm_panel.h
 @@ -24,6 +24,7 @@
@@ -2156,7 +2117,7 @@ index b76ed399621f..ecfdd32fd4ee 100644
  struct ttm_device;
  struct ttm_resource_manager;
 diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-index 600215d8f5d4..e38419722159 100644
+index d543a20bc150..5f765a58a66a 100644
 --- a/include/linux/clk-provider.h
 +++ b/include/linux/clk-provider.h
 @@ -6,6 +6,7 @@
@@ -2216,18 +2177,10 @@ index 0c8e86115b6f..0c172c059927 100644
  	u32 sequence;
  
 diff --git a/include/media/v4l2-async.h b/include/media/v4l2-async.h
-index df5c3a279cd6..a53436578a16 100644
+index 85fcca794211..fcabc643d095 100644
 --- a/include/media/v4l2-async.h
 +++ b/include/media/v4l2-async.h
-@@ -11,7 +11,6 @@
- #include <linux/list.h>
- #include <linux/mutex.h>
- 
--struct dentry;
- struct debugfs_node;
- struct device;
- struct device_node;
-@@ -141,9 +140,9 @@ struct v4l2_async_subdev_endpoint {
+@@ -141,9 +141,9 @@ struct v4l2_async_subdev_endpoint {
  /**
   * v4l2_async_debug_init - Initialize debugging tools.
   *
