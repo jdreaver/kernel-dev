@@ -34,6 +34,10 @@ Different versions:
 
 ## Not seeing build errors
 
+Continue trying to find files that might not be defining debugfs_node:
+- Run with the augmented Makefile and then run my script (do this on EC2)
+- Think about Coccinelle improvements. I think adding `struct debugfs_node;` after _any_ top-level struct if dentry isn't there is fine?
+
 Files I added `struct debugfs_node;` to:
 - `include/linux/shrinker.h`
 - `drivers/usb/host/ohci-dbg.c`
@@ -51,29 +55,9 @@ I should probably remove the `#define` in `dcache.h` as well so I really know wh
 
 Cocinelle idea: make a cleanup step where we remove `struct dentry;` forward decls if a file no longer uses `dentry` (check for `debugfs_node` to find files that used to use `dentry`)
 
-In run-spatch.sh, revert these files that added a forward decl:
-- include/linux/file.h
-- include/linux/fs_context.h
-- include/linux/capability.h
-- include/linux/kernfs.h
-- include/linux/mount.h
-- include/linux/security.h
-- include/linux/statfs.h
-
 How to generate all `.i` files:
 - Add `KBUILD_CFLAGS += -save-temps=obj` to Makefile
 - (hacky, doesn't quite work) `rg -l 'debugfs_node' -g "*.c" | sed 's/\.c$/.i/' | xargs make -k -j$(nproc)`
-
-rg command that finds similar situations as drm_connector.h:
-
-```
-rg -l '\(\*[a-z]+.*struct debugfs_node' -g '*.h' | xargs rg --files-without-match '<linux/debugfs.h>'
-```
-
-
-Once I figure this out: move the extra includes to the commits where I actually change debugfs_node. Some of these are in the manual fixup commit, like the drm header files!
-
-- Use `make drivers/gpu/drm/drm_atomic_uapi.i` to see headers getting loaded
 
 Try this:
 
@@ -81,35 +65,11 @@ Try this:
 rm drivers/gpu/drm/drm_atomic_uapi.o && make KCFLAGS="-H" drivers/gpu/drm/drm_atomic_uapi.o > ../allyesconfig-flags.log 2>&1
 ```
 
-If I remove `#include <linux/debugfs.h>` in `include/drm/drm_connector.h`, I see a build error when I do my QEMU minimal build, but not with `allmodconfig`.
-
-- Files compiled were `drivers/gpu/drm/drm_atomic.o` and `drivers/gpu/drm/drm_atomic_uapi.o`:
-  - Compile these directly under different configs
-    - I don't see different `-I` options. Something else is happening.
-  - Compile with extra verbosity to see the difference when compiling these files. Maybe another directory is being included.
-  - Diff my minimal config, allyesconfig, and allmodconfg .config files
-  - I think this is an allyesconfig vs allmodconfig thing. drm_atomic.o is under drm-y
-
-```
-In file included from ./include/drm/drm_modes.h:33,
-                 from ./include/drm/drm_crtc.h:32,
-                 from ./include/drm/drm_atomic.h:31,
-                 from drivers/gpu/drm/drm_atomic_uapi.c:31:
-./include/drm/drm_connector.h:1579:70: error: ‘struct debugfs_node’ declared inside parameter list will not be visible outside of this definition or declaration [-Werror]
- 1579 |         void (*debugfs_init)(struct drm_connector *connector, struct debugfs_node *root);
-      |
-```
-
-- Consider the following rule: if a _header_ file defines a function with `debugfs_struct` at all, then it needs `#include <linux/debugfs.h>`.
-  - We could check for this after running Coccinelle (maybe even also manual fixups) and then backport these `#include`s to an earlier commit.
-- If I don't see any errors in my latest mrproper build, undo one of the recent header changes (e.g. the `#include` in `include/drm/drm_connector.h`) and make sure the error triggers in a full build. If it doesn't, figure out why.
-  - Should I be using `allyesconfig` instead of `allmodconfig`? I wonder if we somehow aren't type checking when we are compiling standalone modules? (seems implausible to me)
-
-
 ## Submitting, final checks
 
 - (maybe not, Linus' tree is farther ahead) Rebase against `git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git`
 - Ensure all commits have change logs and signoffs.
+- Ensure there aren't two `struct debugfs;` forward decls in any file (write a script for this)
 - Update coccinelle script in the change log of the commit that uses it.
 - Actually go through testing again before submitting!
 - Check for TODO items in patches

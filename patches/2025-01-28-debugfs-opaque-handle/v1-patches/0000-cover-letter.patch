@@ -1,6 +1,6 @@
-From f0ccc1cbfc2f40a6b2d40c6fab3aa2c569b6a4bd Mon Sep 17 00:00:00 2001
+From 4e0c1ffcc7442af4c531c1944991546144d5c342 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 4 Feb 2025 15:48:42 -0800
+Date: Tue, 4 Feb 2025 16:12:46 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -1102,15 +1102,15 @@ David Reaver (6):
  fs/xfs/xfs_super.c                            |   8 +-
  fs/xfs/xfs_super.h                            |   3 +-
  include/drm/drm_bridge.h                      |   2 +-
- include/drm/drm_connector.h                   |   4 +-
+ include/drm/drm_connector.h                   |   5 +-
  include/drm/drm_crtc.h                        |   2 +-
- include/drm/drm_debugfs.h                     |  13 +-
+ include/drm/drm_debugfs.h                     |  15 +-
  include/drm/drm_device.h                      |   2 +-
  include/drm/drm_drv.h                         |   5 +-
  include/drm/drm_encoder.h                     |   4 +-
- include/drm/drm_file.h                        |   4 +-
+ include/drm/drm_file.h                        |   5 +-
  include/drm/drm_panel.h                       |   4 +-
- include/drm/ttm/ttm_resource.h                |   2 +-
+ include/drm/ttm/ttm_resource.h                |   3 +-
  include/kunit/test.h                          |   2 +-
  include/linux/backing-dev-defs.h              |   3 +-
  include/linux/blk-mq.h                        |   4 +-
@@ -1290,7 +1290,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   3 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1119 files changed, 2961 insertions(+), 2640 deletions(-)
+ 1119 files changed, 2966 insertions(+), 2640 deletions(-)
 
 
 base-commit: 0de63bb7d91975e73338300a57c54b93d3cc151c
