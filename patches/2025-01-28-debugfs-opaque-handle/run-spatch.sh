@@ -29,9 +29,10 @@ for file in $files; do
       | tee "$log_dir/$(echo "$file" | tr '/' '--').log"
 done
 
-# Undo the changes to some files. The Coccinelle script loves to modify
-# these.
+# Undo the changes to some files. Some of these should not be modified,
+# and some are handled in the later manual fixup commit.
 git checkout -- \
+  drivers/s390/block/dasd.c \
   fs/bcachefs/xattr.h \
   fs/btrfs/export.h \
   fs/btrfs/ioctl.h \

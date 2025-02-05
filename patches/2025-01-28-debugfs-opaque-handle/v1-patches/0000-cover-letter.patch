@@ -1,6 +1,6 @@
-From e9053a9611bbe9f86eedd21d82c9567c9a53c98c Mon Sep 17 00:00:00 2001
+From 7e95d9a15b0102517d45b79c03977055ba28f049 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 5 Feb 2025 12:13:34 -0800
+Date: Wed, 5 Feb 2025 12:38:19 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -222,7 +222,7 @@ David Reaver (6):
  arch/s390/hypfs/hypfs_dbfs.c                  |   2 +-
  arch/s390/include/asm/debug.h                 |   4 +-
  arch/s390/include/asm/pci.h                   |   2 +-
- arch/s390/kernel/debug.c                      |   8 +-
+ arch/s390/kernel/debug.c                      |  12 +-
  arch/s390/kernel/hiperdispatch.c              |   2 +-
  arch/s390/kernel/kdebugfs.c                   |   2 +-
  arch/s390/kernel/sysinfo.c                    |   2 +-
@@ -963,7 +963,7 @@ David Reaver (6):
  drivers/regulator/internal.h                  |   2 +-
  drivers/remoteproc/remoteproc_debugfs.c       |   6 +-
  drivers/remoteproc/remoteproc_internal.h      |   6 +-
- drivers/s390/block/dasd.c                     |  22 +-
+ drivers/s390/block/dasd.c                     |  26 +-
  drivers/s390/block/dasd_int.h                 |   8 +-
  drivers/s390/char/zcore.c                     |   6 +-
  drivers/s390/cio/cio_debug.h                  |   2 +-
@@ -1300,7 +1300,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   3 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1117 files changed, 2966 insertions(+), 2633 deletions(-)
+ 1117 files changed, 2971 insertions(+), 2636 deletions(-)
 
 
 base-commit: 0de63bb7d91975e73338300a57c54b93d3cc151c

@@ -1,4 +1,4 @@
-From 40f6f7ac5f4e3ce3ec756d559cbab756febed569 Mon Sep 17 00:00:00 2001
+From 5392d6a53e444b06b98563d24288178de1cece55 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 5 Feb 2025 09:36:24 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
@@ -1166,7 +1166,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/regulator/internal.h                  |  2 +-
  drivers/remoteproc/remoteproc_debugfs.c       |  6 +-
  drivers/remoteproc/remoteproc_internal.h      |  2 +-
- drivers/s390/block/dasd.c                     | 22 +++---
  drivers/s390/block/dasd_int.h                 |  8 +-
  drivers/s390/char/zcore.c                     |  6 +-
  drivers/s390/cio/cio_debug.h                  |  2 +-
@@ -1483,7 +1482,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  3 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  8 +-
- 1061 files changed, 2184 insertions(+), 2001 deletions(-)
+ 1060 files changed, 2173 insertions(+), 1990 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -15513,86 +15512,6 @@ index 0cd09e67ac14..ec2b32c65989 100644
  				       struct rproc_debug_trace *trace);
  void rproc_delete_debug_dir(struct rproc *rproc);
  void rproc_create_debug_dir(struct rproc *rproc);
-diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
-index 3ed642f4f00d..ddafbc489b72 100644
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -40,7 +40,7 @@
-  */
- debug_info_t *dasd_debug_area;
- EXPORT_SYMBOL(dasd_debug_area);
--static struct dentry *dasd_debugfs_root_entry;
-+static struct debugfs_node *dasd_debugfs_root_entry;
- struct dasd_discipline *dasd_diag_discipline_pointer;
- EXPORT_SYMBOL(dasd_diag_discipline_pointer);
- void dasd_int_handler(struct ccw_device *, unsigned long, struct irb *);
-@@ -205,10 +205,10 @@ static int dasd_state_known_to_new(struct dasd_device *device)
- 	return 0;
- }
- 
--static struct dentry *dasd_debugfs_setup(const char *name,
--					 struct dentry *base_dentry)
-+static struct debugfs_node *dasd_debugfs_setup(const char *name,
-+					 struct debugfs_node *base_dentry)
- {
--	struct dentry *pde;
-+	struct debugfs_node *pde;
- 
- 	if (!base_dentry)
- 		return NULL;
-@@ -646,7 +646,7 @@ unsigned int dasd_global_profile_level = DASD_PROFILE_OFF;
- struct dasd_profile dasd_global_profile = {
- 	.lock = __SPIN_LOCK_UNLOCKED(dasd_global_profile.lock),
- };
--static struct dentry *dasd_debugfs_global_entry;
-+static struct debugfs_node *dasd_debugfs_global_entry;
- 
- /*
-  * Add profiling information for cqr before execution.
-@@ -1049,10 +1049,10 @@ static const struct file_operations dasd_stats_raw_fops = {
- };
- 
- static void dasd_profile_init(struct dasd_profile *profile,
--			      struct dentry *base_dentry)
-+			      struct debugfs_node *base_dentry)
- {
- 	umode_t mode;
--	struct dentry *pde;
-+	struct debugfs_node *pde;
- 
- 	if (!base_dentry)
- 		return;
-@@ -1083,7 +1083,7 @@ static void dasd_statistics_removeroot(void)
- 
- static void dasd_statistics_createroot(void)
- {
--	struct dentry *pde;
-+	struct debugfs_node *pde;
- 
- 	dasd_debugfs_root_entry = NULL;
- 	pde = debugfs_create_dir("dasd", NULL);
-@@ -1119,7 +1119,7 @@ static void dasd_statistics_removeroot(void)
- }
- 
- static void dasd_profile_init(struct dasd_profile *profile,
--			      struct dentry *base_dentry)
-+			      struct debugfs_node *base_dentry)
- {
- 	return;
- }
-@@ -1159,10 +1159,10 @@ static void dasd_hosts_exit(struct dasd_device *device)
- 	device->hosts_dentry = NULL;
- }
- 
--static void dasd_hosts_init(struct dentry *base_dentry,
-+static void dasd_hosts_init(struct debugfs_node *base_dentry,
- 			    struct dasd_device *device)
- {
--	struct dentry *pde;
-+	struct debugfs_node *pde;
- 	umode_t mode;
- 
- 	if (!base_dentry)
 diff --git a/drivers/s390/block/dasd_int.h b/drivers/s390/block/dasd_int.h
 index 81cfb5c89681..cab0b1b03894 100644
 --- a/drivers/s390/block/dasd_int.h
