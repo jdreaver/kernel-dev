@@ -1,6 +1,6 @@
 From fd510a9379d2c07f0c37e5bbf1d5ee585404045a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 5 Feb 2025 14:38:19 -0800
+Date: Wed, 5 Feb 2025 15:37:20 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -25,17 +25,16 @@ an opaque wrapper struct:
 		struct dentry dentry;
 	};
 
-Intermediate commits rely in "#define debugfs_node dentry" to migrate
-debugfs users without breaking the build. The struct and
-debugfs-internal changes are introduced in the final commit in the
-series.
+Intermediate commits rely on "#define debugfs_node dentry" to migrate
+debugfs users without breaking the build. The final commit introduces
+the struct and updates debugfs internals accordingly.
 
 Why an RFC?
 ===========
 
 This is a large change, and I expect a few iterations -- unless this
-entire approach is NACKed of course :) Any advice is appreciated, but I
-also have specific areas I want feedback on:
+entire approach is NACKed of course :) Any advice is appreciated, and
+I'm particularly looking for feedback on the following:
 
 1. This change touches over 1100 files. Is that okay? I've been told it
    is because the patch series does "one thing", but it is a lot of
@@ -94,15 +93,15 @@ The changes to fs/debugfs/ are straightforward, swapping dentry with
 debugfs_node in the API where appropriate. Internal functions convert
 between the two as needed. I introduced a few trivial helper functions
 for specific debugfs users. Thanks to Al Viro's recent refactoring,
-parts of this change were simpler to make.
+parts of this change were simpler to implement.
 
 Relay changes
 =============
 
 The most non-obvious change is in the relay system. While the relay
 documentation suggests support for non-debugfs users, in practice all
-relay users rely on debugfs. I updated relay to use debugfs_node revised
-the documentation.
+relay users rely on debugfs. I updated relay to use debugfs_node and
+revised the documentation.
 
 Coccinelle
 ==========
@@ -144,14 +143,13 @@ manual fixups.
 #includes and #defines
 ======================
 
-struct dentry is implictly defined, transitively included (usually
+struct dentry is implicitly defined, transitively included (usually
 through <linux/fs.h>), or defined with a forward declaration in much of
 the files affected by this patch series. Usually <linux/debugfs.h> is
 _not_ included in those same files. For the intermediate commits, we
 need to ensure the #define is in scope wherever debugfs_node is used so
-it isn't considered a forward declaration of a distinct type. Figuring
-out where to add include debugfs.h and "#define debugfs_node dentry" is
-error-prone.
+it isn't considered a forward declaration of a distinct type. Ensuring
+the #define and/or a debugfs.h include is in scope is error-prone.
 
 I found one heuristic that was easy to automate and seems to do the job:
 in files we modify, wherever there is a forward declaration of "struct
@@ -172,9 +170,10 @@ to avoid implicit declaration errors.
 Testing
 =======
 
-This was tested by building every commit in this series on an x86_64
-machine with allmodconfig, as well as cross-compiling to s390, arm, and
-powerpc64. I also loaded a more minimal kernel into QEMU and ran:
+My primary form of testing was compiling without errors. This was tested
+by building every commit in this series on an x86_64 machine with
+allmodconfig, as well as cross-compiling to s390, arm, and powerpc64. I
+also loaded a more minimal kernel into QEMU and ran:
 
   find /sys/kernel/debug -type f -exec stat {} +
 
