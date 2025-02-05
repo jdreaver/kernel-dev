@@ -34,6 +34,29 @@ Different versions:
 
 ## Not seeing build errors
 
+Bizarre error for fault injection. The files involved appear to include debugfs.h. I have no idea what is going on:
+- If I add an `#include <linux/debugfs.h>` to fault-inject.h, it works. Ugh.
+
+```
+drivers/ufs/core/ufs-fault-injection.c: In function ‘ufs_fault_inject_hba_init’:
+drivers/ufs/core/ufs-fault-injection.c:69:59: error: passing argument 2 of ‘fault_create_debugfs_attr’ from incompatible pointer type [-Werror=incompatible-pointer-types]
+   69 |         fault_create_debugfs_attr("trigger_eh_inject", hba->debugfs_root, &hba->trigger_eh_attr);
+      |                                                        ~~~^~~~~~~~~~~~~~
+      |                                                           |
+      |                                                           struct dentry *
+In file included from drivers/ufs/core/ufs-fault-injection.c:5:
+./include/linux/fault-inject.h:84:46: note: expected ‘struct debugfs_node *’ but argument is of type ‘struct dentry *’
+   84 |                         struct debugfs_node *parent, struct fault_attr *attr);
+      |                         ~~~~~~~~~~~~~~~~~~~~~^~~~~~
+drivers/ufs/core/ufs-fault-injection.c:70:56: error: passing argument 2 of ‘fault_create_debugfs_attr’ from incompatible pointer type [-Werror=incompatible-pointer-types]
+   70 |         fault_create_debugfs_attr("timeout_inject", hba->debugfs_root, &hba->timeout_attr);
+      |                                                     ~~~^~~~~~~~~~~~~~
+      |                                                        |
+      |                                                        struct dentry *
+./include/linux/fault-inject.h:84:46: note: expected ‘struct debugfs_node *’ but argument is of type ‘struct dentry *’
+   84 |                         struct debugfs_node *parent, struct fault_attr *attr);
+```
+
 Continue trying to find files that might not be defining debugfs_node:
 - Run with the augmented Makefile and then run my script (do this on EC2)
 - Think about Coccinelle improvements. I think adding `struct debugfs_node;` after _any_ top-level struct if dentry isn't there is fine?
@@ -43,15 +66,10 @@ Continue trying to find files that might not be defining debugfs_node:
 Files I added `struct debugfs_node;` to:
 - `include/linux/shrinker.h`
 - `drivers/usb/host/ohci-dbg.c`
-- `drivers/gpu/drm/imagination/pvr_params.h`
 
 Facts:
 - If I remove `#include <linux/debugfs.h>` in `include/drm/drm_connector.h`, then `make drivers/gpu/drm/drm_atomic_uapi.o` causes a compilation error with `defconfig`, but not `allyesconfig` or `allmodconfig`
 - This only happens on the last commit, where I replace the `#define` with a real struct
-
-Potential conclusions:
-- I think what happens is make allyesconfig has more forward-defined `struct debugfs_node` entries. They get imported before implicit declarations of `debugfs_node` inside function callbacks. This is confirmed with compiling `make drivers/gpu/drm/drm_atomic_uapi.i` and comparing.
-  - I think I need to find all places where `struct debugfs_node` is used as a _function_ parameter, and ensure I `#include <linux/debugfs.h>`
 
 I should probably remove the `#define` in `dcache.h` as well so I really know where to add these `#include`s.
 
