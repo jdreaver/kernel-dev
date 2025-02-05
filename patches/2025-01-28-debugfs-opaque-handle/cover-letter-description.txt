@@ -124,8 +124,7 @@ struct dentry is implictly defined, transitively included (usually
 through <linux/fs.h>), or defined with a forward declaration in much of
 the files affected by this patch series. Very often <linux/debugfs.h> is
 _not_ included in those same files. Figuring out where to add include
-debugfs.h and forward declarations of struct debugfs_node is
-error-prone.
+debugfs.h and "#define debugfs_node dentry" is error-prone.
 
 I found one heuristic that was easy to automate and seems to do the job:
 in files we modify, wherever there is a forward declaration of "struct
@@ -136,6 +135,10 @@ these #defines and replaces the dentry declaration with debugfs_node.
 Suggestions for solving this problem without peppering #defines in an
 intermediate commit is welcome. I'm still not totally confident that
 _some_ kernel configuration won't break because an #include is missing.
+
+I originally had this entire patch series reversed, where we immediately
+define struct debugfs_node without an intermediate #define, but the
+whole thing has to be done in a single commit for that to work.
 
 Testing
 =======

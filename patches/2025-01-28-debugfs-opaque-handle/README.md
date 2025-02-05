@@ -35,7 +35,7 @@ Different versions:
 
 ## Not seeing build errors
 
-A few errors on arm in drivers. I think all of these are from implicit `struct debugfs_node` declarations in structs, which are distinct from `struct dentry` because of the `#define`. We might need to do `#define debugfs_node dentry` more :(
+A few errors on arm allmodconfig in drivers. I think all of these are from implicit `struct debugfs_node` declarations in structs, which are distinct from `struct dentry` because of the `#define`. We might need to do `#define debugfs_node dentry` more :(
 
 ```
 In file included from ./include/linux/mmc/host.h:13,
