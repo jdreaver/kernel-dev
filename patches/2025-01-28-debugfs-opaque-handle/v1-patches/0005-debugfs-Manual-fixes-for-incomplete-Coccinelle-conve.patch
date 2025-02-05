@@ -1,4 +1,4 @@
-From 9aea8dcfac0d7481072895c0e7fcaf61bd0deed2 Mon Sep 17 00:00:00 2001
+From d82e39c1e794c303304bdc66bf27256c742662cf Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
@@ -114,7 +114,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/drm/drm_encoder.h                     |   2 +-
  include/drm/drm_file.h                        |   1 +
  include/drm/drm_panel.h                       |   3 +-
- include/drm/ttm/ttm_resource.h                |   1 +
+ include/drm/ttm/ttm_resource.h                |   3 +-
  include/linux/clk-provider.h                  |   3 +-
  include/linux/closure.h                       |   2 +-
  include/linux/fault-inject.h                  |   2 +-
@@ -136,7 +136,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 113 files changed, 405 insertions(+), 367 deletions(-)
+ 113 files changed, 406 insertions(+), 368 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
 index e6f29101bb46..1f4ea53a6b7d 100644
@@ -2240,7 +2240,7 @@ index 4030eae6ee90..47aa6c0b2853 100644
  
  struct drm_panel_follower_funcs {
 diff --git a/include/drm/ttm/ttm_resource.h b/include/drm/ttm/ttm_resource.h
-index b76ed399621f..5e3d3a927341 100644
+index ee688d0c029b..5e3d3a927341 100644
 --- a/include/drm/ttm/ttm_resource.h
 +++ b/include/drm/ttm/ttm_resource.h
 @@ -38,6 +38,7 @@
@@ -2251,6 +2251,14 @@ index b76ed399621f..5e3d3a927341 100644
  struct dmem_cgroup_device;
  struct ttm_device;
  struct ttm_resource_manager;
+@@ -504,6 +505,6 @@ void ttm_kmap_iter_linear_io_fini(struct ttm_kmap_iter_linear_io *iter_io,
+ 				  struct ttm_resource *mem);
+ 
+ void ttm_resource_manager_create_debugfs(struct ttm_resource_manager *man,
+-					 struct dentry * parent,
++					 struct debugfs_node * parent,
+ 					 const char *name);
+ #endif
 diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
 index d543a20bc150..5f765a58a66a 100644
 --- a/include/linux/clk-provider.h

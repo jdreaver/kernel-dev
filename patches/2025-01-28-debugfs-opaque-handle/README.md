@@ -67,10 +67,9 @@ rm drivers/gpu/drm/drm_atomic_uapi.o && make KCFLAGS="-H" drivers/gpu/drm/drm_at
 - Use clang or a different nix-shell for cross-compilation (and add that I did that to test procedure)
   - ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
   - ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu-
-  - ARCH=mips CROSS_COMPILE=mips-linux-gnu-
   - ARCH=s390 CROSS_COMPILE=s390x-linux-gnu-
-  - ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
-  - (also try defconfig? In fact defconfig is probably all we need)
+  - ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
+  - (doesn't work) ARCH=mips CROSS_COMPILE=mips-linux-gnu-
 
 ```
 make -s mrproper

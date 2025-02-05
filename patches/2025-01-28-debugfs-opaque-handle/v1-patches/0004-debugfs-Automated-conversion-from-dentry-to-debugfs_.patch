@@ -1,4 +1,4 @@
-From 5392d6a53e444b06b98563d24288178de1cece55 Mon Sep 17 00:00:00 2001
+From eeb172ddabbe25088ac49044ee748ffb6c060545 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 5 Feb 2025 09:36:24 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
@@ -1314,7 +1314,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/drm/drm_encoder.h                     |  2 +-
  include/drm/drm_file.h                        |  4 +-
  include/drm/drm_panel.h                       |  1 +
- include/drm/ttm/ttm_resource.h                |  2 +-
  include/kunit/test.h                          |  2 +-
  include/linux/backing-dev-defs.h              |  3 +-
  include/linux/blk-mq.h                        |  4 +-
@@ -1482,7 +1481,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  3 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  8 +-
- 1060 files changed, 2173 insertions(+), 1990 deletions(-)
+ 1059 files changed, 2172 insertions(+), 1989 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -18469,18 +18468,6 @@ index 10015891b056..4030eae6ee90 100644
  struct device_node;
  struct drm_connector;
  struct drm_device;
-diff --git a/include/drm/ttm/ttm_resource.h b/include/drm/ttm/ttm_resource.h
-index ee688d0c029b..b76ed399621f 100644
---- a/include/drm/ttm/ttm_resource.h
-+++ b/include/drm/ttm/ttm_resource.h
-@@ -504,6 +504,6 @@ void ttm_kmap_iter_linear_io_fini(struct ttm_kmap_iter_linear_io *iter_io,
- 				  struct ttm_resource *mem);
- 
- void ttm_resource_manager_create_debugfs(struct ttm_resource_manager *man,
--					 struct dentry * parent,
-+					 struct debugfs_node * parent,
- 					 const char *name);
- #endif
 diff --git a/include/kunit/test.h b/include/kunit/test.h
 index 58dbab60f853..8688cd1ce8f1 100644
 --- a/include/kunit/test.h

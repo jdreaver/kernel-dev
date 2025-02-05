@@ -41,6 +41,7 @@ git checkout -- \
   fs/debugfs \
   fs/ntfs3/ntfs_fs.h \
   fs/udf/udfdecl.h \
+  include/drm/ttm/ttm_resource.h \
   include/linux/capability.h \
   include/linux/debugfs.h \
   include/linux/exportfs.h \
