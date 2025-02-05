@@ -1,4 +1,4 @@
-From 5d3710848e12c445bd9f82fd7f3ef95ec8897c04 Mon Sep 17 00:00:00 2001
+From 5f0538943819b4e928890b79391dd49db74841d3 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 6/7] debugfs: Manual fixes for incomplete Coccinelle
@@ -384,14 +384,14 @@ index a5ee622f90d7..aa87239d2cc6 100644
  	file = debugfs_create_file(#_f, 0400, parent, connector, &_f ## _infoframe_fops); \
  	if (IS_ERR(file)) \
 diff --git a/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h b/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
-index 82475823a7e4..624ea2785549 100644
+index 82475823a7e4..03d425886e25 100644
 --- a/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
 +++ b/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
 @@ -9,6 +9,7 @@
  #include <linux/file.h>
  
  struct intel_gt;
-+struct debugfs_node;
++#define debugfs_node dentry
  
  #define __GT_DEBUGFS_ATTRIBUTE_FOPS(__name)				\
  static const struct file_operations __name ## _fops = {			\
@@ -2046,14 +2046,14 @@ index 496dbbd2ad7e..77a1649e5586 100644
  
  /**
 diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 9f63215edaea..0b6726c56c69 100644
+index 9f63215edaea..7b1e2ad2d285 100644
 --- a/include/drm/drm_connector.h
 +++ b/include/drm/drm_connector.h
 @@ -34,6 +34,7 @@
  
  #include <uapi/drm/drm_mode.h>
  
-+struct debugfs_node;
++#define debugfs_node dentry
  struct drm_connector_helper_funcs;
  struct drm_modeset_acquire_ctx;
  struct drm_device;
@@ -2067,14 +2067,14 @@ index 9f63215edaea..0b6726c56c69 100644
  
  /**
 diff --git a/include/drm/drm_debugfs.h b/include/drm/drm_debugfs.h
-index e795aa93a132..b411a7ca51f1 100644
+index e795aa93a132..efce45002f86 100644
 --- a/include/drm/drm_debugfs.h
 +++ b/include/drm/drm_debugfs.h
 @@ -37,6 +37,8 @@
  
  #include <drm/drm_gpuvm.h>
  
-+struct debugfs_node;
++#define debugfs_node dentry
 +
  /**
   * DRM_DEBUGFS_GPUVA_INFO - &drm_info_list entry to dump a GPU VA space
@@ -2093,14 +2093,14 @@ index 50845e231366..28384b37b841 100644
  
  /**
 diff --git a/include/drm/drm_file.h b/include/drm/drm_file.h
-index 6cb6144dc9e1..824cb3326ff1 100644
+index 6cb6144dc9e1..3703ae656970 100644
 --- a/include/drm/drm_file.h
 +++ b/include/drm/drm_file.h
 @@ -38,6 +38,7 @@
  
  #include <drm/drm_prime.h>
  
-+struct debugfs_node;
++#define debugfs_node dentry
  struct dma_fence;
  struct drm_file;
  struct drm_device;
@@ -2126,14 +2126,14 @@ index 4030eae6ee90..47aa6c0b2853 100644
  
  struct drm_panel_follower_funcs {
 diff --git a/include/drm/ttm/ttm_resource.h b/include/drm/ttm/ttm_resource.h
-index b76ed399621f..ecfdd32fd4ee 100644
+index b76ed399621f..5e3d3a927341 100644
 --- a/include/drm/ttm/ttm_resource.h
 +++ b/include/drm/ttm/ttm_resource.h
 @@ -38,6 +38,7 @@
  #define TTM_MAX_BO_PRIORITY	4U
  #define TTM_NUM_MEM_TYPES 8
  
-+struct debugfs_node;
++#define debugfs_node dentry
  struct dmem_cgroup_device;
  struct ttm_device;
  struct ttm_resource_manager;
