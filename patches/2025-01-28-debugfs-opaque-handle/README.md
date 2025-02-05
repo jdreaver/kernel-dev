@@ -34,9 +34,6 @@ Different versions:
 
 ## Not seeing build errors
 
-Try removing the commit adding the #includes again (requires re-running spatch!)
-- I think I could remove it from fault-inject.h, but I'm not so sure about irqdesc.h. It has an implicit definition of struct dentry (not a forward declaration).
-
 Continue trying to find files that might not be defining debugfs_node:
 - If I do this, call it out in cover letter.
 - Run with the augmented Makefile and then run my script (do this on EC2)

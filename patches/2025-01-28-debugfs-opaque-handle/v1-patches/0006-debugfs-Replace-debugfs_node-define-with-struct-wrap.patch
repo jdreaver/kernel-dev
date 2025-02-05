@@ -1,7 +1,7 @@
-From 811f3742661894505a3bfd223329ea8cb214b4bf Mon Sep 17 00:00:00 2001
+From 2e1595e492519ce888f2f1de90f25f32a7ee9811 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:27:04 -0800
-Subject: [RFC PATCH 7/7] debugfs: Replace debugfs_node #define with struct
+Subject: [RFC PATCH 6/6] debugfs: Replace debugfs_node #define with struct
  wrapping dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -73,13 +73,14 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/dcache.h                        |   2 -
  include/linux/debugfs.h                       | 153 +++++++------
  include/linux/fault-inject.h                  |   2 +-
+ include/linux/irqdesc.h                       |   2 +-
  include/linux/soundwire/sdw.h                 |   2 +-
  include/linux/xattr.h                         |   2 +-
  include/media/v4l2-async.h                    |   2 +-
  include/media/v4l2-dev.h                      |   2 +-
  sound/pci/hda/cs35l56_hda.h                   |   2 +-
  sound/soc/sof/sof-client.h                    |   2 +-
- 59 files changed, 312 insertions(+), 280 deletions(-)
+ 60 files changed, 313 insertions(+), 281 deletions(-)
 
 diff --git a/drivers/acpi/apei/apei-internal.h b/drivers/acpi/apei/apei-internal.h
 index 360bfab92ebb..8dc0059e6506 100644
@@ -1939,11 +1940,11 @@ index 738a990f99cd..f2549e04bf08 100644
  {
  	if (sizeof(*value) == sizeof(u32))
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index 4f0f01015460..3480068a1564 100644
+index 6691f57aa18c..d5ba99bf101e 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
-@@ -7,7 +7,7 @@
- #include <linux/debugfs.h>
+@@ -6,7 +6,7 @@
+ #include <linux/types.h>
  
  struct dentry;
 -#define debugfs_node dentry
@@ -1951,6 +1952,19 @@ index 4f0f01015460..3480068a1564 100644
  struct kmem_cache;
  
  #ifdef CONFIG_FAULT_INJECTION
+diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
+index 19edde4e6307..239a2ceb1844 100644
+--- a/include/linux/irqdesc.h
++++ b/include/linux/irqdesc.h
+@@ -16,7 +16,7 @@ struct module;
+ struct irq_desc;
+ struct irq_domain;
+ struct pt_regs;
+-#define debugfs_node dentry
++struct debugfs_node;
+ 
+ /**
+  * struct irqstat - interrupt statistics
 diff --git a/include/linux/soundwire/sdw.h b/include/linux/soundwire/sdw.h
 index 2da002eb5767..c8e7a77201d0 100644
 --- a/include/linux/soundwire/sdw.h

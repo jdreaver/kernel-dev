@@ -1,11 +1,19 @@
 debugfs: Replace dentry with an opaque handle in debugfs API
 
+Overview
+========
+
 This patch series replaces raw dentry pointers in the debugfs API with
 an opaque wrapper struct:
 
 	struct debugfs_node {
 		struct dentry dentry;
 	};
+
+Intermediate commits rely in "#define debugfs_node dentry" to migrate
+debugfs users without breaking the build. The struct and
+debugfs-internal changes are introduced in the final commit in the
+series.
 
 Concerns
 ========
@@ -43,12 +51,11 @@ About this patch series
 This series makes the following changes:
 
 1. Add a temporary "#define debugfs_node dentry".
-2. Add necessary "#include <linux/debugfs.h>" for the Cocinelle step.
-3. Introduce debugfs helper functions used by Coccinelle rules.
-4. Update relay to use debugfs_node instead of dentry.
-5. Use Coccinelle to convert most of the kernel to debugfs_node.
-6. Apply manual fixes for cases Coccinelle missed.
-7. Remove the #define and introduce struct debugfs_node.
+2. Introduce debugfs helper functions used by Coccinelle rules.
+3. Update relay to use debugfs_node instead of dentry.
+4. Use Coccinelle to convert most of the kernel to debugfs_node.
+5. Apply manual fixes for cases Coccinelle missed.
+6. Remove the #define and introduce struct debugfs_node.
 
 The #define is placed in both debugfs.h and dcache.h to avoid
 unnecessary #include <linux/debugfs.h> additions or forward declarations

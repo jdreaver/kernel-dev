@@ -1,7 +1,7 @@
-From ed52e2bd8e8dca7c3feab404dc70bcefd28e9d38 Mon Sep 17 00:00:00 2001
+From e6baa8dbafd4e69e10ed2c085278e3e06ad43479 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:39:53 -0800
-Subject: [RFC PATCH 4/7] relay: Replace dentry with debugfs_node
+Subject: [RFC PATCH 3/6] relay: Replace dentry with debugfs_node
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>

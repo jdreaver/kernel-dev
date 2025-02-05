@@ -1,7 +1,7 @@
-From 5f0538943819b4e928890b79391dd49db74841d3 Mon Sep 17 00:00:00 2001
+From 9a2da3b7a32877097261f784094cff5859fef701 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
-Subject: [RFC PATCH 6/7] debugfs: Manual fixes for incomplete Coccinelle
+Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
  conversions
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -117,6 +117,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/clk-provider.h                  |   3 +-
  include/linux/closure.h                       |   2 +-
  include/linux/fault-inject.h                  |   2 +-
+ include/linux/irqdesc.h                       |   5 +-
  include/media/cec.h                           |   2 +-
  include/media/v4l2-async.h                    |   5 +-
  include/net/mac80211.h                        |  12 +-
@@ -134,7 +135,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 111 files changed, 385 insertions(+), 351 deletions(-)
+ 112 files changed, 388 insertions(+), 353 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
 index e6f29101bb46..1f4ea53a6b7d 100644
@@ -2172,10 +2173,10 @@ index 880fe85e35e9..b98b6067368a 100644
  struct closure_waitlist {
  	struct llist_head	list;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index cf35012ba550..4f0f01015460 100644
+index cfbffb130c0c..6691f57aa18c 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
-@@ -35,7 +35,7 @@ struct fault_attr {
+@@ -34,7 +34,7 @@ struct fault_attr {
  
  	unsigned long count;
  	struct ratelimit_state ratelimit_state;
@@ -2184,6 +2185,36 @@ index cf35012ba550..4f0f01015460 100644
  };
  
  enum fault_flags {
+diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
+index fd091c35d572..19edde4e6307 100644
+--- a/include/linux/irqdesc.h
++++ b/include/linux/irqdesc.h
+@@ -16,6 +16,7 @@ struct module;
+ struct irq_desc;
+ struct irq_domain;
+ struct pt_regs;
++#define debugfs_node dentry
+ 
+ /**
+  * struct irqstat - interrupt statistics
+@@ -61,7 +62,7 @@ struct irqstat {
+  * @kobj:		kobject used to represent this struct in sysfs
+  * @request_mutex:	mutex to protect request/free before locking desc->lock
+  * @dir:		/proc/irq/ procfs entry
+- * @debugfs_file:	dentry for the debugfs file
++ * @debugfs_file:	debugfs_node for the debugfs file
+  * @name:		flow handler name for /proc/interrupts output
+  */
+ struct irq_desc {
+@@ -103,7 +104,7 @@ struct irq_desc {
+ 	struct proc_dir_entry	*dir;
+ #endif
+ #ifdef CONFIG_GENERIC_IRQ_DEBUGFS
+-	struct dentry		*debugfs_file;
++	struct debugfs_node	*debugfs_file;
+ 	const char		*dev_name;
+ #endif
+ #ifdef CONFIG_SPARSE_IRQ
 diff --git a/include/media/cec.h b/include/media/cec.h
 index 0c8e86115b6f..0c172c059927 100644
 --- a/include/media/cec.h

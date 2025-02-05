@@ -1,7 +1,7 @@
-From 88b00daf7bfb689f490d3a9d67085446cc5cc4b2 Mon Sep 17 00:00:00 2001
+From 918997e95b2f8860f0a05258835d6fa3d6112f51 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 5 Feb 2025 09:36:24 -0800
-Subject: [RFC PATCH 5/7] debugfs: Automated conversion from dentry to
+Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
  debugfs_node
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -1339,7 +1339,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/iio/iio.h                       |  4 +-
  include/linux/intel_tpmi.h                    |  2 +-
  include/linux/iommu.h                         |  2 +-
- include/linux/irqdesc.h                       |  2 +-
  include/linux/kvm_host.h                      |  5 +-
  include/linux/mfd/aat2870.h                   |  2 +-
  include/linux/mhi.h                           |  2 +-
@@ -1482,7 +1481,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  3 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  8 +-
- 1062 files changed, 2185 insertions(+), 2002 deletions(-)
+ 1061 files changed, 2184 insertions(+), 2001 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -18738,18 +18737,18 @@ index b4ee8961e623..35b3bec64c6a 100644
  	bool fake_inject_ue;
  	u16 fake_inject_count;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index ab7ddd6fdc47..cf35012ba550 100644
+index 8c829d28dcf3..cfbffb130c0c 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
-@@ -7,6 +7,7 @@
- #include <linux/debugfs.h>
+@@ -6,6 +6,7 @@
+ #include <linux/types.h>
  
  struct dentry;
 +#define debugfs_node dentry
  struct kmem_cache;
  
  #ifdef CONFIG_FAULT_INJECTION
-@@ -80,13 +81,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
+@@ -79,13 +80,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
  
  #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
  
@@ -18949,19 +18948,6 @@ index 38c65e92ecd0..93358fb7bebc 100644
  void iommu_debugfs_setup(void);
  #else
  static inline void iommu_debugfs_setup(void) {}
-diff --git a/include/linux/irqdesc.h b/include/linux/irqdesc.h
-index 549d930407fd..373a390fc0f2 100644
---- a/include/linux/irqdesc.h
-+++ b/include/linux/irqdesc.h
-@@ -104,7 +104,7 @@ struct irq_desc {
- 	struct proc_dir_entry	*dir;
- #endif
- #ifdef CONFIG_GENERIC_IRQ_DEBUGFS
--	struct dentry		*debugfs_file;
-+	struct debugfs_node *debugfs_file;
- 	const char		*dev_name;
- #endif
- #ifdef CONFIG_SPARSE_IRQ
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
 index 3cb9a32a6330..565add411cbc 100644
 --- a/include/linux/kvm_host.h

@@ -46,6 +46,7 @@ git checkout -- \
   include/linux/file.h \
   include/linux/fs.h \
   include/linux/fs_context.h \
+  include/linux/irqdesc.h \
   include/linux/kernfs.h \
   include/linux/mount.h \
   include/linux/path.h \
