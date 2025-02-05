@@ -5,7 +5,8 @@ Related: [2025-01-19-sample-kernfs](../2025-01-19-sample-kernfs) and [2025-01-22
 Storing patches in this directory with:
 
 ```bash
-git format-patch master...HEAD \
+rm -rf ../patches/2025-01-28-debugfs-opaque-handle/v1-patches && \
+  git format-patch master...HEAD \
       --base=origin/master \
       -o ../patches/2025-01-28-debugfs-opaque-handle/v1-patches/ \
       --cover-letter \
@@ -41,8 +42,6 @@ Continue trying to find files that might not be defining debugfs_node:
 - rg for any .h files with debugfs_node that do not have a `struct debugfs_node;`
   - A more interesting case is specifically searching for files that have `struct debugfs_node` not at the beginning of a line, because it is probably a struct definition or function arg: '\s+.*struct debugfs_node '
 
-I should probably remove the `#define` in `dcache.h` as well so I really know where to add these `#include`s.
-
 How to generate all `.i` files:
 - Add `KBUILD_CFLAGS += -save-temps=obj` to Makefile
 - (hacky, doesn't quite work) `rg -l 'debugfs_node' -g "*.c" | sed 's/\.c$/.i/' | xargs make -k -j$(nproc)`
@@ -71,7 +70,7 @@ rm drivers/gpu/drm/drm_atomic_uapi.o && make KCFLAGS="-H" drivers/gpu/drm/drm_at
 
   ```
   time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && time make -s -j$(nproc) && echo Success!' master
-  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && ./scripts/config --set-val CONFIG_DEBUGFS n && make oldconfig && time make -s -j$(nproc) && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && ./scripts/config --set-val CONFIG_DEBUG_FS n && make oldconfig && time make -s -j$(nproc) && echo Success!' master
   time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s defconfig && time make -s -j$(nproc) && echo Success!' master
   ```
 

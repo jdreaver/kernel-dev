@@ -1,4 +1,4 @@
-From 918997e95b2f8860f0a05258835d6fa3d6112f51 Mon Sep 17 00:00:00 2001
+From 40f6f7ac5f4e3ce3ec756d559cbab756febed569 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 5 Feb 2025 09:36:24 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
@@ -22,9 +22,8 @@ below).
 
 Some cases require manual fixups, which are handled in the next commit.
 
-Signed-off-by: David Reaver <me@davidreaver.com>
-
----
+Coccinelle script
+-----------------
 
 virtual patch
 
@@ -370,7 +369,8 @@ idexpression struct debugfs_node *e;
 + debugfs_node_path_raw
   (e, ...);
 
----
+Bash script to run Coccinelle
+-----------------------------
 
 set -euo pipefail
 
@@ -417,6 +417,8 @@ git checkout -- \
   include/linux/path.h \
   include/linux/security.h \
   include/linux/statfs.h
+
+-----
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
