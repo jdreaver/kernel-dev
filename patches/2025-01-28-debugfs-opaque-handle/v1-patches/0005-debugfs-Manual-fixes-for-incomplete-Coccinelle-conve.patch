@@ -1,4 +1,4 @@
-From 6111ade075fbff99e0187dfc7bb8f7a6adad8c75 Mon Sep 17 00:00:00 2001
+From 5d5ce68018e7c8bb8c6061cc1cd694eec5ce6f41 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
@@ -44,7 +44,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |   8 +-
  drivers/gpu/drm/omapdrm/dss/dss.h             |   2 +-
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   2 +-
- drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  22 +-
+ drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  23 ++-
  drivers/gpu/host1x/dev.h                      |   2 +-
  drivers/hwmon/asus_atk0110.c                  |   2 +-
  drivers/infiniband/hw/hfi1/verbs.h            |   4 +-
@@ -135,7 +135,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 112 files changed, 388 insertions(+), 353 deletions(-)
+ 112 files changed, 389 insertions(+), 353 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
 index e6f29101bb46..1f4ea53a6b7d 100644
@@ -476,10 +476,10 @@ index 6e5cbb23d5c9..3bc631d11f9d 100644
  	int (*print)(struct xe_gt *, struct drm_printer *) = node->info_ent->data;
  
 diff --git a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
-index b0a32211d892..8ab4758a3ba6 100644
+index b0a32211d892..5d65472e6ecf 100644
 --- a/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
 +++ b/drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c
-@@ -32,17 +32,19 @@
+@@ -32,17 +32,20 @@
   *      │   ├── vfN	# d_inode->i_private = VFID(N)
   */
  
@@ -496,6 +496,7 @@ index b0a32211d892..8ab4758a3ba6 100644
 -	return extract_priv(d->d_parent);
 +	struct dentry *dentry = debugfs_node_dentry(d);
 +	struct debugfs_node *parent = debugfs_node_from_dentry(dentry->d_parent);
++
 +	return extract_priv(parent);
  }
  
@@ -504,7 +505,7 @@ index b0a32211d892..8ab4758a3ba6 100644
  {
  	return extract_priv(d) == extract_gt(d) ? PFID : (uintptr_t)extract_priv(d);
  }
-@@ -332,7 +334,7 @@ static const struct {
+@@ -332,7 +335,7 @@ static const struct {
  static ssize_t control_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
@@ -513,7 +514,7 @@ index b0a32211d892..8ab4758a3ba6 100644
  	struct xe_gt *gt = extract_gt(parent);
  	struct xe_device *xe = gt_to_xe(gt);
  	unsigned int vfid = extract_vfid(parent);
-@@ -400,7 +402,7 @@ static ssize_t guc_state_read(struct file *file, char __user *buf,
+@@ -400,7 +403,7 @@ static ssize_t guc_state_read(struct file *file, char __user *buf,
  			      size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
@@ -522,7 +523,7 @@ index b0a32211d892..8ab4758a3ba6 100644
  	struct xe_gt *gt = extract_gt(parent);
  	unsigned int vfid = extract_vfid(parent);
  
-@@ -411,7 +413,7 @@ static ssize_t guc_state_write(struct file *file, const char __user *buf,
+@@ -411,7 +414,7 @@ static ssize_t guc_state_write(struct file *file, const char __user *buf,
  			       size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
@@ -531,7 +532,7 @@ index b0a32211d892..8ab4758a3ba6 100644
  	struct xe_gt *gt = extract_gt(parent);
  	unsigned int vfid = extract_vfid(parent);
  
-@@ -438,7 +440,7 @@ static ssize_t config_blob_read(struct file *file, char __user *buf,
+@@ -438,7 +441,7 @@ static ssize_t config_blob_read(struct file *file, char __user *buf,
  				size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);
@@ -540,7 +541,7 @@ index b0a32211d892..8ab4758a3ba6 100644
  	struct xe_gt *gt = extract_gt(parent);
  	unsigned int vfid = extract_vfid(parent);
  	ssize_t ret;
-@@ -466,7 +468,7 @@ static ssize_t config_blob_write(struct file *file, const char __user *buf,
+@@ -466,7 +469,7 @@ static ssize_t config_blob_write(struct file *file, const char __user *buf,
  				 size_t count, loff_t *pos)
  {
  	struct dentry *dent = file_dentry(file);

@@ -1,6 +1,6 @@
-From 6e15b00c53671390161dcc7ef2b93216c1f565e4 Mon Sep 17 00:00:00 2001
+From e9053a9611bbe9f86eedd21d82c9567c9a53c98c Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 5 Feb 2025 11:56:07 -0800
+Date: Wed, 5 Feb 2025 12:13:34 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -509,7 +509,7 @@ David Reaver (6):
  drivers/gpu/drm/xe/xe_gsc_debugfs.c           |   2 +-
  drivers/gpu/drm/xe/xe_gsc_debugfs.h           |   3 +-
  drivers/gpu/drm/xe/xe_gt_debugfs.c            |   6 +-
- drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  40 +--
+ drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.c   |  41 ++--
  drivers/gpu/drm/xe/xe_gt_sriov_pf_debugfs.h   |   7 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.c   |   9 +-
  drivers/gpu/drm/xe/xe_gt_sriov_vf_debugfs.h   |   4 +-
@@ -1300,7 +1300,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   3 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1117 files changed, 2965 insertions(+), 2633 deletions(-)
+ 1117 files changed, 2966 insertions(+), 2633 deletions(-)
 
 
 base-commit: 0de63bb7d91975e73338300a57c54b93d3cc151c
