@@ -1,4 +1,4 @@
-From 887bb81a1440b7a9e7b2fe7964d9ca868992c66a Mon Sep 17 00:00:00 2001
+From 1901c1387c8dc84adbda0405420b114d2f14cd4e Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 4 Feb 2025 15:35:21 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
@@ -1318,7 +1318,6 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/power/smartreflex.h             |  2 +-
  include/linux/regulator/driver.h              |  2 +-
  include/linux/remoteproc.h                    |  2 +-
- include/linux/security.h                      |  6 +-
  include/linux/shrinker.h                      |  2 +-
  include/linux/soundwire/sdw.h                 |  5 +-
  include/linux/sunrpc/clnt.h                   |  2 +-
@@ -1448,7 +1447,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  3 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  8 +-
- 1067 files changed, 2192 insertions(+), 2005 deletions(-)
+ 1066 files changed, 2189 insertions(+), 2002 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -19215,36 +19214,6 @@ index b4795698d8c2..8ec44b500f86 100644
  	struct list_head traces;
  	int num_traces;
  	struct list_head carveouts;
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 980b6c207cad..9b1bd8a0fffb 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -2216,14 +2216,14 @@ extern void securityfs_recursive_remove(struct dentry *dentry);
- #else /* CONFIG_SECURITYFS */
- 
- static inline struct dentry *securityfs_create_dir(const char *name,
--						   struct dentry *parent)
-+						   struct debugfs_node *parent)
- {
- 	return ERR_PTR(-ENODEV);
- }
- 
- static inline struct dentry *securityfs_create_file(const char *name,
- 						    umode_t mode,
--						    struct dentry *parent,
-+						    struct debugfs_node *parent,
- 						    void *data,
- 						    const struct file_operations *fops)
- {
-@@ -2231,7 +2231,7 @@ static inline struct dentry *securityfs_create_file(const char *name,
- }
- 
- static inline struct dentry *securityfs_create_symlink(const char *name,
--					struct dentry *parent,
-+					struct debugfs_node *parent,
- 					const char *target,
- 					const struct inode_operations *iops)
- {
 diff --git a/include/linux/shrinker.h b/include/linux/shrinker.h
 index 1a00be90d93a..a7298da00fa9 100644
 --- a/include/linux/shrinker.h

@@ -1,4 +1,4 @@
-From 3979a0df9a76f10851525c93fa8d6aeafbf666c9 Mon Sep 17 00:00:00 2001
+From 8c6cb12094f5fedd163c0ff30474b74fb746ced6 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
@@ -38,6 +38,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/firmware/arm_scmi/raw_mode.h          |   2 +-
  .../gpu/drm/amd/amdgpu/amdgpu_ras_eeprom.c    |   9 +-
  drivers/gpu/drm/drm_debugfs.c                 |   4 +-
+ drivers/gpu/drm/i915/gt/intel_gt_debugfs.h    |   1 +
  drivers/gpu/drm/msm/dp/dp_debug.h             |   2 +-
  .../gpu/drm/nouveau/include/nvkm/subdev/gsp.h |  10 +-
  .../gpu/drm/nouveau/nvkm/subdev/gsp/r535.c    |   8 +-
@@ -135,7 +136,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 112 files changed, 381 insertions(+), 356 deletions(-)
+ 113 files changed, 382 insertions(+), 356 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
 index e6f29101bb46..1f4ea53a6b7d 100644
@@ -376,6 +377,18 @@ index a5ee622f90d7..aa87239d2cc6 100644
  	\
  	file = debugfs_create_file(#_f, 0400, parent, connector, &_f ## _infoframe_fops); \
  	if (IS_ERR(file)) \
+diff --git a/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h b/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
+index 82475823a7e4..624ea2785549 100644
+--- a/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
++++ b/drivers/gpu/drm/i915/gt/intel_gt_debugfs.h
+@@ -9,6 +9,7 @@
+ #include <linux/file.h>
+ 
+ struct intel_gt;
++struct debugfs_node;
+ 
+ #define __GT_DEBUGFS_ATTRIBUTE_FOPS(__name)				\
+ static const struct file_operations __name ## _fops = {			\
 diff --git a/drivers/gpu/drm/msm/dp/dp_debug.h b/drivers/gpu/drm/msm/dp/dp_debug.h
 index 8a69b3891d5e..ccbc6476d9a7 100644
 --- a/drivers/gpu/drm/msm/dp/dp_debug.h

@@ -12,6 +12,6 @@ rg --files-with-matches 'struct debugfs_node' -g '*.i' | while read -r file; do
     include_or_def=$(rg -n '#include <linux/debugfs.h>|struct debugfs_node;' "$file" | head -n1 | cut -d: -f1)
 
     if [[ -n "$debugfs_line" && ( -z "$include_or_def" || "$debugfs_line" -lt "$include_or_def" ) ]]; then
-        echo "[MISSING INCLUDE] $file: struct debugfs_node appears before #include <linux/debugfs.h> and/or struct debugfs_node;"
+        echo "$file"
     fi
 done

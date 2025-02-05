@@ -1,6 +1,6 @@
-From 4e0c1ffcc7442af4c531c1944991546144d5c342 Mon Sep 17 00:00:00 2001
+From e82ab3fdda0d2c6ef134ee5c10507755d85ed45c Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 4 Feb 2025 16:12:46 -0800
+Date: Tue, 4 Feb 2025 16:34:26 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -414,7 +414,7 @@ David Reaver (6):
  drivers/gpu/drm/i915/display/intel_pps.c      |   2 +-
  drivers/gpu/drm/i915/display/intel_psr.c      |   2 +-
  drivers/gpu/drm/i915/gt/intel_gt_debugfs.c    |   7 +-
- drivers/gpu/drm/i915/gt/intel_gt_debugfs.h    |   2 +-
+ drivers/gpu/drm/i915/gt/intel_gt_debugfs.h    |   3 +-
  .../drm/i915/gt/intel_gt_engines_debugfs.c    |   3 +-
  .../drm/i915/gt/intel_gt_engines_debugfs.h    |   4 +-
  drivers/gpu/drm/i915/gt/intel_gt_pm_debugfs.c |   3 +-
@@ -1154,7 +1154,6 @@ David Reaver (6):
  include/linux/regulator/driver.h              |   2 +-
  include/linux/relay.h                         |  19 +-
  include/linux/remoteproc.h                    |   2 +-
- include/linux/security.h                      |   6 +-
  include/linux/shrinker.h                      |   2 +-
  include/linux/soundwire/sdw.h                 |   5 +-
  include/linux/sunrpc/clnt.h                   |   2 +-
@@ -1290,7 +1289,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   3 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1119 files changed, 2966 insertions(+), 2640 deletions(-)
+ 1118 files changed, 2964 insertions(+), 2637 deletions(-)
 
 
 base-commit: 0de63bb7d91975e73338300a57c54b93d3cc151c

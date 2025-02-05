@@ -37,6 +37,8 @@ Different versions:
 Continue trying to find files that might not be defining debugfs_node:
 - Run with the augmented Makefile and then run my script (do this on EC2)
 - Think about Coccinelle improvements. I think adding `struct debugfs_node;` after _any_ top-level struct if dentry isn't there is fine?
+- rg for any .h files with debugfs_node that do not have a `struct debugfs_node;`
+  - A more interesting case is specifically searching for files that have `struct debugfs_node` not at the beginning of a line, because it is probably a struct definition or function arg: '\s+.*struct debugfs_node '
 
 Files I added `struct debugfs_node;` to:
 - `include/linux/shrinker.h`
@@ -80,9 +82,9 @@ rm drivers/gpu/drm/drm_atomic_uapi.o && make KCFLAGS="-H" drivers/gpu/drm/drm_at
 - Make sure each commit compiles, not just the last one. This runs a build for each commit on the branch (since `master` is the base branch):
 
   ```
-  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && time make -s -j16 && echo Success!' master
-  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && ./scripts/config --set-val CONFIG_DEBUGFS n && make oldconfig && time make -s -j16 && echo Success!' master
-  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s defconfig && time make -s -j16 && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && time make -s -j$(nproc) && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && ./scripts/config --set-val CONFIG_DEBUGFS n && make oldconfig && time make -s -j$(nproc) && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s defconfig && time make -s -j$(nproc) && echo Success!' master
   ```
 
 ## Non-coccinelle changes
