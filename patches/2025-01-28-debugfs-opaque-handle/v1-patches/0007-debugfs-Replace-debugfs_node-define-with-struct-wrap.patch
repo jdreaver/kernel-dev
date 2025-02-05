@@ -1,7 +1,7 @@
-From ae54c4f12bca13f56537315770b16f13ccc1d8aa Mon Sep 17 00:00:00 2001
+From 47d789a625d7943429b63f28b31cb89296e01cf8 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:27:04 -0800
-Subject: [RFC PATCH 6/6] debugfs: Replace debugfs_node #define with struct
+Subject: [RFC PATCH 7/7] debugfs: Replace debugfs_node #define with struct
  wrapping dentry
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,

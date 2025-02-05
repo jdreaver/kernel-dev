@@ -1,7 +1,7 @@
-From 4ec1847dfc740847c43b7ba652fb82ea7bb424b8 Mon Sep 17 00:00:00 2001
+From ced2c7a956bb97f889a3aa92e4ff36eb21223273 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:25:34 -0800
-Subject: [RFC PATCH 2/6] debugfs: Add helper functions for debugfs_node
+Subject: [RFC PATCH 3/7] debugfs: Add helper functions for debugfs_node
  encapsulation
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,

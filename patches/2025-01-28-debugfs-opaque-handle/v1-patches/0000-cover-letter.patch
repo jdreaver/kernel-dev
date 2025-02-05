@@ -1,7 +1,7 @@
-From ae54c4f12bca13f56537315770b16f13ccc1d8aa Mon Sep 17 00:00:00 2001
+From 47d789a625d7943429b63f28b31cb89296e01cf8 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Tue, 4 Feb 2025 18:55:12 -0800
-Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
+Date: Tue, 4 Feb 2025 19:06:23 -0800
+Subject: [RFC PATCH 0/7] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -52,11 +52,12 @@ About this patch series
 This series makes the following changes:
 
 1. Add a temporary "#define debugfs_node dentry".
-2. Introduce debugfs helper functions used by Coccinelle rules.
-3. Update relay to use debugfs_node instead of dentry.
-4. Use Coccinelle to convert most of the kernel to debugfs_node.
-5. Apply manual fixes for cases Coccinelle missed.
-6. Remove the #define and introduce struct debugfs_node.
+2. Add necessary "#include <linux/debugfs.h>" for the Cocinelle step.
+3. Introduce debugfs helper functions used by Coccinelle rules.
+4. Update relay to use debugfs_node instead of dentry.
+5. Use Coccinelle to convert most of the kernel to debugfs_node.
+6. Apply manual fixes for cases Coccinelle missed.
+7. Remove the #define and introduce struct debugfs_node.
 
 The #define is placed in both debugfs.h and dcache.h to avoid
 unnecessary #include <linux/debugfs.h> additions or forward declarations
@@ -168,8 +169,9 @@ Link: https://lore.kernel.org/all/2024012600-dose-happiest-f57d@gregkh/ [1]
 Link: https://lore.kernel.org/all/20240125104822.04a5ad44@gandalf.local.home/ [2]
 Link: https://lore.kernel.org/all/20250128102744.1b94a789@gandalf.local.home/ [3]
 
-David Reaver (6):
+David Reaver (7):
   debugfs: Add temporary "#define debugfs_node dentry"
+  debugfs: Add #includes so debugfs_node is available in some files
   debugfs: Add helper functions for debugfs_node encapsulation
   relay: Replace dentry with debugfs_node
   debugfs: Automated conversion from dentry to debugfs_node
@@ -1130,7 +1132,7 @@ David Reaver (6):
  include/linux/debugfs.h                       | 192 +++++++++------
  include/linux/dmaengine.h                     |   2 +-
  include/linux/edac.h                          |   2 +-
- include/linux/fault-inject.h                  |  12 +-
+ include/linux/fault-inject.h                  |  11 +-
  include/linux/firmware/cirrus/cs_dsp.h        |   5 +-
  include/linux/fsl/ptp_qoriq.h                 |   2 +-
  include/linux/greybus.h                       |   2 +-
@@ -1294,7 +1296,7 @@ David Reaver (6):
  sound/soc/sof/sof-client.h                    |   3 +-
  sound/soc/sof/sof-priv.h                      |   2 +-
  virt/kvm/kvm_main.c                           |  11 +-
- 1118 files changed, 2964 insertions(+), 2637 deletions(-)
+ 1118 files changed, 2964 insertions(+), 2636 deletions(-)
 
 
 base-commit: 0de63bb7d91975e73338300a57c54b93d3cc151c

@@ -1,7 +1,7 @@
-From 1120c5999f0e06163522fa3c01ddb6487d28161f Mon Sep 17 00:00:00 2001
+From 76aa5b2712f94b4333cce4d5d9f0412b5badf972 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
-Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
+Subject: [RFC PATCH 6/7] debugfs: Manual fixes for incomplete Coccinelle
  conversions
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -118,7 +118,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/drm/ttm/ttm_resource.h                |   1 +
  include/linux/clk-provider.h                  |   3 +-
  include/linux/closure.h                       |   2 +-
- include/linux/fault-inject.h                  |   3 +-
+ include/linux/fault-inject.h                  |   2 +-
  include/media/cec.h                           |   2 +-
  include/media/v4l2-async.h                    |   5 +-
  include/net/mac80211.h                        |  12 +-
@@ -136,7 +136,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/mediatek/mt8195/mt8195-afe-common.h |   2 +-
  sound/soc/sof/sof-client-ipc-flood-test.c     |   2 +-
  virt/kvm/kvm_main.c                           |   3 +-
- 113 files changed, 382 insertions(+), 356 deletions(-)
+ 113 files changed, 382 insertions(+), 355 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
 index e6f29101bb46..1f4ea53a6b7d 100644
@@ -2190,18 +2190,10 @@ index 880fe85e35e9..b98b6067368a 100644
  struct closure_waitlist {
  	struct llist_head	list;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index a94d479f4982..ed32ca9d589a 100644
+index 0166c831cbe7..67f74e723a72 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
-@@ -5,7 +5,6 @@
- #include <linux/err.h>
- #include <linux/types.h>
- 
--struct dentry;
- struct debugfs_node;
- struct kmem_cache;
- 
-@@ -34,7 +33,7 @@ struct fault_attr {
+@@ -34,7 +34,7 @@ struct fault_attr {
  
  	unsigned long count;
  	struct ratelimit_state ratelimit_state;

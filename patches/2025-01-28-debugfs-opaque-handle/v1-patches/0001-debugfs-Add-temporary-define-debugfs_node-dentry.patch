@@ -1,7 +1,7 @@
 From cafb674fb230d16b4302ad453bda103fa991914c Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:13:09 -0800
-Subject: [RFC PATCH 1/6] debugfs: Add temporary "#define debugfs_node dentry"
+Subject: [RFC PATCH 1/7] debugfs: Add temporary "#define debugfs_node dentry"
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
     Danilo Krummrich <dakr@kernel.org>

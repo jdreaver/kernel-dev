@@ -1,7 +1,7 @@
-From 2e0292dc6e804f8d4541833986fadd946514dfdf Mon Sep 17 00:00:00 2001
+From a7b4bd4331dc5379cd3bb9e0631c8f7acab15bf3 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Tue, 4 Feb 2025 18:54:57 -0800
-Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
+Subject: [RFC PATCH 5/7] debugfs: Automated conversion from dentry to
  debugfs_node
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,
@@ -1290,7 +1290,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  include/linux/clk-provider.h                  |  1 +
  include/linux/dmaengine.h                     |  2 +-
  include/linux/edac.h                          |  2 +-
- include/linux/fault-inject.h                  |  9 ++-
+ include/linux/fault-inject.h                  |  8 +-
  include/linux/firmware/cirrus/cs_dsp.h        |  5 +-
  include/linux/fsl/ptp_qoriq.h                 |  2 +-
  include/linux/greybus.h                       |  2 +-
@@ -1447,7 +1447,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  sound/soc/sof/sof-client.h                    |  3 +-
  sound/soc/sof/sof-priv.h                      |  2 +-
  virt/kvm/kvm_main.c                           |  8 +-
- 1066 files changed, 2189 insertions(+), 2002 deletions(-)
+ 1066 files changed, 2188 insertions(+), 2002 deletions(-)
 
 diff --git a/arch/arm/mach-omap1/pm.c b/arch/arm/mach-omap1/pm.c
 index 6a5815aa05e6..0f668545bbc2 100644
@@ -18739,18 +18739,10 @@ index b4ee8961e623..35b3bec64c6a 100644
  	bool fake_inject_ue;
  	u16 fake_inject_count;
 diff --git a/include/linux/fault-inject.h b/include/linux/fault-inject.h
-index 8c829d28dcf3..a94d479f4982 100644
+index ab7ddd6fdc47..0166c831cbe7 100644
 --- a/include/linux/fault-inject.h
 +++ b/include/linux/fault-inject.h
-@@ -6,6 +6,7 @@
- #include <linux/types.h>
- 
- struct dentry;
-+struct debugfs_node;
- struct kmem_cache;
- 
- #ifdef CONFIG_FAULT_INJECTION
-@@ -79,13 +80,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
+@@ -80,13 +80,13 @@ static inline bool should_fail(struct fault_attr *attr, ssize_t size)
  
  #ifdef CONFIG_FAULT_INJECTION_DEBUG_FS
  

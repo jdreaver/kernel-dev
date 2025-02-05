@@ -290,13 +290,17 @@ struct
 //
 // Forward declarations of struct debugfs_node;
 //
-@forward_decl_exists@
+@debugfs_node_exists@
 @@
 
-struct debugfs_node;
+(
+  #include <linux/debugfs.h>
+|
+  struct debugfs_node;
+)
 
 @depends on
-  !forward_decl_exists and (
+  !debugfs_node_exists and (
     rewrite_wrapper_returns or
     rewrite_wrapper_args or
     change_decls or
