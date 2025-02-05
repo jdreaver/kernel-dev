@@ -35,6 +35,33 @@ Different versions:
 
 ## Not seeing build errors
 
+A few errors on arm in drivers. I think all of these are from implicit `struct debugfs_node` declarations in structs, which are distinct from `struct dentry` because of the `#define`. We might need to do `#define debugfs_node dentry` more :(
+
+```
+In file included from ./include/linux/mmc/host.h:13,
+                 from drivers/mmc/core/mmc_test.c:8:
+drivers/mmc/core/mmc_test.c: In function ‘__mmc_test_register_dbgfs_file’:
+drivers/mmc/core/mmc_test.c:3199:60: error: passing argument 3 of ‘debugfs_create_file_full’ from incompatible pointer type [-Werror=incompatible-pointer-types]
+ 3199 |                 file = debugfs_create_file(name, mode, card->debugfs_root,
+      |                                                        ~~~~^~~~~~~~~~~~~~
+      |                                                            |
+      |                                                            struct debugfs_node *
+
+
+drivers/gpu/drm/drm_panic.c: In function ‘debugfs_register_plane’:
+drivers/gpu/drm/drm_panic.c:776:52: error: passing argument 3 of ‘debugfs_create_file_full’ from incompatible pointer type [-Werror=incompatible-pointer-types]
+  776 |         debugfs_create_file(fname, 0200, plane->dev->debugfs_root,
+      |                                          ~~~~~~~~~~^~~~~~~~~~~~~~
+      |                                                    |
+      |                                                    struct debugfs_node *
+
+
+drivers/mtd/mtdswap.c: In function ‘mtdswap_add_debugfs’:
+drivers/mtd/mtdswap.c:1257:37: error: initialization of ‘struct dentry *’ from incompatible pointer type ‘struct debugfs_node *’ [-Werror=incompatible-pointer-types]
+ 1257 |         struct debugfs_node *root = d->mtd->dbg.dfs_dir;
+      |
+```
+
 Continue trying to find files that might not be defining debugfs_node:
 - If I do this, call it out in cover letter.
 - Run with the augmented Makefile and then run my script (do this on EC2)
@@ -64,11 +91,11 @@ rm drivers/gpu/drm/drm_atomic_uapi.o && make KCFLAGS="-H" drivers/gpu/drm/drm_at
 - Check for TODO items in patches
 - Ensure I have latest cover letter (run `git format-patch`)
 - Run checkpatch.pl
-- Use clang or a different nix-shell for cross-compilation (and add that I did that to test procedure)
-  - ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
+- Use clang or a different nix-shell for cross-compilation
   - ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu-
   - ARCH=s390 CROSS_COMPILE=s390x-linux-gnu-
   - ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-
+  - (Just do powerpc64) ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-
   - (doesn't work) ARCH=mips CROSS_COMPILE=mips-linux-gnu-
 
 ```

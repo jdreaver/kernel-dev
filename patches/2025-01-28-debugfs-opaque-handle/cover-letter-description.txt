@@ -141,8 +141,8 @@ Testing
 =======
 
 This was tested by building every commit in this series on an x86_64
-machine with allmodconfig, including an mrproper before each build. I
-also loaded a more minimal kernel into QEMU and ran:
+machine with allmodconfig, as well as cross-compiling to s390, arm, and
+powerpc64. I also loaded a more minimal kernel into QEMU and ran:
 
   find /sys/kernel/debug -type f -exec stat {} +
 
