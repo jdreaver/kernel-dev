@@ -1,4 +1,4 @@
-struct dentry;
+//struct dentry;
 
 static struct dentry *header_dentry;
 

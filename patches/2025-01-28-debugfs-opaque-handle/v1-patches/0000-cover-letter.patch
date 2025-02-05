@@ -1,6 +1,6 @@
 From fd510a9379d2c07f0c37e5bbf1d5ee585404045a Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 5 Feb 2025 13:16:48 -0800
+Date: Wed, 5 Feb 2025 14:38:19 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -30,19 +30,28 @@ debugfs users without breaking the build. The struct and
 debugfs-internal changes are introduced in the final commit in the
 series.
 
-Concerns
-========
+Why an RFC?
+===========
 
-These are my primary concerns with the patch series, hence the RFC:
+This is a large change, and I expect a few iterations -- unless this
+entire approach is NACKed of course :) Any advice is appreciated, but I
+also have specific areas I want feedback on:
 
 1. This change touches over 1100 files. Is that okay? I've been told it
    is because the patch series does "one thing", but it is a lot of
    files to touch across many systems.
 
-2. I tested this on a few different kernel configurations, as well as
-   make randconfig, but I'm worried the build could be broken for some
-   kernel configurations because of a missing #include. See "#includes
-   and #defines" below.
+2. The trickiest part of this migration is ensuring a declaration for
+   struct debugfs_node is in scope so we don't get errors that it is
+   being implicitly defined, especially as different kernel
+   configurations change which headers are transitively included. See
+   "#includes and #defines" below. I'm open to any other migration
+   strategies.
+
+3. This change is mostly automated with Coccinelle, but I'm really
+   contorting Coccinelle to replace dentry with debugfs_node in
+   different kinds of declarations. Any Coccinelle advice would be
+   appreciated.
 
 Purpose/Background
 ==================
@@ -137,9 +146,12 @@ manual fixups.
 
 struct dentry is implictly defined, transitively included (usually
 through <linux/fs.h>), or defined with a forward declaration in much of
-the files affected by this patch series. Very often <linux/debugfs.h> is
-_not_ included in those same files. Figuring out where to add include
-debugfs.h and "#define debugfs_node dentry" is error-prone.
+the files affected by this patch series. Usually <linux/debugfs.h> is
+_not_ included in those same files. For the intermediate commits, we
+need to ensure the #define is in scope wherever debugfs_node is used so
+it isn't considered a forward declaration of a distinct type. Figuring
+out where to add include debugfs.h and "#define debugfs_node dentry" is
+error-prone.
 
 I found one heuristic that was easy to automate and seems to do the job:
 in files we modify, wherever there is a forward declaration of "struct
@@ -153,7 +165,9 @@ _some_ kernel configuration won't break because an #include is missing.
 
 I originally had this entire patch series reversed, where we immediately
 define struct debugfs_node without an intermediate #define, but the
-whole thing has to be done in a single commit for that to work.
+whole migration has to be done in a single commit for that to work. This
+approach suffers from similar issues about debugfs_node being in scope
+to avoid implicit declaration errors.
 
 Testing
 =======

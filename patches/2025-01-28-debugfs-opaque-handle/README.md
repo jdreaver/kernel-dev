@@ -33,6 +33,8 @@ Different versions:
 
 # TODO
 
+I'm considering putting my remaining problems in the RFC and asking for suggestions.
+
 ## Not seeing build errors
 
 A few errors on arm allmodconfig in drivers. I think all of these are from implicit `struct debugfs_node` declarations in structs, which are distinct from `struct dentry` because of the `#define`. We might need to do `#define debugfs_node dentry` more :(

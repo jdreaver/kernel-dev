@@ -2,7 +2,7 @@
 
 #include "test.h"
 
-struct dentry;
+//struct dentry;
 
 static struct dentry *test;
 static struct dentry *debugfs_unused;

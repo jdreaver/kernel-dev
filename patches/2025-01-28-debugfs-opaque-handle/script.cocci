@@ -288,7 +288,8 @@ struct
 }
 
 //
-// Add #define debugfs_node dentry
+// Add #define debugfs_node dentry if debugfs_node is not defined
+// anywhere. This prevents implicit declarations.
 //
 @define_exists@
 @@
@@ -300,10 +301,18 @@ struct
 
 struct debugfs_node
 
-@depends on !define_exists and any_debugfs_node_usage@
+@define_under_dentry depends on !define_exists and any_debugfs_node_usage@
 @@
 
 struct dentry;
++#define debugfs_node dentry
+
+@define_under_include depends on !define_under_dentry and !define_exists and any_debugfs_node_usage@
+@@
+
+// Else, try to put it after an #include
+#include ...
++
 +#define debugfs_node dentry
 
 //
