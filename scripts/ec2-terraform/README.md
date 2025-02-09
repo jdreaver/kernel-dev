@@ -63,3 +63,20 @@ $ sudo make install
 ```
 
 You can then reboot and run `uname -a` to verify that your compiled kernel version is correct and you are therefore using your new kernel.
+
+## Emacs setup
+
+```
+sudo apt-get install emacs ccls
+```
+
+Copy over my Emacs config:
+
+```
+# On local host
+cd ~/.emacs.d/
+ssh ubuntu@<ip> 'mkdir /home/ubuntu/.emacs.d'
+git ls-files -z | tar -czf - --null -T - | ssh ubuntu@<ip> 'tar -xzf - -C /home/ubuntu/.emacs.d'
+```
+
+Then SSH in and run `emacs -nw`.
