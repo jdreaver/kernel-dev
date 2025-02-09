@@ -12,7 +12,8 @@ mkdir -p "$log_dir"
 # Use ripgrep to find any files that contain debugfs-looking code. This
 # is a simple heuristic to avoid running spatch on files that don't
 # contain debugfs code.
-files=$(rg --files-with-matches 'debugfs|dentry' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h' -g '!include/linux/fs.h' | sort)
+files=$(rg --files-with-matches 'debugfs|dentry' -g '*.{c,h}' -g '!fs/debugfs' \
+          -g '!include/linux/debugfs.h' -g '!include/linux/fs.h' | sort)
 
 counter=1
 total_files=$(echo "$files" | wc -l)

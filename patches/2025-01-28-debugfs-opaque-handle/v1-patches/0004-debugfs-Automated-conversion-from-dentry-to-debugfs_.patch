@@ -1,4 +1,4 @@
-From eeb172ddabbe25088ac49044ee748ffb6c060545 Mon Sep 17 00:00:00 2001
+From d002dc9c025b30c3dba1ffb20fc1aad9c3ca6e81 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 5 Feb 2025 09:36:24 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
@@ -25,398 +25,421 @@ Some cases require manual fixups, which are handled in the next commit.
 Coccinelle script
 -----------------
 
-virtual patch
+  virtual patch
 
-//
-// Rewrite wrapper functions. These are functions that return a dentry
-// or accept a dentry as an argument and look like they are related to
-// debugfs.
-//
-@wrapper_function_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
-identifier wfr =~ "debugfs|dbgfs";
-type T = { struct dentry *, struct debugfs_node * };
-idexpression T e;
-@@
+  //
+  // Rewrite wrapper functions. These are functions that return a dentry
+  // or accept a dentry as an argument and look like they are related to
+  // debugfs.
+  //
+  @wrapper_function_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+  identifier wfr =~ "debugfs|dbgfs";
+  type T = { struct dentry *, struct debugfs_node * };
+  idexpression T e;
+  @@
 
-e = wfr(...)
+  e = wfr(...)
 
-@wrapper_function_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
-identifier wfa =~ "debugfs|dbgfs";
-type T = { struct dentry *, struct debugfs_node * };
-T arg;
-@@
+  @wrapper_function_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+  identifier wfa =~ "debugfs|dbgfs";
+  type T = { struct dentry *, struct debugfs_node * };
+  T arg;
+  @@
 
-wfa(..., arg, ...)
+  wfa(..., arg, ...)
 
-// Rewrite rule is separate in case wrapper is not in the same file.
-@rewrite_wrapper_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
-identifier wfr =~ "debugfs|dbgfs";
-@@
+  // Rewrite rule is separate in case wrapper is not in the same file.
+  @rewrite_wrapper_returns depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+  identifier wfr =~ "debugfs|dbgfs";
+  @@
 
-- struct dentry *
-+ struct debugfs_node *
-wfr(...) { ... }
+  - struct dentry *
+  + struct debugfs_node *
+  wfr(...) { ... }
 
-// Rewrite rule is separate in case wrapper is not in the same file.
-@rewrite_wrapper_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
-identifier wfa =~ "debugfs|dbgfs";
-identifier arg;
-@@
+  // Rewrite rule is separate in case wrapper is not in the same file.
+  @rewrite_wrapper_args depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+  identifier wfa =~ "debugfs|dbgfs";
+  identifier arg;
+  @@
 
-wfa(...,
-- struct dentry
-+ struct debugfs_node
-  *arg
-  ,...)
-{ ... }
+  wfa(...,
+  - struct dentry
+  + struct debugfs_node
+    *arg
+    ,...)
+  { ... }
 
-// Collect all function calls
-@function_calls@
-// This hard-coded list is separate from the wrapper regexes above so we don't
-// go and mutate core debugfs functions on accident. Many of these purposely
-// have dentry types in them.
-identifier hf = {
-  // Macros with debugfs_node. Coccinelle can't infer types for these.
-  debugfs_create_file,
-  debugfs_create_file_aux,
-  debugfs_create_file_aux_num,
-  debugfs_remove_recursive,
+  // Collect all function calls
+  @function_calls@
+  // This hard-coded list is separate from the wrapper regexes above so we don't
+  // go and mutate core debugfs functions on accident. Many of these purposely
+  // have dentry types in them.
+  identifier hf = {
+    // Macros with debugfs_node. Coccinelle can't infer types for these.
+    debugfs_create_file,
+    debugfs_create_file_aux,
+    debugfs_create_file_aux_num,
+    debugfs_remove_recursive,
 
-  // Actual functions
-  debugfs_change_name,
-  debugfs_create_atomic_t,
-  debugfs_create_bool,
-  debugfs_create_devm_seqfile,
-  debugfs_create_dir,
-  debugfs_create_file_full,
-  debugfs_create_file_short,
-  debugfs_create_file_size,
-  debugfs_create_file_unsafe,
-  debugfs_create_regset32,
-  debugfs_create_size,
-  debugfs_create_str,
-  debugfs_create_symlink,
-  debugfs_create_u16,
-  debugfs_create_u32,
-  debugfs_create_u32_array,
-  debugfs_create_u64,
-  debugfs_create_u8,
-  debugfs_create_ulong,
-  debugfs_create_x16,
-  debugfs_create_x32,
-  debugfs_create_x64,
-  debugfs_create_x8,
-  debugfs_lookup,
-  debugfs_lookup_and_remove,
-  debugfs_node_get,
-  debugfs_node_path_raw,
-  debugfs_node_put,
-  debugfs_real_fops,
-  debugfs_remove
-};
-identifier wrapper_function_returns.wfr;
-identifier wrapper_function_args.wfa;
-// Exclude functions that might have been fuzzy matched that should
-// "stay" with dentry.
-identifier f != {
-  debugfs_create_automount,
-  debugfs_file_get,
-  debugfs_file_put
-};
-@@
+    // Actual functions
+    debugfs_change_name,
+    debugfs_create_atomic_t,
+    debugfs_create_bool,
+    debugfs_create_devm_seqfile,
+    debugfs_create_dir,
+    debugfs_create_file_full,
+    debugfs_create_file_short,
+    debugfs_create_file_size,
+    debugfs_create_file_unsafe,
+    debugfs_create_regset32,
+    debugfs_create_size,
+    debugfs_create_str,
+    debugfs_create_symlink,
+    debugfs_create_u16,
+    debugfs_create_u32,
+    debugfs_create_u32_array,
+    debugfs_create_u64,
+    debugfs_create_u8,
+    debugfs_create_ulong,
+    debugfs_create_x16,
+    debugfs_create_x32,
+    debugfs_create_x64,
+    debugfs_create_x8,
+    debugfs_lookup,
+    debugfs_lookup_and_remove,
+    debugfs_node_get,
+    debugfs_node_path_raw,
+    debugfs_node_put,
+    debugfs_real_fops,
+    debugfs_remove
+  };
+  identifier wrapper_function_returns.wfr;
+  identifier wrapper_function_args.wfa;
+  // Exclude functions that might have been fuzzy matched that should
+  // "stay" with dentry.
+  identifier f != {
+    debugfs_create_automount,
+    debugfs_file_get,
+    debugfs_file_put
+  };
+  @@
 
-(
-  hf@f(...)
-|
-  wfr@f(...)
-|
-  wfa@f(...)
-)
+  (
+    hf@f(...)
+  |
+    wfr@f(...)
+  |
+    wfa@f(...)
+  )
 
-// We need to separate cases for when a variable is in the return
-// position vs a function arg. If we combine them, then we will miss
-// cases where they both happen at the same time, e.g. x = f(y) where x
-// and y are both dentries.
-@find_dentry_return_vars@
-identifier f = { function_calls.f };
-idexpression struct dentry *e;
-identifier var;
-@@
+  // We need to separate cases for when a variable is in the return
+  // position vs a function arg. If we combine them, then we will miss
+  // cases where they both happen at the same time, e.g. x = f(y) where x
+  // and y are both dentries.
+  @find_dentry_return_vars@
+  identifier f = { function_calls.f };
+  idexpression struct dentry *e;
+  identifier var;
+  @@
 
-e@var = f(...)
+  e@var = f(...)
 
-@find_dentry_arg_vars@
-identifier f = { function_calls.f };
-idexpression struct dentry *e;
-identifier var;
-@@
+  @find_dentry_arg_vars@
+  identifier f = { function_calls.f };
+  idexpression struct dentry *e;
+  identifier var;
+  @@
 
-f(..., e@var, ...)
+  f(..., e@var, ...)
 
-// find_decls and change_decl_types are separate so we properly handle
-// static declarations as well as multi-declarations (e.g. struct dentry
-// *a, *b, *c;). The "= NULL", "= f(...)", and "= E" cases get thrown
-// off when we combine them into one rule.
-@find_decls@
-identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
-identifier f = { find_dentry_return_vars.f, find_dentry_arg_vars.f };
-position p;
-idexpression struct debugfs_node *E;
-@@
+  // find_decls and change_decl_types are separate so we properly handle
+  // static declarations as well as multi-declarations (e.g. struct dentry
+  // *a, *b, *c;). The "= NULL", "= f(...)", and "= E" cases get thrown
+  // off when we combine them into one rule.
+  @find_decls@
+  identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
+  identifier f = { find_dentry_return_vars.f, find_dentry_arg_vars.f };
+  position p;
+  idexpression struct debugfs_node *E;
+  @@
 
-(
-  struct dentry@p *var;
-|
-  struct dentry@p *var = NULL;
-|
-  struct dentry@p *var = f(...);
-|
-  struct dentry@p *var = E;
-)
+  (
+    struct dentry@p *var;
+  |
+    struct dentry@p *var = NULL;
+  |
+    struct dentry@p *var = f(...);
+  |
+    struct dentry@p *var = E;
+  )
 
-@change_decls type@
-position find_decls.p;
-@@
+  @change_decls type@
+  position find_decls.p;
+  @@
 
--struct dentry@p
-+struct debugfs_node
+  -struct dentry@p
+  +struct debugfs_node
 
-@find_function_arg_decls@
-identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
-identifier f;
-position p;
-@@
+  @find_function_arg_decls@
+  identifier var = { find_dentry_return_vars.var, find_dentry_arg_vars.var };
+  identifier f;
+  position p;
+  @@
 
-f(..., struct dentry@p *var, ...) {...}
+  f(..., struct dentry@p *var, ...) {...}
 
-@change_function_arg_decls type@
-position find_function_arg_decls.p;
-@@
+  @change_function_arg_decls type@
+  position find_function_arg_decls.p;
+  @@
 
--struct dentry@p
-+struct debugfs_node
+  -struct dentry@p
+  +struct debugfs_node
 
-//
-// Struct fields
-//
-@fields_need_rewrite@
-identifier function_calls.f;
-identifier var;
-expression E;
-@@
+  //
+  // Struct fields
+  //
+  @fields_need_rewrite@
+  identifier function_calls.f;
+  identifier var;
+  expression E;
+  @@
 
-(
-  E->var = f(...)
-|
-  E.var = f(...)
-|
-  f(..., E->var, ...)
-|
-  f(..., E.var, ...)
-)
+  (
+    E->var = f(...)
+  |
+    E.var = f(...)
+  |
+    f(..., E->var, ...)
+  |
+    f(..., E.var, ...)
+  )
 
-@rewrite_fields@
-identifier fields_need_rewrite.var;
-identifier struct_name;
-@@
+  @rewrite_fields@
+  identifier fields_need_rewrite.var;
+  identifier struct_name;
+  @@
 
-(
-struct struct_name {
-    ...
--   struct dentry *
-+   struct debugfs_node *
+  (
+  struct struct_name {
+      ...
+  -   struct dentry *
+  +   struct debugfs_node *
+      var;
+      ...
+  };
+  |
+  struct {
+      ...
+  -   struct dentry *
+  +   struct debugfs_node *
+      var;
+      ...
+  } struct_name;
+  )
+
+  //
+  // Rewrite declarations and fields that are dentries with names that
+  // very strongly imply they are for debugfs. This is necessary because
+  // sometimes Coccinelle doesn't go into all headers/structs.
+  //
+  @obvious_debugfs_decls depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+  identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
+  @@
+
+  (
+  - struct dentry *
+  + struct debugfs_node *
     var;
-    ...
-};
-|
-struct {
-    ...
--   struct dentry *
-+   struct debugfs_node *
-    var;
-    ...
-} struct_name;
-)
+  |
+  - struct dentry *
+  + struct debugfs_node *
+    var = NULL;
+  )
 
-//
-// Rewrite declarations and fields that are dentries with names that
-// very strongly imply they are for debugfs. This is necessary because
-// sometimes Coccinelle doesn't go into all headers/structs.
-//
-@obvious_debugfs_decls depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
-identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
-@@
+  @obvious_debugfs_fields depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+  identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
+  identifier struct_name;
+  @@
 
-(
-- struct dentry *
-+ struct debugfs_node *
-  var;
-|
-- struct dentry *
-+ struct debugfs_node *
-  var = NULL;
-)
+  struct struct_name {
+      ...
+  -   struct dentry *
+  +   struct debugfs_node *
+      var;
+      ...
+  };
 
-@obvious_debugfs_fields depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
-identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
-identifier struct_name;
-@@
+  @obvious_debugfs_field_arrays depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
+  identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
+  identifier struct_name;
+  @@
 
-struct struct_name {
+  struct struct_name {
+      ...
+  -   struct dentry *
+  +   struct debugfs_node *
+      var [...];
+      ...
+  };
+
+  // Rewrite return types of helper functions that return a debugfs_node
+  // now.
+  @rewrite_helper_return_exp@
+  identifier f;
+  idexpression struct debugfs_node *e;
+  @@
+
+  -struct dentry *
+  +struct debugfs_node *
+    f(...) {
+      ...
+      return e;
+      ...
+    }
+
+  @rewrite_helper_return_ret@
+  identifier fn;
+  identifier function_calls.f;
+  @@
+
+  struct
+  - dentry
+  + debugfs_node
+   *fn(...)
+  {
     ...
--   struct dentry *
-+   struct debugfs_node *
-    var;
-    ...
-};
-
-@obvious_debugfs_field_arrays depends on !(file in "fs/debugfs") && !(file in "include/linux/debugfs.h")@
-identifier var =~ "debugfs|dbgfs|^debug_dir$|^debug_root$|^dbg_dir$";
-identifier struct_name;
-@@
-
-struct struct_name {
-    ...
--   struct dentry *
-+   struct debugfs_node *
-    var [...];
-    ...
-};
-
-// Rewrite return types of helper functions that return a debugfs_node
-// now.
-@rewrite_helper_return_exp@
-identifier f;
-idexpression struct debugfs_node *e;
-@@
-
--struct dentry *
-+struct debugfs_node *
-  f(...) {
-    ...
-    return e;
+    return f(...);
     ...
   }
 
-@rewrite_helper_return_ret@
-identifier fn;
-identifier function_calls.f;
-@@
+  //
+  // Add #define debugfs_node dentry if debugfs_node is not defined
+  // anywhere. This prevents implicit declarations.
+  //
+  @define_exists@
+  @@
 
-struct
-- dentry
-+ debugfs_node
- *fn(...)
-{
-  ...
-  return f(...);
-  ...
-}
+  #define debugfs_node dentry
 
-//
-// Add #define debugfs_node dentry
-//
-@define_exists@
-@@
+  @any_debugfs_node_usage type@
+  @@
 
-@any_debugfs_node_usage type@
-@@
+  struct debugfs_node
 
-struct debugfs_node
+  @define_under_dentry depends on !define_exists and any_debugfs_node_usage@
+  @@
 
-@depends on !define_exists and any_debugfs_node_usage@
-@@
+  struct dentry;
+  +#define debugfs_node dentry
 
-struct dentry;
-+#define debugfs_node dentry
+  @define_under_include depends on !define_under_dentry and !define_exists and any_debugfs_node_usage@
+  @@
 
-//
-// Transform various helper functions
-//
-@@
-idexpression struct debugfs_node *e;
-@@
+  // Else, try to put it after an #include
+  #include ...
+  +
+  +#define debugfs_node dentry
 
--d_inode(e)
-+debugfs_node_inode(e)
+  //
+  // Transform various helper functions
+  //
+  @@
+  idexpression struct debugfs_node *e;
+  @@
 
-@@
-idexpression struct debugfs_node *e;
-@@
+  -d_inode(e)
+  +debugfs_node_inode(e)
 
--e->d_inode
-+debugfs_node_inode(e)
+  @@
+  idexpression struct debugfs_node *e;
+  @@
 
-@@
-idexpression struct debugfs_node *e;
-@@
+  -e->d_inode
+  +debugfs_node_inode(e)
 
--dput(e)
-+debugfs_node_put(e)
+  @@
+  idexpression struct debugfs_node *e;
+  @@
 
-@@
-idexpression struct debugfs_node *e;
-@@
+  -dput(e)
+  +debugfs_node_put(e)
 
--dget(e)
-+debugfs_node_get(e)
+  @@
+  idexpression struct debugfs_node *e;
+  @@
 
-@@
-idexpression struct debugfs_node *e;
-@@
+  -dget(e)
+  +debugfs_node_get(e)
 
-- dentry_path_raw
-+ debugfs_node_path_raw
-  (e, ...);
+  @@
+  idexpression struct debugfs_node *e;
+  @@
+
+  - dentry_path_raw
+  + debugfs_node_path_raw
+    (e, ...);
 
 Bash script to run Coccinelle
 -----------------------------
 
-set -euo pipefail
+  #!/usr/bin/env bash
 
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+  set -euo pipefail
 
-log_dir=/tmp/cocci-logs
-rm -rf "$log_dir"
-mkdir -p "$log_dir"
+  # Store bash script source directory
+  script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-files=$(rg --files-with-matches 'debugfs|dentry' -g '*.{c,h}' -g '!fs/debugfs' -g '!include/linux/debugfs.h' -g '!include/linux/fs.h' | sort)
+  log_dir=/tmp/cocci-logs
+  rm -rf "$log_dir"
+  mkdir -p "$log_dir"
 
-counter=1
-total_files=$(echo "$files" | wc -l)
-for file in $files; do
-    echo "($counter/$total_files) $file"
-    counter=$((counter+1))
+  # Use ripgrep to find any files that contain debugfs-looking code. This
+  # is a simple heuristic to avoid running spatch on files that don't
+  # contain debugfs code.
+  files=$(rg --files-with-matches 'debugfs|dentry' -g '*.{c,h}' -g '!fs/debugfs' \
+            -g '!include/linux/debugfs.h' -g '!include/linux/fs.h' | sort)
 
-    time spatch "$script_dir/script.cocci" \
-      --all-includes --include-headers --patch . \
-      --ignore include/linux/fs.h \
-      --ignore include/linux/debugfs.h \
-      --ignore fs/debugfs \
-      --in-place "$file" 2>&1 \
-      | tee "$log_dir/$(echo "$file" | tr '/' '--').log"
-done
+  counter=1
+  total_files=$(echo "$files" | wc -l)
+  for file in $files; do
+      echo "($counter/$total_files) $file"
+      counter=$((counter+1))
 
-git checkout -- \
-  fs/bcachefs/xattr.h \
-  fs/btrfs/export.h \
-  fs/btrfs/ioctl.h \
-  fs/btrfs/transaction.h \
-  fs/btrfs/tree-log.h \
-  fs/debugfs \
-  fs/ntfs3/ntfs_fs.h \
-  fs/udf/udfdecl.h \
-  include/linux/capability.h \
-  include/linux/debugfs.h \
-  include/linux/exportfs.h \
-  include/linux/file.h \
-  include/linux/fs.h \
-  include/linux/fs_context.h \
-  include/linux/kernfs.h \
-  include/linux/mount.h \
-  include/linux/path.h \
-  include/linux/security.h \
-  include/linux/statfs.h
+      time spatch "$script_dir/script.cocci" \
+        --all-includes --include-headers --patch . \
+        --ignore include/linux/fs.h \
+        --ignore include/linux/debugfs.h \
+        --ignore fs/debugfs \
+        --in-place "$file" 2>&1 \
+        | tee "$log_dir/$(echo "$file" | tr '/' '--').log"
+  done
+
+  # Undo the changes to some files. Some of these should not be modified,
+  # and some are handled in the later manual fixup commit.
+  git checkout -- \
+    drivers/s390/block/dasd.c \
+    fs/bcachefs/xattr.h \
+    fs/btrfs/export.h \
+    fs/btrfs/ioctl.h \
+    fs/btrfs/transaction.h \
+    fs/btrfs/tree-log.h \
+    fs/debugfs \
+    fs/ntfs3/ntfs_fs.h \
+    fs/udf/udfdecl.h \
+    include/drm/ttm/ttm_resource.h \
+    include/linux/capability.h \
+    include/linux/debugfs.h \
+    include/linux/exportfs.h \
+    include/linux/file.h \
+    include/linux/fs.h \
+    include/linux/fs_context.h \
+    include/linux/irqdesc.h \
+    include/linux/kernfs.h \
+    include/linux/mount.h \
+    include/linux/path.h \
+    include/linux/security.h \
+    include/linux/statfs.h
 
 -----
 
