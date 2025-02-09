@@ -94,6 +94,7 @@ rm drivers/gpu/drm/drm_atomic_uapi.o && make KCFLAGS="-H" drivers/gpu/drm/drm_at
 - Ensure I have latest cover letter (run `git format-patch`)
 - Run checkpatch.pl
 - Use clang or a different nix-shell for cross-compilation
+  - To install these on Ubuntu: `sudo apt-get install gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi gcc-mips-linux-gnu gcc-powerpc-linux-gnu gcc-powerpc64-linux-gnu gcc-s390x-linux-gnu`
   - ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu-
   - ARCH=s390 CROSS_COMPILE=s390x-linux-gnu-
   - ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-

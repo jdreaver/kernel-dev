@@ -39,6 +39,12 @@ Stuff I had to install to compile:
 $ sudo apt install build-essential libncurses-dev bison flex libssl-dev libelf-dev fakeroot dwarves
 ```
 
+To install various cross-compilers:
+
+```
+$ sudo apt-get install gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi gcc-mips-linux-gnu gcc-powerpc-linux-gnu gcc-powerpc64-linux-gnu gcc-s390x-linux-gnu
+```
+
 To compile, we use the host's kernel config:
 
 ```
