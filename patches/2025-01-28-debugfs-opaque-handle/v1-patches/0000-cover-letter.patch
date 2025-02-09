@@ -1,6 +1,6 @@
-From 9659ce1a6c35319cebcb5bace544116ce6586de1 Mon Sep 17 00:00:00 2001
+From 217666a1df9491b514acec7e790246f158b1b714 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Sun, 9 Feb 2025 13:11:20 -0800
+Date: Sun, 9 Feb 2025 13:23:38 -0800
 Subject: [RFC PATCH 0/6] debugfs: Replace dentry with an opaque handle in
  debugfs API
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -1319,4 +1319,4 @@ David Reaver (6):
  1117 files changed, 2971 insertions(+), 2636 deletions(-)
 
 
-base-commit: 0de63bb7d91975e73338300a57c54b93d3cc151c
+base-commit: a64dcfb451e254085a7daee5fe51bf22959d52d3

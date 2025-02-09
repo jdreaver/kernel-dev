@@ -1,4 +1,4 @@
-From d002dc9c025b30c3dba1ffb20fc1aad9c3ca6e81 Mon Sep 17 00:00:00 2001
+From 53ad8557364991922e04ddd3f07b784f65e17444 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Wed, 5 Feb 2025 09:36:24 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
@@ -3132,7 +3132,7 @@ index cfec7811dfbb..2b8b2bd18642 100644
  void mhi_create_debugfs(struct mhi_controller *mhi_cntrl)
  {
 diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
-index 6276551d7968..e2d7fcf1d9e4 100644
+index 1e57ebfb7622..7930689c247b 100644
 --- a/drivers/bus/moxtet.c
 +++ b/drivers/bus/moxtet.c
 @@ -552,7 +552,7 @@ static const struct file_operations output_fops = {
@@ -5427,10 +5427,10 @@ index 174badca27e7..8bc221531589 100644
  
  	if (!(adev->sdma.num_instances > 1))
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-index ff286940ab43..909b4b7da4d6 100644
+index 01ae2f88dec8..ff028552543e 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ttm.c
-@@ -2615,7 +2615,7 @@ void amdgpu_ttm_debugfs_init(struct amdgpu_device *adev)
+@@ -2619,7 +2619,7 @@ void amdgpu_ttm_debugfs_init(struct amdgpu_device *adev)
  {
  #if defined(CONFIG_DEBUG_FS)
  	struct drm_minor *minor = adev_to_drm(adev)->primary;
@@ -8337,7 +8337,7 @@ index 78bd7e4bf9ce..dd24a570e42d 100644
  void intel_th_debug_init(void);
  void intel_th_debug_done(void);
 diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-index 5546184df05f..8369f62b9f49 100644
+index 35a221e2c11c..e7ee12a4f790 100644
 --- a/drivers/i2c/i2c-core-base.c
 +++ b/drivers/i2c/i2c-core-base.c
 @@ -68,7 +68,7 @@ static int i2c_detect(struct i2c_adapter *adapter, struct i2c_driver *driver);
@@ -11774,10 +11774,10 @@ index f05cae103d83..9d076f8cf902 100644
  
  	unsigned long state;
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index d04543e5697b..030f82298754 100644
+index b34ebb916b89..8cd7cbcfad90 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-@@ -6263,7 +6263,7 @@ static int stmmac_set_mac_address(struct net_device *ndev, void *addr)
+@@ -6276,7 +6276,7 @@ static int stmmac_set_mac_address(struct net_device *ndev, void *addr)
  }
  
  #ifdef CONFIG_DEBUG_FS
@@ -14385,7 +14385,7 @@ index 220c7391fc19..ce1c8b250c0f 100644
  	parent = debugfs_create_dir("nvmet", NULL);
  	if (IS_ERR(parent)) {
 diff --git a/drivers/nvme/target/nvmet.h b/drivers/nvme/target/nvmet.h
-index b540216c0c9a..5e671671a31b 100644
+index 4be8d22d2d8d..e9802c4fd575 100644
 --- a/drivers/nvme/target/nvmet.h
 +++ b/drivers/nvme/target/nvmet.h
 @@ -283,7 +283,7 @@ struct nvmet_ctrl {
@@ -15019,7 +15019,7 @@ index c3772df34679..785125291b82 100644
  };
  
 diff --git a/drivers/platform/x86/ideapad-laptop.c b/drivers/platform/x86/ideapad-laptop.c
-index dfb5d4b8c046..9e847035e8f4 100644
+index 30bd366d7b58..a78f321dae9d 100644
 --- a/drivers/platform/x86/ideapad-laptop.c
 +++ b/drivers/platform/x86/ideapad-laptop.c
 @@ -161,7 +161,7 @@ struct ideapad_private {
@@ -15076,7 +15076,7 @@ index 2b55347a5a93..f2f966b3510a 100644
  	struct resource *res;
  	struct tpmi_plr *plr;
 diff --git a/drivers/platform/x86/intel/pmc/core.c b/drivers/platform/x86/intel/pmc/core.c
-index 10f04b944117..78a76e00832d 100644
+index 1ee0fb5f8250..dd7ab0dda14b 100644
 --- a/drivers/platform/x86/intel/pmc/core.c
 +++ b/drivers/platform/x86/intel/pmc/core.c
 @@ -1266,7 +1266,7 @@ static void pmc_core_dbgfs_unregister(struct pmc_dev *pmcdev)
@@ -16994,7 +16994,7 @@ index e3baed6c70bd..eefa511740be 100644
  		debugfs_create_file(attr->name, attr->mode, root, (void *)attr,
  				    attr->fops);
 diff --git a/drivers/ufs/host/ufshcd-pci.c b/drivers/ufs/host/ufshcd-pci.c
-index ea39c5d5b8cf..620231dd30ce 100644
+index 9cfcaad23cf9..cff99cc79b27 100644
 --- a/drivers/ufs/host/ufshcd-pci.c
 +++ b/drivers/ufs/host/ufshcd-pci.c
 @@ -36,7 +36,7 @@ struct intel_host {
@@ -18028,7 +18028,7 @@ index 468828288a4a..2e3b80092f67 100644
  
  /*
 diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index 8c4c1f871a88..a4a6314e068d 100644
+index 65c07aa95718..18376fe104c2 100644
 --- a/fs/gfs2/glock.c
 +++ b/fs/gfs2/glock.c
 @@ -64,7 +64,7 @@ static void do_xmote(struct gfs2_glock *gl, struct gfs2_holder *gh, unsigned int
@@ -18805,10 +18805,10 @@ index 4179add2864b..a67e9b3007d0 100644
  };
  
 diff --git a/include/linux/i2c.h b/include/linux/i2c.h
-index c31fd1dba3bd..9cf1b35c983a 100644
+index 2b2af24d2a43..cda945c9a6ca 100644
 --- a/include/linux/i2c.h
 +++ b/include/linux/i2c.h
-@@ -349,7 +349,7 @@ struct i2c_client {
+@@ -352,7 +352,7 @@ struct i2c_client {
  	i2c_slave_cb_t slave_cb;	/* callback for slave mode	*/
  #endif
  	void *devres_group_id;		/* ID of probe devres group	*/
@@ -18817,7 +18817,7 @@ index c31fd1dba3bd..9cf1b35c983a 100644
  };
  #define to_i2c_client(d) container_of(d, struct i2c_client, dev)
  
-@@ -757,7 +757,7 @@ struct i2c_adapter {
+@@ -763,7 +763,7 @@ struct i2c_adapter {
  	struct irq_domain *host_notify_domain;
  	struct regulator *bus_regulator;
  
@@ -18880,7 +18880,7 @@ index 38c65e92ecd0..93358fb7bebc 100644
  #else
  static inline void iommu_debugfs_setup(void) {}
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 3cb9a32a6330..565add411cbc 100644
+index f34f4cfaa513..86ac3c997be2 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
 @@ -842,7 +842,7 @@ struct kvm {
@@ -19621,7 +19621,7 @@ index fcdb5adfcd5e..03abd4d3f501 100644
  
  extern const struct dev_pm_ops snd_soc_pm_ops;
 diff --git a/include/ufs/ufshcd.h b/include/ufs/ufshcd.h
-index 650ff238cd74..10674a325789 100644
+index 8bf31e6ca4e5..bba8fc389e53 100644
 --- a/include/ufs/ufshcd.h
 +++ b/include/ufs/ufshcd.h
 @@ -1105,7 +1105,7 @@ struct ufs_hba {
@@ -19713,7 +19713,7 @@ index d971a0189319..6ab1f2bafea6 100644
  	dir = fault_create_debugfs_attr("fail_function", NULL,
  					&fei_fault_attr);
 diff --git a/kernel/futex/core.c b/kernel/futex/core.c
-index ebdd76b4ecbb..9d3eead25637 100644
+index 3db8567f5a44..b74ef2ff988b 100644
 --- a/kernel/futex/core.c
 +++ b/kernel/futex/core.c
 @@ -89,7 +89,7 @@ bool should_fail_futex(bool fshared)
@@ -19931,7 +19931,7 @@ index a6b27526baaf..04eee47ab9ff 100644
  	dfs_index = debugfs_create_dir("index", dfs_root);
  	pi_setup_module_notifier();
 diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
-index fd7e85220715..9776f59a7db4 100644
+index ef047add7f9e..2d759da7fbf8 100644
 --- a/kernel/sched/debug.c
 +++ b/kernel/sched/debug.c
 @@ -282,7 +282,7 @@ static const struct file_operations sched_dynamic_fops = {
@@ -21403,7 +21403,7 @@ index abbb5ee7e08c..4bfce1e4db71 100644
  	bool dbg_dump_printed;
  	bool ipc_dump_printed;
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index faf10671eed2..e76c0c3738e1 100644
+index ba0327e2d0d3..ca7fdbbf9fa3 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
 @@ -115,7 +115,7 @@ static struct kmem_cache *kvm_vcpu_cache;
@@ -21433,7 +21433,7 @@ index faf10671eed2..e76c0c3738e1 100644
  		mutex_unlock(&kvm_debugfs_lock);
  		return 0;
  	}
-@@ -4044,7 +4044,7 @@ DEFINE_SIMPLE_ATTRIBUTE(vcpu_get_pid_fops, vcpu_get_pid, NULL, "%llu\n");
+@@ -4037,7 +4037,7 @@ DEFINE_SIMPLE_ATTRIBUTE(vcpu_get_pid_fops, vcpu_get_pid, NULL, "%llu\n");
  
  static void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu)
  {

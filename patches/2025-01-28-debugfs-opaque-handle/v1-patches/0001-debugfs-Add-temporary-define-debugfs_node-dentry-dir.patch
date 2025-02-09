@@ -1,4 +1,4 @@
-From ec8ce1f02ed81e07b7ad7c79d94e1401ca549354 Mon Sep 17 00:00:00 2001
+From d9e18fd5c21c52ba3423ba23a9853175b1c681bd Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 13:13:09 -0800
 Subject: [RFC PATCH 1/6] debugfs: Add temporary "#define debugfs_node dentry"

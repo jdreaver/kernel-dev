@@ -1,4 +1,4 @@
-From ae04bf603e9a62e1a4acc1f0ae97e14d8e1a29e5 Mon Sep 17 00:00:00 2001
+From 68159c9efacb0982c1503d10216a9a1f9351a0e6 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
 Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
@@ -2643,10 +2643,10 @@ index 443d36294c99..efc76f42ac83 100644
  };
  
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index e76c0c3738e1..165764eafe9e 100644
+index ca7fdbbf9fa3..a2e308709265 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -6216,7 +6216,8 @@ static void kvm_uevent_notify_change(unsigned int type, struct kvm *kvm)
+@@ -6209,7 +6209,8 @@ static void kvm_uevent_notify_change(unsigned int type, struct kvm *kvm)
  		char *tmp, *p = kmalloc(PATH_MAX, GFP_KERNEL);
  
  		if (p) {
