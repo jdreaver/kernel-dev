@@ -29,6 +29,7 @@ Different versions:
 
 - [v0-patches](./v0-patches) Before Steve's suggestion of starting with a `#define`. This was meant to be RFC-only and each commit didn't compile until the last couple of them.
 - [v1-patches](./v1-patches) Use `#define debugfs_node dentry` first so we can do subsequent transformations while still being able to compile each commit.
+  - Lore thread: <https://lore.kernel.org/linux-fsdevel/20250210052039.144513-1-me@davidreaver.com/T/#u>
 
 # TODO
 
