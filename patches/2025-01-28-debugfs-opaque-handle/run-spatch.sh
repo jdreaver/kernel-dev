@@ -21,7 +21,7 @@ for file in $files; do
     echo "($counter/$total_files) $file"
     counter=$((counter+1))
 
-    time spatch "$script_dir/script.cocci" \
+    time spatch "$script_dir/script-v2.cocci" \
       --all-includes --include-headers --patch . \
       --ignore include/linux/fs.h \
       --ignore include/linux/debugfs.h \

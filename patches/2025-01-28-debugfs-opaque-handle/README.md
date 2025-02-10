@@ -5,10 +5,10 @@ Related: [2025-01-19-sample-kernfs](../2025-01-19-sample-kernfs) and [2025-01-22
 Storing patches in this directory with:
 
 ```bash
-rm -rf ../patches/2025-01-28-debugfs-opaque-handle/v1-patches && \
+rm -rf ../patches/2025-01-28-debugfs-opaque-handle/v2-patches && \
   git format-patch master...HEAD \
       --base=origin/master \
-      -o ../patches/2025-01-28-debugfs-opaque-handle/v1-patches/ \
+      -o ../patches/2025-01-28-debugfs-opaque-handle/v2-patches/ \
       --cover-letter \
       --description-file=../patches/2025-01-28-debugfs-opaque-handle/cover-letter-description.txt \
       --cover-from-description=subject \
@@ -30,6 +30,7 @@ Different versions:
 - [v0-patches](./v0-patches) Before Steve's suggestion of starting with a `#define`. This was meant to be RFC-only and each commit didn't compile until the last couple of them.
 - [v1-patches](./v1-patches) Use `#define debugfs_node dentry` first so we can do subsequent transformations while still being able to compile each commit.
   - Lore thread: <https://lore.kernel.org/linux-fsdevel/20250210052039.144513-1-me@davidreaver.com/T/#u>
+- [v2-patches](./v2-patches) Changes after feedback on v1.
 
 # Changes for v2
 
