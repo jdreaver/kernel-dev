@@ -1,6 +1,6 @@
-From 53ad8557364991922e04ddd3f07b784f65e17444 Mon Sep 17 00:00:00 2001
+From 639943eb11ccbb5b75ccb6b670de840ae7277d62 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
-Date: Wed, 5 Feb 2025 09:36:24 -0800
+Date: Sun, 9 Feb 2025 21:09:31 -0800
 Subject: [RFC PATCH 4/6] debugfs: Automated conversion from dentry to
  debugfs_node
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -313,8 +313,8 @@ Coccinelle script
   }
 
   //
-  // Add #define debugfs_node dentry if debugfs_node is not defined
-  // anywhere. This prevents implicit declarations.
+  // Add #define debugfs_node dentry if debugfs_node is used anywhere.
+  // This prevents implicit declarations.
   //
   @define_exists@
   @@
@@ -326,18 +326,10 @@ Coccinelle script
 
   struct debugfs_node
 
-  @define_under_dentry depends on !define_exists and any_debugfs_node_usage@
+  @depends on !define_exists and any_debugfs_node_usage@
   @@
 
   struct dentry;
-  +#define debugfs_node dentry
-
-  @define_under_include depends on !define_under_dentry and !define_exists and any_debugfs_node_usage@
-  @@
-
-  // Else, try to put it after an #include
-  #include ...
-  +
   +#define debugfs_node dentry
 
   //

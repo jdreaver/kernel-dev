@@ -133,10 +133,11 @@ through <linux/fs.h>), or defined with a forward declaration in much of
 the files affected by this patch series. Usually <linux/debugfs.h> is
 _not_ included in those same files. For the intermediate commits, we
 need to ensure the #define is in scope wherever debugfs_node is used so
-it isn't considered a forward declaration of a distinct type. Ensuring
-the #define and/or a debugfs.h include is in scope is error-prone.
+it isn't considered a forward declaration of a distinct type.
+Automatically ensuring the #define and/or a debugfs.h include is in
+scope is difficult.
 
-I found one heuristic that was easy to automate and seems to do the job:
+I found one heuristic that was easy to automate and mostly does the job:
 in files we modify, wherever there is a forward declaration of "struct
 dentry;", temporarily add a "#define debugfs_node" right below it. The
 Coccinelle script implements this heuristic. The final commit removes

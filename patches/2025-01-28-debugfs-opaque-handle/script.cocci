@@ -288,8 +288,8 @@ struct
 }
 
 //
-// Add #define debugfs_node dentry if debugfs_node is not defined
-// anywhere. This prevents implicit declarations.
+// Add #define debugfs_node dentry if debugfs_node is used anywhere.
+// This prevents implicit declarations.
 //
 @define_exists@
 @@
