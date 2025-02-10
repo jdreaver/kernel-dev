@@ -19,7 +19,6 @@ rm -rf ../patches/2025-01-28-debugfs-opaque-handle/v1-patches && \
       --cc 'Steven Rostedt <rostedt@goodmis.org>' \
       --cc 'Christian Brauner <brauner@kernel.org>' \
       --cc 'Alexander Viro <viro@zeniv.linux.org.uk>' \
-      --cc 'Tejun Heo <tj@kernel.org>' \
       --cc 'linux-fsdevel@vger.kernel.org' \
       --cc 'cocci@inria.fr' \
       --cc 'linux-kernel@vger.kernel.org' \
