@@ -301,18 +301,10 @@ struct
 
 struct debugfs_node
 
-@define_under_dentry depends on !define_exists and any_debugfs_node_usage@
+@depends on !define_exists and any_debugfs_node_usage@
 @@
 
 struct dentry;
-+#define debugfs_node dentry
-
-@define_under_include depends on !define_under_dentry and !define_exists and any_debugfs_node_usage@
-@@
-
-// Else, try to put it after an #include
-#include ...
-+
 +#define debugfs_node dentry
 
 //
