@@ -31,6 +31,65 @@ Different versions:
 - [v1-patches](./v1-patches) Use `#define debugfs_node dentry` first so we can do subsequent transformations while still being able to compile each commit.
   - Lore thread: <https://lore.kernel.org/linux-fsdevel/20250210052039.144513-1-me@davidreaver.com/T/#u>
 
+# Changes for v2
+
+Send these as a response to the v1 RFC thread to see if anyone objects to these, or has more suggestions.
+
+- (Al and Greg) Don't embed dentry in debugfs_node
+  - Need to get consensus on alternative
+- Fix more compilation errors (kernel test robot sent me some)
+- (Greg) Refactor code that requires underlying access to the dentry so it no longer needs that.
+  - Consider asking Greg to expand on his point about refactoring users to remove the need to store anything.
+  - After that, it is okay to expose the underlying dentry via `debugfs_node_dentry`. Don't make so many wrapper functions.
+  - Greg mentioned relay as a good example of this. Why do we need to store those pointers at all?
+- (Steve) Replace temporary defines and forward declarations with #include <linux/debugfs.h>.
+  - Coccinelle might not be the right tool for the job, but try Coccinelle first.
+
+# Why do we need the forward declarations?
+
+(Reviewers asked this, so I'm coming up with concrete answers.)
+
+## Example removing all the `#define debugfs_node dentry` lines added in the Coccinelle commit
+
+`find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i '/#define debugfs_node/d' {} +` (undo changes to `debugfs.h` and `dcache.h`)
+
+If you compile allmodconfig, you get:
+
+```
+In file included from drivers/gpu/drm/xe/xe_gsc_debugfs.c:6:
+drivers/gpu/drm/xe/xe_gsc_debugfs.h:12:57: error: ‘struct debugfs_node’ declared inside parameter list will not be visible outside of this definition or declaration [-Werror]
+   12 | void xe_gsc_debugfs_register(struct xe_gsc *gsc, struct debugfs_node *parent);
+      |                                                         ^~~~~~~~~~~~
+drivers/gpu/drm/xe/xe_gsc_debugfs.c:51:6: error: conflicting types for ‘xe_gsc_debugfs_register’; have ‘void(struct xe_gsc *, struct dentry *)’
+   51 | void xe_gsc_debugfs_register(struct xe_gsc *gsc, struct debugfs_node *parent)
+      |      ^~~~~~~~~~~~~~~~~~~~~~~
+drivers/gpu/drm/xe/xe_gsc_debugfs.h:12:6: note: previous declaration of ‘xe_gsc_debugfs_register’ with type ‘void(struct xe_gsc *, struct debugfs_node *)’
+   12 | void xe_gsc_debugfs_register(struct xe_gsc *gsc, struct debugfs_node *parent);
+      |      ^~~~~~~~~~~~~~~~~~~~~~~
+```
+
+and
+
+```
+drivers/ufs/core/ufs-fault-injection.c: In function ‘ufs_fault_inject_hba_init’:
+drivers/ufs/core/ufs-fault-injection.c:69:59: error: passing argument 2 of ‘fault_create_debugfs_attr’ from incompatible pointer type [-Werror=incompatible-pointer-types]
+   69 |         fault_create_debugfs_attr("trigger_eh_inject", hba->debugfs_root, &hba->trigger_eh_attr);
+      |                                                        ~~~^~~~~~~~~~~~~~
+      |                                                           |
+      |                                                           struct dentry *
+In file included from drivers/ufs/core/ufs-fault-injection.c:5:
+./include/linux/fault-inject.h:83:46: note: expected ‘struct debugfs_node *’ but argument is of type ‘struct dentry *’
+   83 |                         struct debugfs_node *parent, struct fault_attr *attr);
+      |                         ~~~~~~~~~~~~~~~~~~~~~^~~~~~
+drivers/ufs/core/ufs-fault-injection.c:70:56: error: passing argument 2 of ‘fault_create_debugfs_attr’ from incompatible pointer type [-Werror=incompatible-pointer-types]
+   70 |         fault_create_debugfs_attr("timeout_inject", hba->debugfs_root, &hba->timeout_attr);
+      |                                                     ~~~^~~~~~~~~~~~~~
+      |                                                        |
+      |                                                        struct dentry *
+./include/linux/fault-inject.h:83:46: note: expected ‘struct debugfs_node *’ but argument is of type ‘struct dentry *’
+   83 |                         struct debugfs_node *parent, struct fault_attr *attr);
+```
+
 # TODO
 
 I'm considering putting my remaining problems in the RFC and asking for suggestions.
