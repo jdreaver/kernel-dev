@@ -1,4 +1,4 @@
-From 9573ba10a6c1004b54e7e26bd14cbfdb06856217 Mon Sep 17 00:00:00 2001
+From ed2541911b9cb137d02ad3700fd4f515e6dbd64f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [RFC PATCH] relay: Assume debugfs and simplify accordingly
@@ -36,9 +36,9 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  drivers/net/wwan/iosm/iosm_ipc_trace.c        |  23 +---
  drivers/net/wwan/t7xx/t7xx_port_trace.c       |  20 +--
  include/linux/relay.h                         |  50 +------
- kernel/relay.c                                |  25 ++--
+ kernel/relay.c                                |  21 +--
  kernel/trace/blktrace.c                       |  20 ---
- 12 files changed, 49 insertions(+), 385 deletions(-)
+ 12 files changed, 49 insertions(+), 381 deletions(-)
 
 diff --git a/Documentation/filesystems/relay.rst b/Documentation/filesystems/relay.rst
 index 04ad083cfe62..ceab59dddacf 100644
@@ -617,7 +617,7 @@ index 72b876dd5cb8..9b91eedf0ffc 100644
  #endif /* _LINUX_RELAY_H */
 -
 diff --git a/kernel/relay.c b/kernel/relay.c
-index a8ae436dc77e..65c15e73ec95 100644
+index a8ae436dc77e..269ceef07056 100644
 --- a/kernel/relay.c
 +++ b/kernel/relay.c
 @@ -22,6 +22,7 @@
@@ -676,18 +676,7 @@ index a8ae436dc77e..65c15e73ec95 100644
  	kref_put(&buf->kref, relay_remove_buf);
  }
  
-@@ -466,10 +470,6 @@ int relay_prepare_cpu(unsigned int cpu)
-  *	attributes specified.  The created channel buffer files
-  *	will be named base_filename0...base_filenameN-1.  File
-  *	permissions will be %S_IRUSR.
-- *
-- *	If opening a buffer (@parent = NULL) that you later wish to register
-- *	in a filesystem, call relay_late_setup_files() once the @parent dentry
-- *	is available.
-  */
- struct rchan *relay_open(const char *base_filename,
- 			 struct dentry *parent,
-@@ -486,7 +486,7 @@ struct rchan *relay_open(const char *base_filename,
+@@ -486,7 +490,7 @@ struct rchan *relay_open(const char *base_filename,
  		return NULL;
  	if (subbuf_size > UINT_MAX / n_subbufs)
  		return NULL;
@@ -696,7 +685,7 @@ index a8ae436dc77e..65c15e73ec95 100644
  		return NULL;
  
  	chan = kzalloc(sizeof(struct rchan), GFP_KERNEL);
-@@ -1081,4 +1081,3 @@ const struct file_operations relay_file_operations = {
+@@ -1081,4 +1085,3 @@ const struct file_operations relay_file_operations = {
  	.read		= relay_file_read,
  	.release	= relay_file_release,
  };

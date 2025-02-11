@@ -1,7 +1,7 @@
-diff --git b/Documentation/filesystems/relay.rst a/Documentation/filesystems/relay.rst
+diff --git a/Documentation/filesystems/relay.rst b/Documentation/filesystems/relay.rst
 index ceab59dddacf..56e5cf11affc 100644
---- b/Documentation/filesystems/relay.rst
-+++ a/Documentation/filesystems/relay.rst
+--- a/Documentation/filesystems/relay.rst
++++ b/Documentation/filesystems/relay.rst
 @@ -233,16 +233,6 @@ The private_data passed into relay_open() allows clients to associate
  user-defined data with a channel, and is immediately available via
  chan->private_data or buf->chan->private_data.
@@ -19,10 +19,10 @@ index ceab59dddacf..56e5cf11affc 100644
  Channel 'modes'
  ---------------
  
-diff --git b/include/linux/relay.h a/include/linux/relay.h
+diff --git a/include/linux/relay.h b/include/linux/relay.h
 index 9b91eedf0ffc..8fdff007734e 100644
---- b/include/linux/relay.h
-+++ a/include/linux/relay.h
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
 @@ -119,9 +119,6 @@ struct rchan *relay_open(const char *base_filename,
  			 size_t n_subbufs,
  			 const struct rchan_callbacks *cb,
@@ -33,11 +33,22 @@ index 9b91eedf0ffc..8fdff007734e 100644
  extern void relay_close(struct rchan *chan);
  extern void relay_flush(struct rchan *chan);
  extern void relay_subbufs_consumed(struct rchan *chan,
-diff --git b/kernel/relay.c a/kernel/relay.c
-index 65c15e73ec95..4e4ce7d4243c 100644
---- b/kernel/relay.c
-+++ a/kernel/relay.c
-@@ -541,111 +541,6 @@ struct rchan_percpu_buf_dispatcher {
+diff --git a/kernel/relay.c b/kernel/relay.c
+index 269ceef07056..4e4ce7d4243c 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -470,10 +470,6 @@ int relay_prepare_cpu(unsigned int cpu)
+  *	attributes specified.  The created channel buffer files
+  *	will be named base_filename0...base_filenameN-1.  File
+  *	permissions will be %S_IRUSR.
+- *
+- *	If opening a buffer (@parent = NULL) that you later wish to register
+- *	in a filesystem, call relay_late_setup_files() once the @parent dentry
+- *	is available.
+  */
+ struct rchan *relay_open(const char *base_filename,
+ 			 struct dentry *parent,
+@@ -545,111 +541,6 @@ struct rchan_percpu_buf_dispatcher {
  	struct dentry *dentry;
  };
  
