@@ -1,4 +1,4 @@
-From 2f21135d0af62724f86bb125d669c86a0cad4aad Mon Sep 17 00:00:00 2001
+From 24d685c9ff2a415d9379438c1618a11707fc667d Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [RFC PATCH] relay: Assume debugfs and simplify accordingly
@@ -10,13 +10,17 @@ Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
 
 While the relay documentation suggests support for non-debugfs users, in
 practice all relay users rely on debugfs. By assuming relay is only used in
-debugfs, we can vastly simplify the code and documentation.
+debugfs, we can vastly simplify the code and documentation. We realized
+this when while migrating relay to use an opaque handle for debugfs nodes
+instead of dentry [1].
 
 The create_buf_file and remove_buf_file callbacks have been removed and
 replaced with direct calls to debugfs_create_file and debugfs_remove. Users
 now just specify a struct file_operations and an optional is_global flag.
 
 Lastly, relay_late_setup_files() was unused, so it has been removed.
+
+Link: https://lore.kernel.org/linux-fsdevel/2025021048-thieving-failing-7831@gregkh/ [1]
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
