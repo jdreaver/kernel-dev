@@ -1,4 +1,4 @@
-From 771c92e3089df9ac6636d019fe6c5186bcf9783e Mon Sep 17 00:00:00 2001
+From b7e2a9f675b2a970476085f365135e10d7e0ad79 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [RFC PATCH] relay: Assume debugfs and simplify accordingly
@@ -17,30 +17,29 @@ instead of dentry [1].
 The create_buf_file and remove_buf_file callbacks have been removed and
 replaced with direct calls to debugfs_create_file and debugfs_remove. All
 users used the example code from the documentation, so allowing
-customization just adds complexity. Also, relay_late_setup_files() was
-unused, so it has been removed.
+customization just adds complexity.
 
 Link: https://lore.kernel.org/linux-fsdevel/2025021048-thieving-failing-7831@gregkh/ [1]
 
 Signed-off-by: David Reaver <me@davidreaver.com>
 Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- Documentation/filesystems/relay.rst           | 132 ++++--------------
+ Documentation/filesystems/relay.rst           | 122 ++++--------------
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  42 +-----
  drivers/net/wireless/ath/ath10k/spectral.c    |  27 +---
  drivers/net/wireless/ath/ath11k/spectral.c    |  24 +---
  .../net/wireless/ath/ath9k/common-spectral.c  |  27 +---
  .../wireless/mediatek/mt76/mt7915/debugfs.c   |  27 +---
  .../wireless/mediatek/mt76/mt7996/debugfs.c   |  27 +---
- drivers/net/wwan/iosm/iosm_ipc_trace.c        |  23 +--
+ drivers/net/wwan/iosm/iosm_ipc_trace.c        |  23 +---
  drivers/net/wwan/t7xx/t7xx_port_trace.c       |  20 +--
- include/linux/relay.h                         |  53 +------
- kernel/relay.c                                | 130 ++---------------
+ include/linux/relay.h                         |  50 +------
+ kernel/relay.c                                |  25 ++--
  kernel/trace/blktrace.c                       |  20 ---
- 12 files changed, 49 insertions(+), 503 deletions(-)
+ 12 files changed, 49 insertions(+), 385 deletions(-)
 
 diff --git a/Documentation/filesystems/relay.rst b/Documentation/filesystems/relay.rst
-index 04ad083cfe62..56e5cf11affc 100644
+index 04ad083cfe62..ceab59dddacf 100644
 --- a/Documentation/filesystems/relay.rst
 +++ b/Documentation/filesystems/relay.rst
 @@ -15,8 +15,8 @@ clients write into the channel buffers using efficient write
@@ -165,7 +164,7 @@ index 04ad083cfe62..56e5cf11affc 100644
  
  The total size of each per-cpu buffer is calculated by multiplying the
  number of sub-buffers by the sub-buffer size passed into relay_open().
-@@ -277,39 +214,24 @@ though, it's safe to assume that having only 1 sub-buffer is a bad
+@@ -277,29 +214,24 @@ though, it's safe to assume that having only 1 sub-buffer is a bad
  idea - you're guaranteed to either overwrite data or lose events
  depending on the channel mode being used.
  
@@ -204,21 +203,11 @@ index 04ad083cfe62..56e5cf11affc 100644
 -user-defined data with a channel, and is immediately available
 -(including in create_buf_file()) via chan->private_data or
 -buf->chan->private_data.
--
--Buffer-only channels
----------------------
--
--These channels have no files associated and can be created with
--relay_open(NULL, NULL, ...). Such channels are useful in scenarios such
--as when doing early tracing in the kernel, before the VFS is up. In these
--cases, one may open a buffer-only channel and then call
--relay_late_setup_files() when the kernel is ready to handle files,
--to expose the buffered data to the userspace.
 +user-defined data with a channel, and is immediately available via
 +chan->private_data or buf->chan->private_data.
  
- Channel 'modes'
- ---------------
+ Buffer-only channels
+ --------------------
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c b/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
 index e8a04e476c57..ea2acf1a8c58 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
@@ -553,7 +542,7 @@ index 4ed8b4e29bf1..f9e667feadfe 100644
  
  static void t7xx_trace_port_uninit(struct t7xx_port *port)
 diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 72b876dd5cb8..8fdff007734e 100644
+index 72b876dd5cb8..9b91eedf0ffc 100644
 --- a/include/linux/relay.h
 +++ b/include/linux/relay.h
 @@ -104,49 +104,9 @@ struct rchan_callbacks
@@ -608,17 +597,7 @@ index 72b876dd5cb8..8fdff007734e 100644
  };
  
  /*
-@@ -159,9 +119,6 @@ struct rchan *relay_open(const char *base_filename,
- 			 size_t n_subbufs,
- 			 const struct rchan_callbacks *cb,
- 			 void *private_data);
--extern int relay_late_setup_files(struct rchan *chan,
--				  const char *base_filename,
--				  struct dentry *parent);
- extern void relay_close(struct rchan *chan);
- extern void relay_flush(struct rchan *chan);
- extern void relay_subbufs_consumed(struct rchan *chan,
-@@ -272,11 +229,6 @@ static inline void subbuf_start_reserve(struct rchan_buf *buf,
+@@ -272,11 +232,6 @@ static inline void subbuf_start_reserve(struct rchan_buf *buf,
  	buf->offset = length;
  }
  
@@ -630,13 +609,13 @@ index 72b876dd5cb8..8fdff007734e 100644
  #ifdef CONFIG_RELAY
  int relay_prepare_cpu(unsigned int cpu);
  #else
-@@ -284,4 +236,3 @@ int relay_prepare_cpu(unsigned int cpu);
+@@ -284,4 +239,3 @@ int relay_prepare_cpu(unsigned int cpu);
  #endif
  
  #endif /* _LINUX_RELAY_H */
 -
 diff --git a/kernel/relay.c b/kernel/relay.c
-index a8ae436dc77e..4e4ce7d4243c 100644
+index a8ae436dc77e..65c15e73ec95 100644
 --- a/kernel/relay.c
 +++ b/kernel/relay.c
 @@ -22,6 +22,7 @@
@@ -715,119 +694,7 @@ index a8ae436dc77e..4e4ce7d4243c 100644
  		return NULL;
  
  	chan = kzalloc(sizeof(struct rchan), GFP_KERNEL);
-@@ -541,111 +541,6 @@ struct rchan_percpu_buf_dispatcher {
- 	struct dentry *dentry;
- };
- 
--/* Called in atomic context. */
--static void __relay_set_buf_dentry(void *info)
--{
--	struct rchan_percpu_buf_dispatcher *p = info;
--
--	relay_set_buf_dentry(p->buf, p->dentry);
--}
--
--/**
-- *	relay_late_setup_files - triggers file creation
-- *	@chan: channel to operate on
-- *	@base_filename: base name of files to create
-- *	@parent: dentry of parent directory, %NULL for root directory
-- *
-- *	Returns 0 if successful, non-zero otherwise.
-- *
-- *	Use to setup files for a previously buffer-only channel created
-- *	by relay_open() with a NULL parent dentry.
-- *
-- *	For example, this is useful for perfomring early tracing in kernel,
-- *	before VFS is up and then exposing the early results once the dentry
-- *	is available.
-- */
--int relay_late_setup_files(struct rchan *chan,
--			   const char *base_filename,
--			   struct dentry *parent)
--{
--	int err = 0;
--	unsigned int i, curr_cpu;
--	unsigned long flags;
--	struct dentry *dentry;
--	struct rchan_buf *buf;
--	struct rchan_percpu_buf_dispatcher disp;
--
--	if (!chan || !base_filename)
--		return -EINVAL;
--
--	strscpy(chan->base_filename, base_filename, NAME_MAX);
--
--	mutex_lock(&relay_channels_mutex);
--	/* Is chan already set up? */
--	if (unlikely(chan->has_base_filename)) {
--		mutex_unlock(&relay_channels_mutex);
--		return -EEXIST;
--	}
--	chan->has_base_filename = 1;
--	chan->parent = parent;
--
--	if (chan->is_global) {
--		err = -EINVAL;
--		buf = *per_cpu_ptr(chan->buf, 0);
--		if (!WARN_ON_ONCE(!buf)) {
--			dentry = relay_create_buf_file(chan, buf, 0);
--			if (dentry && !WARN_ON_ONCE(!chan->is_global)) {
--				relay_set_buf_dentry(buf, dentry);
--				err = 0;
--			}
--		}
--		mutex_unlock(&relay_channels_mutex);
--		return err;
--	}
--
--	curr_cpu = get_cpu();
--	/*
--	 * The CPU hotplug notifier ran before us and created buffers with
--	 * no files associated. So it's safe to call relay_setup_buf_file()
--	 * on all currently online CPUs.
--	 */
--	for_each_online_cpu(i) {
--		buf = *per_cpu_ptr(chan->buf, i);
--		if (unlikely(!buf)) {
--			WARN_ONCE(1, KERN_ERR "CPU has no buffer!\n");
--			err = -EINVAL;
--			break;
--		}
--
--		dentry = relay_create_buf_file(chan, buf, i);
--		if (unlikely(!dentry)) {
--			err = -EINVAL;
--			break;
--		}
--
--		if (curr_cpu == i) {
--			local_irq_save(flags);
--			relay_set_buf_dentry(buf, dentry);
--			local_irq_restore(flags);
--		} else {
--			disp.buf = buf;
--			disp.dentry = dentry;
--			smp_mb();
--			/* relay_channels_mutex must be held, so wait. */
--			err = smp_call_function_single(i,
--						       __relay_set_buf_dentry,
--						       &disp, 1);
--		}
--		if (unlikely(err))
--			break;
--	}
--	put_cpu();
--	mutex_unlock(&relay_channels_mutex);
--
--	return err;
--}
--EXPORT_SYMBOL_GPL(relay_late_setup_files);
--
- /**
-  *	relay_switch_subbuf - switch to a new sub-buffer
-  *	@buf: channel buffer
-@@ -1081,4 +976,3 @@ const struct file_operations relay_file_operations = {
+@@ -1081,4 +1081,3 @@ const struct file_operations relay_file_operations = {
  	.read		= relay_file_read,
  	.release	= relay_file_release,
  };
