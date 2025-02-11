@@ -14,11 +14,12 @@ Patches:
 - [2025-01-08-virtio-console-kmap-local-page](./2025-01-08-virtio-console-kmap-local-page)
 - [2025-01-10-pm-snapshot-kmap-local-page](./2025-01-10-pm-snapshot-kmap-local-page)
 
-## `kernfs`-related
+## Filesystem-related
 
 - [2025-01-19-sample-kernfs](./2025-01-19-sample-kernfs)
 - [2025-01-22-port-tracefs-kernfs](./2025-01-22-port-tracefs-kernfs)
 - [2025-01-28-debugfs-opaque-handle](./2025-01-28-debugfs-opaque-handle)
+- [2025-02-10-relay-debugfs-simplification](./2025-02-10-relay-debugfs-simplification)
 
 ## Misc
 
