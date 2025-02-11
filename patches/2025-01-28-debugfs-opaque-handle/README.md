@@ -39,6 +39,7 @@ Send these as a response to the v1 RFC thread to see if anyone objects to these,
 
 - (Al and Greg) Don't embed dentry in debugfs_node
   - Need to get consensus on alternative
+  - Consider lifetimes even if we embed a dentry pointer. We need to ensure that users of `debugfs_node_dentry()` do not free the dentry, for example.
 - Fix more compilation errors (kernel test robot sent me some)
 - (Greg) Refactor code that requires underlying access to the dentry so it no longer needs that.
   - Consider asking Greg to expand on his point about refactoring users to remove the need to store anything.

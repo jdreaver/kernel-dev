@@ -1,4 +1,4 @@
-From ec6bd9e47633558b8367061ee4fedcf38203e0b1 Mon Sep 17 00:00:00 2001
+From 4ca36c0ef6699343560f4c1a84b4680b9fdcc424 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [PATCH] relay: Assume debugfs and simplify accordingly
@@ -42,7 +42,7 @@ Signed-off-by: David Reaver <me@davidreaver.com>
  12 files changed, 49 insertions(+), 381 deletions(-)
 
 diff --git a/Documentation/filesystems/relay.rst b/Documentation/filesystems/relay.rst
-index 04ad083cfe62..ceab59dddacf 100644
+index 04ad083cfe62..746090b0d989 100644
 --- a/Documentation/filesystems/relay.rst
 +++ b/Documentation/filesystems/relay.rst
 @@ -15,8 +15,8 @@ clients write into the channel buffers using efficient write
@@ -51,7 +51,7 @@ index 04ad083cfe62..ceab59dddacf 100644
  and retrieve the data as it becomes available.  The relay files
 -themselves are files created in a host filesystem, e.g. debugfs, and
 -are associated with the channel buffers using the API described below.
-+themselves are files created in debugfs, andare associated with the
++themselves are files created in debugfs, and are associated with the
 +channel buffers using the API described below.
  
  The format of the data logged into the channel buffers is completely
