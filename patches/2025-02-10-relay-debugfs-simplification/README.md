@@ -43,7 +43,7 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
 
 # TODO
 
-- Figure out testing methodology.
+- Figure out testing methodology. blktrace is probably the best one to try.
 - Add more CC's to email. I think Jens Axboe wrote relay, and Christoph Hellwig as reviewed patches recently (e.g. <https://lore.kernel.org/all/88003c1527386b93036e286e7917f1e33aec84ac.1606153547.git.jani.nikula@intel.com/T/#u>)
 
 # Kernel configuration

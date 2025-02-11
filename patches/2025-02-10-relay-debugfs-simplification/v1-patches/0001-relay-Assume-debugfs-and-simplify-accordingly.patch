@@ -1,4 +1,4 @@
-From 784a8a317ab75a0e62c73f09484bde90a6eb7439 Mon Sep 17 00:00:00 2001
+From 2f21135d0af62724f86bb125d669c86a0cad4aad Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [RFC PATCH] relay: Assume debugfs and simplify accordingly
@@ -21,7 +21,7 @@ Lastly, relay_late_setup_files() was unused, so it has been removed.
 Signed-off-by: David Reaver <me@davidreaver.com>
 Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- Documentation/filesystems/relay.rst           | 117 ++++------------
+ Documentation/filesystems/relay.rst           | 136 +++++-------------
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  43 +-----
  drivers/net/wireless/ath/ath10k/spectral.c    |  28 +---
  drivers/net/wireless/ath/ath11k/spectral.c    |  25 +---
@@ -30,13 +30,13 @@ Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  .../wireless/mediatek/mt76/mt7996/debugfs.c   |  28 +---
  drivers/net/wwan/iosm/iosm_ipc_trace.c        |  24 +---
  drivers/net/wwan/t7xx/t7xx_port_trace.c       |  21 +--
- include/linux/relay.h                         |  47 +------
- kernel/relay.c                                | 127 ++----------------
+ include/linux/relay.h                         |  47 +-----
+ kernel/relay.c                                | 127 ++--------------
  kernel/trace/blktrace.c                       |  21 +--
- 12 files changed, 55 insertions(+), 482 deletions(-)
+ 12 files changed, 64 insertions(+), 492 deletions(-)
 
 diff --git a/Documentation/filesystems/relay.rst b/Documentation/filesystems/relay.rst
-index 04ad083cfe62..5b80545ee0b2 100644
+index 04ad083cfe62..222b9dbbbbff 100644
 --- a/Documentation/filesystems/relay.rst
 +++ b/Documentation/filesystems/relay.rst
 @@ -15,8 +15,8 @@ clients write into the channel buffers using efficient write
@@ -50,7 +50,30 @@ index 04ad083cfe62..5b80545ee0b2 100644
  
  The format of the data logged into the channel buffers is completely
  up to the kernel client; the relay interface does however provide
-@@ -184,8 +184,6 @@ TBD(curr. line MT:/API/)
+@@ -142,17 +142,16 @@ close()     decrements the channel buffer's refcount.  When the refcount
+ 	    buffer open, the channel buffer is freed.
+ =========== ============================================================
+ 
+-In order for a user application to make use of relay files, the
+-host filesystem must be mounted.  For example::
++In order for a user application to make use of relay files, debugfs must
++be mounted. For example::
+ 
+ 	mount -t debugfs debugfs /sys/kernel/debug
+ 
+ .. Note::
+ 
+-	the host filesystem doesn't need to be mounted for kernel
+-	clients to create or use channels - it only needs to be
+-	mounted when user space applications need access to the buffer
+-	data.
++	debugfs doesn't need to be mounted for kernel clients to create
++	or use channels - it only needs to be mounted when user space
++	applications need access to the buffer data.
+ 
+ 
+ The relay interface kernel API
+@@ -184,8 +183,6 @@ TBD(curr. line MT:/API/)
      subbuf_start(buf, subbuf, prev_subbuf, prev_padding)
      buf_mapped(buf, filp)
      buf_unmapped(buf, filp)
@@ -59,10 +82,14 @@ index 04ad083cfe62..5b80545ee0b2 100644
  
    helper functions::
  
-@@ -200,68 +198,16 @@ relay_open() is used to create a channel, along with its per-cpu
- channel buffers.  Each channel buffer will have an associated file
- created for it in the host filesystem, which can be and mmapped or
- read from in user space.  The files are named basename0...basenameN-1
+@@ -196,72 +193,20 @@ TBD(curr. line MT:/API/)
+ Creating a channel
+ ------------------
+ 
+-relay_open() is used to create a channel, along with its per-cpu
+-channel buffers.  Each channel buffer will have an associated file
+-created for it in the host filesystem, which can be and mmapped or
+-read from in user space.  The files are named basename0...basenameN-1
 -where N is the number of online cpus, and by default will be created
 -in the root of the filesystem (if the parent param is NULL).  If you
 -want a directory structure to contain your relay files, you should
@@ -109,8 +136,12 @@ index 04ad083cfe62..5b80545ee0b2 100644
 -
 -	    return 0;
 -    }
-+where N is the number of online cpus, and by will be created under the
-+directory specified by the parent param.
++relay_open() is used to create a channel, along with its per-cpu channel
++buffers. Each channel buffer will have an associated file created for it
++in debugfs, which can be and mmapped or read from in user space. The
++files are named basename0...basenameN-1 where N is the number of online
++cpus, and by will be created under the directory specified by the parent
++param.
  
 -    /*
 -    * relay interface callbacks
@@ -136,7 +167,7 @@ index 04ad083cfe62..5b80545ee0b2 100644
  
  The total size of each per-cpu buffer is calculated by multiplying the
  number of sub-buffers by the sub-buffer size passed into relay_open().
-@@ -277,39 +223,24 @@ though, it's safe to assume that having only 1 sub-buffer is a bad
+@@ -277,39 +222,24 @@ though, it's safe to assume that having only 1 sub-buffer is a bad
  idea - you're guaranteed to either overwrite data or lose events
  depending on the channel mode being used.
  
