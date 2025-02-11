@@ -23,7 +23,6 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
   git format-patch master...HEAD \
       --base=origin/master \
       -o ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/ \
-      --rfc \
       --to 'Greg Kroah-Hartman <gregkh@linuxfoundation.org>' \
       --cc 'Alexander Viro <viro@zeniv.linux.org.uk>' \
       --cc 'Jani Nikula <jani.nikula@intel.com>' \

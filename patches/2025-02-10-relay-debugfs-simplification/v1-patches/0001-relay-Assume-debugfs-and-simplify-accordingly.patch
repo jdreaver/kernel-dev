@@ -1,7 +1,7 @@
 From ec6bd9e47633558b8367061ee4fedcf38203e0b1 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
-Subject: [RFC PATCH] relay: Assume debugfs and simplify accordingly
+Subject: [PATCH] relay: Assume debugfs and simplify accordingly
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
     Jani Nikula <jani.nikula@intel.com>,
