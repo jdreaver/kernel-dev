@@ -1,4 +1,4 @@
-From bdf75b7c37b5b3124bff04242bdf205fe18543cd Mon Sep 17 00:00:00 2001
+From 9573ba10a6c1004b54e7e26bd14cbfdb06856217 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [RFC PATCH] relay: Assume debugfs and simplify accordingly
@@ -23,7 +23,6 @@ Link: https://lore.kernel.org/linux-fsdevel/20250210052039.144513-4-me@davidreav
 Link: https://lore.kernel.org/linux-fsdevel/2025021048-thieving-failing-7831@gregkh/ [2]
 
 Signed-off-by: David Reaver <me@davidreaver.com>
-Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
  Documentation/filesystems/relay.rst           | 122 ++++--------------
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  42 +-----
