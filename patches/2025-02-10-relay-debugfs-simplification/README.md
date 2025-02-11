@@ -50,30 +50,7 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
 
 ```
 make defconfig
-./scripts/config \
-  --set-val CONFIG_BLK_DEV_IO_TRACE y \
-  --set-val CONFIG_WWAN y \
-  --set-val CONFIG_MTK_T7XX y \
-  --set-val CONFIG_WWAN_DEBUGFS y \
-  --set-val CONFIG_MT7915E y \
-  --set-val CONFIG_MT7996E y \
-  --set-val CONFIG_MAC80211 y \
-  --set-val CONFIG_MAC80211_DEBUGFS y \
-  --set-val CONFIG_CFG80211_DEBUGFS y \
-  --set-val CONFIG_ATH9K y \
-  --set-val CONFIG_ATH9K_HTC y \
-  --set-val CONFIG_ATH9K_DEBUGFS y \
-  --set-val CONFIG_ATH9K_COMMON_SPECTRAL y \
-  --set-val CONFIG_ATH10K y \
-  --set-val CONFIG_ATH10K_HTC y \
-  --set-val CONFIG_ATH10K_DEBUGFS y \
-  --set-val CONFIG_ATH10K_SPECTRAL y \
-  --set-val CONFIG_ATH10K_COMMON_SPECTRAL y \
-  --set-val CONFIG_ATH11K y \
-  --set-val CONFIG_ATH11K_HTC y \
-  --set-val CONFIG_ATH11K_DEBUGFS y \
-  --set-val CONFIG_ATH11K_SPECTRAL y \
-  --set-val CONFIG_ATH11K_COMMON_SPECTRAL y
+./scripts/kconfig/merge_config.sh -m .config ../patches/2025-02-10-relay-debugfs-simplification/relay-drivers.config
 make olddefconfig
 ```
 
