@@ -42,9 +42,8 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
 
 # TODO
 
-- Find config options to enable compiling all users
-- Nuke `relay_late_setup_files`
 - Edit relay.rst docs
+
 - Check if we need permission for Suggested-By (I added Greg KH)
 - Add more CC's to email. I think Jens Axboe wrote relay, and Christoph Hellwig as reviewed patches recently (e.g. <https://lore.kernel.org/all/88003c1527386b93036e286e7917f1e33aec84ac.1606153547.git.jani.nikula@intel.com/T/#u>)
 
