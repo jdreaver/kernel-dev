@@ -1,4 +1,4 @@
-From 7f3703be43daead8841623e4b9a1bbefc49942f6 Mon Sep 17 00:00:00 2001
+From e5d79b1ec4014b49ff829b9534ca57347bccfce7 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [RFC PATCH] relay: Assume debugfs and simplify accordingly
@@ -12,28 +12,59 @@ While the relay documentation suggests support for non-debugfs users, in
 practice all relay users rely on debugfs.
 
 Signed-off-by: David Reaver <me@davidreaver.com>
+Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/gpu/drm/i915/gt/uc/intel_guc_log.c         | 10 ----------
- drivers/net/wireless/ath/ath10k/spectral.c         |  8 --------
- drivers/net/wireless/ath/ath11k/spectral.c         |  8 --------
- drivers/net/wireless/ath/ath9k/common-spectral.c   |  8 --------
- .../net/wireless/mediatek/mt76/mt7915/debugfs.c    |  9 ---------
- .../net/wireless/mediatek/mt76/mt7996/debugfs.c    |  9 ---------
- drivers/net/wwan/iosm/iosm_ipc_trace.c             |  8 --------
- drivers/net/wwan/t7xx/t7xx_port_trace.c            |  7 -------
- include/linux/relay.h                              | 14 --------------
- kernel/relay.c                                     |  5 +++--
- kernel/trace/blktrace.c                            |  9 ---------
- 11 files changed, 3 insertions(+), 92 deletions(-)
+ drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    | 43 +-----------------
+ drivers/net/wireless/ath/ath10k/spectral.c    | 28 +-----------
+ drivers/net/wireless/ath/ath11k/spectral.c    | 25 +----------
+ .../net/wireless/ath/ath9k/common-spectral.c  | 28 +-----------
+ .../wireless/mediatek/mt76/mt7915/debugfs.c   | 28 +-----------
+ .../wireless/mediatek/mt76/mt7996/debugfs.c   | 28 +-----------
+ drivers/net/wwan/iosm/iosm_ipc_trace.c        | 24 +---------
+ drivers/net/wwan/t7xx/t7xx_port_trace.c       | 21 +--------
+ include/linux/relay.h                         | 44 ++-----------------
+ kernel/relay.c                                | 18 ++++----
+ kernel/trace/blktrace.c                       | 21 +--------
+ 11 files changed, 31 insertions(+), 277 deletions(-)
 
 diff --git a/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c b/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
-index e8a04e476c57..afdbe66ee43c 100644
+index e8a04e476c57..af6c310472b1 100644
 --- a/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
 +++ b/drivers/gpu/drm/i915/gt/uc/intel_guc_log.c
-@@ -269,20 +269,10 @@ static struct dentry *create_buf_file_callback(const char *filename,
- 	return buf_file;
+@@ -239,50 +239,11 @@ static int subbuf_start_callback(struct rchan_buf *buf,
+ 	return 1;
  }
  
+-/*
+- * file_create() callback. Creates relay file in debugfs.
+- */
+-static struct dentry *create_buf_file_callback(const char *filename,
+-					       struct dentry *parent,
+-					       umode_t mode,
+-					       struct rchan_buf *buf,
+-					       int *is_global)
+-{
+-	struct dentry *buf_file;
+-
+-	/*
+-	 * This to enable the use of a single buffer for the relay channel and
+-	 * correspondingly have a single file exposed to User, through which
+-	 * it can collect the logs in order without any post-processing.
+-	 * Need to set 'is_global' even if parent is NULL for early logging.
+-	 */
+-	*is_global = 1;
+-
+-	if (!parent)
+-		return NULL;
+-
+-	buf_file = debugfs_create_file(filename, mode,
+-				       parent, buf, &relay_file_operations);
+-	if (IS_ERR(buf_file))
+-		return NULL;
+-
+-	return buf_file;
+-}
+-
 -/*
 - * file_remove() default callback. Removes relay file in debugfs.
 - */
@@ -46,19 +77,38 @@ index e8a04e476c57..afdbe66ee43c 100644
  /* relay channel callbacks */
  static const struct rchan_callbacks relay_callbacks = {
  	.subbuf_start = subbuf_start_callback,
- 	.create_buf_file = create_buf_file_callback,
+-	.create_buf_file = create_buf_file_callback,
 -	.remove_buf_file = remove_buf_file_callback,
++	.file_ops = &relay_file_operations,
++	.is_global = 1,
  };
  
  static void guc_move_to_next_buf(struct intel_guc_log *log)
 diff --git a/drivers/net/wireless/ath/ath10k/spectral.c b/drivers/net/wireless/ath/ath10k/spectral.c
-index 2240994390ed..4a97141d7c35 100644
+index 2240994390ed..bb3320f784ed 100644
 --- a/drivers/net/wireless/ath/ath10k/spectral.c
 +++ b/drivers/net/wireless/ath/ath10k/spectral.c
-@@ -480,16 +480,8 @@ static struct dentry *create_buf_file_handler(const char *filename,
- 	return buf_file;
- }
+@@ -463,33 +463,9 @@ static const struct file_operations fops_spectral_bins = {
+ 	.llseek = default_llseek,
+ };
  
+-static struct dentry *create_buf_file_handler(const char *filename,
+-					      struct dentry *parent,
+-					      umode_t mode,
+-					      struct rchan_buf *buf,
+-					      int *is_global)
+-{
+-	struct dentry *buf_file;
+-
+-	buf_file = debugfs_create_file(filename, mode, parent, buf,
+-				       &relay_file_operations);
+-	if (IS_ERR(buf_file))
+-		return NULL;
+-
+-	*is_global = 1;
+-	return buf_file;
+-}
+-
 -static int remove_buf_file_handler(struct dentry *dentry)
 -{
 -	debugfs_remove(dentry);
@@ -67,19 +117,35 @@ index 2240994390ed..4a97141d7c35 100644
 -}
 -
  static const struct rchan_callbacks rfs_spec_scan_cb = {
- 	.create_buf_file = create_buf_file_handler,
+-	.create_buf_file = create_buf_file_handler,
 -	.remove_buf_file = remove_buf_file_handler,
++	.file_ops = &relay_file_operations,
++	.is_global = 1,
  };
  
  int ath10k_spectral_start(struct ath10k *ar)
 diff --git a/drivers/net/wireless/ath/ath11k/spectral.c b/drivers/net/wireless/ath/ath11k/spectral.c
-index 79e091134515..0cf0a2de0fb9 100644
+index 79e091134515..377621f9f41e 100644
 --- a/drivers/net/wireless/ath/ath11k/spectral.c
 +++ b/drivers/net/wireless/ath/ath11k/spectral.c
-@@ -141,16 +141,8 @@ static struct dentry *create_buf_file_handler(const char *filename,
- 	return buf_file;
- }
+@@ -127,30 +127,9 @@ struct ath11k_spectral_search_report {
+ 	u8 rel_pwr_db;
+ };
  
+-static struct dentry *create_buf_file_handler(const char *filename,
+-					      struct dentry *parent,
+-					      umode_t mode,
+-					      struct rchan_buf *buf,
+-					      int *is_global)
+-{
+-	struct dentry *buf_file;
+-
+-	buf_file = debugfs_create_file(filename, mode, parent, buf,
+-				       &relay_file_operations);
+-	*is_global = 1;
+-	return buf_file;
+-}
+-
 -static int remove_buf_file_handler(struct dentry *dentry)
 -{
 -	debugfs_remove(dentry);
@@ -88,19 +154,38 @@ index 79e091134515..0cf0a2de0fb9 100644
 -}
 -
  static const struct rchan_callbacks rfs_scan_cb = {
- 	.create_buf_file = create_buf_file_handler,
+-	.create_buf_file = create_buf_file_handler,
 -	.remove_buf_file = remove_buf_file_handler,
++	.file_ops = &relay_file_operations,
++	.is_global = 1,
  };
  
  static struct ath11k_vif *ath11k_spectral_get_vdev(struct ath11k *ar)
 diff --git a/drivers/net/wireless/ath/ath9k/common-spectral.c b/drivers/net/wireless/ath/ath9k/common-spectral.c
-index 628eeec4b82f..5cd808c2d240 100644
+index 628eeec4b82f..da5557ba6c93 100644
 --- a/drivers/net/wireless/ath/ath9k/common-spectral.c
 +++ b/drivers/net/wireless/ath/ath9k/common-spectral.c
-@@ -1025,16 +1025,8 @@ static struct dentry *create_buf_file_handler(const char *filename,
- 	return buf_file;
- }
+@@ -1008,33 +1008,9 @@ static const struct file_operations fops_spectral_fft_period = {
+ /* Relay interface */
+ /*******************/
  
+-static struct dentry *create_buf_file_handler(const char *filename,
+-					      struct dentry *parent,
+-					      umode_t mode,
+-					      struct rchan_buf *buf,
+-					      int *is_global)
+-{
+-	struct dentry *buf_file;
+-
+-	buf_file = debugfs_create_file(filename, mode, parent, buf,
+-				       &relay_file_operations);
+-	if (IS_ERR(buf_file))
+-		return NULL;
+-
+-	*is_global = 1;
+-	return buf_file;
+-}
+-
 -static int remove_buf_file_handler(struct dentry *dentry)
 -{
 -	debugfs_remove(dentry);
@@ -109,19 +194,37 @@ index 628eeec4b82f..5cd808c2d240 100644
 -}
 -
  static const struct rchan_callbacks rfs_spec_scan_cb = {
- 	.create_buf_file = create_buf_file_handler,
+-	.create_buf_file = create_buf_file_handler,
 -	.remove_buf_file = remove_buf_file_handler,
++	.file_ops = &relay_file_operations,
++	.is_global = 1,
  };
  
  /*********************/
 diff --git a/drivers/net/wireless/mediatek/mt76/mt7915/debugfs.c b/drivers/net/wireless/mediatek/mt76/mt7915/debugfs.c
-index 578013884e43..5615fd87a2aa 100644
+index 578013884e43..bd1ffae023ac 100644
 --- a/drivers/net/wireless/mediatek/mt76/mt7915/debugfs.c
 +++ b/drivers/net/wireless/mediatek/mt76/mt7915/debugfs.c
-@@ -598,20 +598,11 @@ create_buf_file_cb(const char *filename, struct dentry *parent, umode_t mode,
- 	return f;
- }
+@@ -582,36 +582,12 @@ mt7915_fw_debug_wa_get(void *data, u64 *val)
+ DEFINE_DEBUGFS_ATTRIBUTE(fops_fw_debug_wa, mt7915_fw_debug_wa_get,
+ 			 mt7915_fw_debug_wa_set, "%lld\n");
  
+-static struct dentry *
+-create_buf_file_cb(const char *filename, struct dentry *parent, umode_t mode,
+-		   struct rchan_buf *buf, int *is_global)
+-{
+-	struct dentry *f;
+-
+-	f = debugfs_create_file("fwlog_data", mode, parent, buf,
+-				&relay_file_operations);
+-	if (IS_ERR(f))
+-		return NULL;
+-
+-	*is_global = 1;
+-
+-	return f;
+-}
+-
 -static int
 -remove_buf_file_cb(struct dentry *f)
 -{
@@ -134,19 +237,37 @@ index 578013884e43..5615fd87a2aa 100644
  mt7915_fw_debug_bin_set(void *data, u64 val)
  {
  	static struct rchan_callbacks relay_cb = {
- 		.create_buf_file = create_buf_file_cb,
+-		.create_buf_file = create_buf_file_cb,
 -		.remove_buf_file = remove_buf_file_cb,
++		.file_ops = &relay_file_operations,
++		.is_global = 1,
  	};
  	struct mt7915_dev *dev = data;
  
 diff --git a/drivers/net/wireless/mediatek/mt76/mt7996/debugfs.c b/drivers/net/wireless/mediatek/mt76/mt7996/debugfs.c
-index 7b2bb72b407d..dff3160ef051 100644
+index 7b2bb72b407d..9e4a9aff5234 100644
 --- a/drivers/net/wireless/mediatek/mt76/mt7996/debugfs.c
 +++ b/drivers/net/wireless/mediatek/mt76/mt7996/debugfs.c
-@@ -391,20 +391,11 @@ create_buf_file_cb(const char *filename, struct dentry *parent, umode_t mode,
- 	return f;
- }
+@@ -375,36 +375,12 @@ mt7996_fw_debug_wa_get(void *data, u64 *val)
+ DEFINE_DEBUGFS_ATTRIBUTE(fops_fw_debug_wa, mt7996_fw_debug_wa_get,
+ 			 mt7996_fw_debug_wa_set, "%lld\n");
  
+-static struct dentry *
+-create_buf_file_cb(const char *filename, struct dentry *parent, umode_t mode,
+-		   struct rchan_buf *buf, int *is_global)
+-{
+-	struct dentry *f;
+-
+-	f = debugfs_create_file("fwlog_data", mode, parent, buf,
+-				&relay_file_operations);
+-	if (IS_ERR(f))
+-		return NULL;
+-
+-	*is_global = 1;
+-
+-	return f;
+-}
+-
 -static int
 -remove_buf_file_cb(struct dentry *f)
 -{
@@ -159,19 +280,34 @@ index 7b2bb72b407d..dff3160ef051 100644
  mt7996_fw_debug_bin_set(void *data, u64 val)
  {
  	static struct rchan_callbacks relay_cb = {
- 		.create_buf_file = create_buf_file_cb,
+-		.create_buf_file = create_buf_file_cb,
 -		.remove_buf_file = remove_buf_file_cb,
++		.file_ops = &relay_file_operations,
++		.is_global = 1,
  	};
  	struct mt7996_dev *dev = data;
  
 diff --git a/drivers/net/wwan/iosm/iosm_ipc_trace.c b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-index eeecfa3d10c5..4fc9ea6520d3 100644
+index eeecfa3d10c5..51b7d3c55251 100644
 --- a/drivers/net/wwan/iosm/iosm_ipc_trace.c
 +++ b/drivers/net/wwan/iosm/iosm_ipc_trace.c
-@@ -43,13 +43,6 @@ ipc_trace_create_buf_file_handler(const char *filename,
- 				   &relay_file_operations);
+@@ -30,26 +30,6 @@ void ipc_trace_port_rx(struct iosm_imem *ipc_imem, struct sk_buff *skb)
+ 	dev_kfree_skb(skb);
  }
  
+-/* Creates relay file in debugfs. */
+-static struct dentry *
+-ipc_trace_create_buf_file_handler(const char *filename,
+-				  struct dentry *parent,
+-				  umode_t mode,
+-				  struct rchan_buf *buf,
+-				  int *is_global)
+-{
+-	*is_global = 1;
+-	return debugfs_create_file(filename, mode, parent, buf,
+-				   &relay_file_operations);
+-}
+-
 -/* Removes relay file from debugfs. */
 -static int ipc_trace_remove_buf_file_handler(struct dentry *dentry)
 -{
@@ -182,22 +318,36 @@ index eeecfa3d10c5..4fc9ea6520d3 100644
  static int ipc_trace_subbuf_start_handler(struct rchan_buf *buf, void *subbuf,
  					  void *prev_subbuf,
  					  size_t prev_padding)
-@@ -66,7 +59,6 @@ static int ipc_trace_subbuf_start_handler(struct rchan_buf *buf, void *subbuf,
+@@ -65,8 +45,8 @@ static int ipc_trace_subbuf_start_handler(struct rchan_buf *buf, void *subbuf,
+ /* Relay interface callbacks */
  static struct rchan_callbacks relay_callbacks = {
  	.subbuf_start = ipc_trace_subbuf_start_handler,
- 	.create_buf_file = ipc_trace_create_buf_file_handler,
+-	.create_buf_file = ipc_trace_create_buf_file_handler,
 -	.remove_buf_file = ipc_trace_remove_buf_file_handler,
++	.file_ops = &relay_file_operations,
++	.is_global = 1,
  };
  
  /* Copy the trace control mode to user buffer */
 diff --git a/drivers/net/wwan/t7xx/t7xx_port_trace.c b/drivers/net/wwan/t7xx/t7xx_port_trace.c
-index 4ed8b4e29bf1..2a2c71416064 100644
+index 4ed8b4e29bf1..211279818ae6 100644
 --- a/drivers/net/wwan/t7xx/t7xx_port_trace.c
 +++ b/drivers/net/wwan/t7xx/t7xx_port_trace.c
-@@ -26,12 +26,6 @@ static struct dentry *t7xx_trace_create_buf_file_handler(const char *filename,
- 				   &relay_file_operations);
- }
+@@ -15,23 +15,6 @@
+ #define T7XX_TRC_SUB_BUFF_SIZE		131072
+ #define T7XX_TRC_N_SUB_BUFF		32
  
+-static struct dentry *t7xx_trace_create_buf_file_handler(const char *filename,
+-							 struct dentry *parent,
+-							 umode_t mode,
+-							 struct rchan_buf *buf,
+-							 int *is_global)
+-{
+-	*is_global = 1;
+-	return debugfs_create_file(filename, mode, parent, buf,
+-				   &relay_file_operations);
+-}
+-
 -static int t7xx_trace_remove_buf_file_handler(struct dentry *dentry)
 -{
 -	debugfs_remove(dentry);
@@ -207,24 +357,58 @@ index 4ed8b4e29bf1..2a2c71416064 100644
  static int t7xx_trace_subbuf_start_handler(struct rchan_buf *buf, void *subbuf,
  					   void *prev_subbuf, size_t prev_padding)
  {
-@@ -46,7 +40,6 @@ static int t7xx_trace_subbuf_start_handler(struct rchan_buf *buf, void *subbuf,
+@@ -45,8 +28,8 @@ static int t7xx_trace_subbuf_start_handler(struct rchan_buf *buf, void *subbuf,
+ 
  static struct rchan_callbacks relay_callbacks = {
  	.subbuf_start = t7xx_trace_subbuf_start_handler,
- 	.create_buf_file = t7xx_trace_create_buf_file_handler,
+-	.create_buf_file = t7xx_trace_create_buf_file_handler,
 -	.remove_buf_file = t7xx_trace_remove_buf_file_handler,
++	.file_ops = &relay_file_operations,
++	.is_global = 1,
  };
  
  static void t7xx_trace_port_uninit(struct t7xx_port *port)
 diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 72b876dd5cb8..820f8753eeef 100644
+index 72b876dd5cb8..40b379a275e1 100644
 --- a/include/linux/relay.h
 +++ b/include/linux/relay.h
-@@ -133,20 +133,6 @@ struct rchan_callbacks
- 					  umode_t mode,
- 					  struct rchan_buf *buf,
- 					  int *is_global);
--
--	/*
+@@ -104,49 +104,14 @@ struct rchan_callbacks
+ 			     size_t prev_padding);
+ 
+ 	/*
+-	 * create_buf_file - create file to represent a relay channel buffer
+-	 * @filename: the name of the file to create
+-	 * @parent: the parent of the file to create
+-	 * @mode: the mode of the file to create
+-	 * @buf: the channel buffer
+-	 * @is_global: outparam - set non-zero if the buffer should be global
+-	 *
+-	 * Called during relay_open(), once for each per-cpu buffer,
+-	 * to allow the client to create a file to be used to
+-	 * represent the corresponding channel buffer.  If the file is
+-	 * created outside of relay, the parent must also exist in
+-	 * that filesystem.
+-	 *
+-	 * The callback should return the dentry of the file created
+-	 * to represent the relay buffer.
+-	 *
+-	 * Setting the is_global outparam to a non-zero value will
+-	 * cause relay_open() to create a single global buffer rather
+-	 * than the default set of per-cpu buffers.
+-	 *
+-	 * This callback is mandatory.
+-	 *
+-	 * See Documentation/filesystems/relay.rst for more info.
++	 * file_ops - file operations for the relay file
+ 	 */
+-	struct dentry *(*create_buf_file)(const char *filename,
+-					  struct dentry *parent,
+-					  umode_t mode,
+-					  struct rchan_buf *buf,
+-					  int *is_global);
++	const struct file_operations *file_ops;
+ 
+ 	/*
 -	 * remove_buf_file - remove file representing a relay channel buffer
 -	 * @dentry: the dentry of the file to remove
 -	 *
@@ -235,13 +419,20 @@ index 72b876dd5cb8..820f8753eeef 100644
 -	 * The callback should return 0 if successful, negative if not.
 -	 *
 -	 * This callback is mandatory.
--	 */
++	 * is_global - create a single global buffer rather than per-cpu buffers
+ 	 */
 -	int (*remove_buf_file)(struct dentry *dentry);
++	int is_global;
  };
  
  /*
+@@ -284,4 +249,3 @@ int relay_prepare_cpu(unsigned int cpu);
+ #endif
+ 
+ #endif /* _LINUX_RELAY_H */
+-
 diff --git a/kernel/relay.c b/kernel/relay.c
-index a8ae436dc77e..300eff05f5ab 100644
+index a8ae436dc77e..079741a5f6dc 100644
 --- a/kernel/relay.c
 +++ b/kernel/relay.c
 @@ -22,6 +22,7 @@
@@ -252,7 +443,37 @@ index a8ae436dc77e..300eff05f5ab 100644
  
  /* list of open channels, for cpu hotplug */
  static DEFINE_MUTEX(relay_channels_mutex);
-@@ -426,7 +427,7 @@ static void relay_close_buf(struct rchan_buf *buf)
+@@ -357,12 +358,14 @@ static struct dentry *relay_create_buf_file(struct rchan *chan,
+ 	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
+ 
+ 	/* Create file in fs */
+-	dentry = chan->cb->create_buf_file(tmpname, chan->parent,
+-					   S_IRUSR, buf,
+-					   &chan->is_global);
++	dentry = debugfs_create_file(tmpname, S_IRUSR, chan->parent, buf,
++				     chan->cb->file_ops);
++
+ 	if (IS_ERR(dentry))
+ 		dentry = NULL;
+ 
++	chan->is_global = chan->cb->is_global;
++
+ 	kfree(tmpname);
+ 
+ 	return dentry;
+@@ -392,9 +395,8 @@ static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
+ 		relay_set_buf_dentry(buf, dentry);
+ 	} else {
+ 		/* Only retrieve global info, nothing more, nothing less */
+-		dentry = chan->cb->create_buf_file(NULL, NULL,
+-						   S_IRUSR, buf,
+-						   &chan->is_global);
++		dentry = debugfs_create_file(NULL, S_IRUSR, NULL, buf,
++					     chan->cb->file_ops);
+ 		if (IS_ERR_OR_NULL(dentry))
+ 			goto free_buf;
+ 	}
+@@ -426,7 +428,7 @@ static void relay_close_buf(struct rchan_buf *buf)
  {
  	buf->finalized = 1;
  	irq_work_sync(&buf->wakeup_work);
@@ -261,20 +482,20 @@ index a8ae436dc77e..300eff05f5ab 100644
  	kref_put(&buf->kref, relay_remove_buf);
  }
  
-@@ -486,7 +487,7 @@ struct rchan *relay_open(const char *base_filename,
+@@ -486,7 +488,7 @@ struct rchan *relay_open(const char *base_filename,
  		return NULL;
  	if (subbuf_size > UINT_MAX / n_subbufs)
  		return NULL;
 -	if (!cb || !cb->create_buf_file || !cb->remove_buf_file)
-+	if (!cb || !cb->create_buf_file)
++	if (!cb || !cb->file_ops)
  		return NULL;
  
  	chan = kzalloc(sizeof(struct rchan), GFP_KERNEL);
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 3679a6d18934..8a383d542d9e 100644
+index 3679a6d18934..a4dca02bfabc 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -473,13 +473,6 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
+@@ -473,27 +473,9 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
  	return 0;
  }
  
@@ -285,18 +506,25 @@ index 3679a6d18934..8a383d542d9e 100644
 -	return 0;
 -}
 -
- static struct dentry *blk_create_buf_file_callback(const char *filename,
- 						   struct dentry *parent,
- 						   umode_t mode,
-@@ -493,7 +486,6 @@ static struct dentry *blk_create_buf_file_callback(const char *filename,
+-static struct dentry *blk_create_buf_file_callback(const char *filename,
+-						   struct dentry *parent,
+-						   umode_t mode,
+-						   struct rchan_buf *buf,
+-						   int *is_global)
+-{
+-	return debugfs_create_file(filename, mode, parent, buf,
+-					&relay_file_operations);
+-}
+-
  static const struct rchan_callbacks blk_relay_callbacks = {
  	.subbuf_start		= blk_subbuf_start_callback,
- 	.create_buf_file	= blk_create_buf_file_callback,
+-	.create_buf_file	= blk_create_buf_file_callback,
 -	.remove_buf_file	= blk_remove_buf_file_callback,
++	.file_ops		= &relay_file_operations,
  };
  
  static void blk_trace_setup_lba(struct blk_trace *bt,
-@@ -1902,4 +1894,3 @@ void blk_fill_rwbs(char *rwbs, blk_opf_t opf)
+@@ -1902,4 +1884,3 @@ void blk_fill_rwbs(char *rwbs, blk_opf_t opf)
  EXPORT_SYMBOL_GPL(blk_fill_rwbs);
  
  #endif /* CONFIG_EVENT_TRACING */
