@@ -23,9 +23,6 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
   git format-patch master...HEAD \
       --base=origin/master \
       -o ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/ \
-      --cover-letter \
-      --description-file=../patches/2025-02-10-relay-debugfs-simplification/cover-letter-description.txt \
-      --cover-from-description=subject \
       --rfc \
       --to 'Greg Kroah-Hartman <gregkh@linuxfoundation.org>' \
       --cc 'Alexander Viro <viro@zeniv.linux.org.uk>' \
@@ -33,7 +30,6 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
       --cc 'linux-kernel@vger.kernel.org' \
       --cc 'David Reaver <me@davidreaver.com>'
 ```
-
 
 # Before submitting
 
@@ -47,6 +43,7 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
 # TODO
 
 - Find config options to enable compiling all users
+- Edit relay.rst docs
 - Add more CC's to email. I think Jens Axboe wrote relay, and Christoph Hellwig as reviewed patches recently (e.g. <https://lore.kernel.org/all/88003c1527386b93036e286e7917f1e33aec84ac.1606153547.git.jani.nikula@intel.com/T/#u>)
 
 # Kernel configuration
@@ -83,7 +80,7 @@ make oldconfig
 Files to compile:
 
 ```
-make \
+make -j$(nproc) \
   kernel/relay.o \
   kernel/trace/blktrace.o \
   drivers/net/wwan/t7xx/t7xx_port_trace.o \
