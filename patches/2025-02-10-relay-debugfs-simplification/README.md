@@ -33,6 +33,7 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
 
 # Before submitting
 
+- Ask Greg KH permission for adding suggested-by
 - checkpatch.pl
 - Make sure each commit compiles, not just the last one. This runs a build for each commit on the branch (since `master` is the base branch):
 
@@ -42,9 +43,7 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
 
 # TODO
 
-- Edit relay.rst docs
-
-- Check if we need permission for Suggested-By (I added Greg KH)
+- Figure out testing methodology.
 - Add more CC's to email. I think Jens Axboe wrote relay, and Christoph Hellwig as reviewed patches recently (e.g. <https://lore.kernel.org/all/88003c1527386b93036e286e7917f1e33aec84ac.1606153547.git.jani.nikula@intel.com/T/#u>)
 
 # Kernel configuration
