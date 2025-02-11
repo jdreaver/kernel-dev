@@ -4,6 +4,8 @@ Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [RFC PATCH] relay: Assume debugfs and simplify accordingly
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
+    Jani Nikula <jani.nikula@intel.com>,
+    Christoph Hellwig <hch@lst.de>,
     linux-fsdevel@vger.kernel.org,
     linux-kernel@vger.kernel.org,
     David Reaver <me@davidreaver.com>

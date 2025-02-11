@@ -26,6 +26,8 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
       --rfc \
       --to 'Greg Kroah-Hartman <gregkh@linuxfoundation.org>' \
       --cc 'Alexander Viro <viro@zeniv.linux.org.uk>' \
+      --cc 'Jani Nikula <jani.nikula@intel.com>' \
+      --cc 'Christoph Hellwig <hch@lst.de>' \
       --cc 'linux-fsdevel@vger.kernel.org' \
       --cc 'linux-kernel@vger.kernel.org' \
       --cc 'David Reaver <me@davidreaver.com>'
@@ -44,7 +46,6 @@ rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
 # TODO
 
 - Figure out testing methodology. blktrace is probably the best one to try.
-- Add more CC's to email. I think Jens Axboe wrote relay, and Christoph Hellwig as reviewed patches recently (e.g. <https://lore.kernel.org/all/88003c1527386b93036e286e7917f1e33aec84ac.1606153547.git.jani.nikula@intel.com/T/#u>)
 
 # Kernel configuration
 
