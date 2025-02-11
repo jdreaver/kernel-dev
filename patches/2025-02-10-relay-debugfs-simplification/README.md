@@ -74,7 +74,7 @@ make defconfig
   --set-val CONFIG_ATH11K_DEBUGFS y \
   --set-val CONFIG_ATH11K_SPECTRAL y \
   --set-val CONFIG_ATH11K_COMMON_SPECTRAL y
-make oldconfig
+make olddefconfig
 ```
 
 Files to compile:

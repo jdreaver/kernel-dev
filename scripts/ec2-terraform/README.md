@@ -50,7 +50,7 @@ To compile, we use the host's kernel config:
 ```
 $ cp -v /boot/config-$(uname -r) .config
 $ scripts/config --disable SYSTEM_TRUSTED_KEYS --disable SYSTEM_REVOCATION_KEYS --set-str CONFIG_SYSTEM_TRUSTED_KEYS "" --set-str CONFIG_SYSTEM_REVOCATION_KEYS ""
-$ yes "" | make oldconfig
+$ make olddefconfig
 $ make localmodconfig
 $ make -j$(nproc)
 ```

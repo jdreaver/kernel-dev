@@ -171,7 +171,7 @@ time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && time make -s
 
   ```
   time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && time make -s -j$(nproc) && echo Success!' master
-  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && ./scripts/config --set-val CONFIG_DEBUG_FS n && make oldconfig && time make -s -j$(nproc) && echo Success!' master
+  time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allyesconfig && ./scripts/config --set-val CONFIG_DEBUG_FS n && make olddefconfig && time make -s -j$(nproc) && echo Success!' master
   time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s defconfig && time make -s -j$(nproc) && echo Success!' master
   ```
 
