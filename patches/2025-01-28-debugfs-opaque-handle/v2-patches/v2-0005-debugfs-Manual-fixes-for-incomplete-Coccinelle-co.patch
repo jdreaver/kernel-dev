@@ -1,7 +1,7 @@
 From 7260f0ef6276c9f72543daa68826de0517558853 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 3 Feb 2025 15:19:42 -0800
-Subject: [RFC PATCH 5/6] debugfs: Manual fixes for incomplete Coccinelle
+Subject: [RFC PATCH v2 5/6] debugfs: Manual fixes for incomplete Coccinelle
  conversions
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
     Rafael J. Wysocki <rafael@kernel.org>,

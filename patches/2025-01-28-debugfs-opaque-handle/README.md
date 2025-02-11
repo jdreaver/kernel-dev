@@ -12,6 +12,7 @@ rm -rf ../patches/2025-01-28-debugfs-opaque-handle/v2-patches && \
       --cover-letter \
       --description-file=../patches/2025-01-28-debugfs-opaque-handle/cover-letter-description.txt \
       --cover-from-description=subject \
+      --reroll-count=2 \
       --rfc \
       --to 'Greg Kroah-Hartman <gregkh@linuxfoundation.org>' \
       --to 'Rafael J. Wysocki <rafael@kernel.org>' \
