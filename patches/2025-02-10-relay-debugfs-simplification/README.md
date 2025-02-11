@@ -16,20 +16,10 @@ In my v1 RFC for [2025-01-28-debugfs-opaque-handle](../2025-01-28-debugfs-opaque
 
 # Work
 
-Storing patches in this directory with:
+Storing patches in this directory by calling `$this_dir/format-patch.sh` from the `linux` source tree:
 
 ```bash
-rm -rf ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/
-  git format-patch master...HEAD \
-      --base=origin/master \
-      -o ../patches/2025-02-10-relay-debugfs-simplification/v1-patches/ \
-      --to 'Greg Kroah-Hartman <gregkh@linuxfoundation.org>' \
-      --cc 'Alexander Viro <viro@zeniv.linux.org.uk>' \
-      --cc 'Jani Nikula <jani.nikula@intel.com>' \
-      --cc 'Christoph Hellwig <hch@lst.de>' \
-      --cc 'linux-fsdevel@vger.kernel.org' \
-      --cc 'linux-kernel@vger.kernel.org' \
-      --cc 'David Reaver <me@davidreaver.com>'
+../patches/2025-02-10-relay-debugfs-simplification/format-patch.sh
 ```
 
 # Before submitting
