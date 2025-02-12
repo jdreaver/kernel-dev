@@ -1,0 +1,9 @@
+Hey Andrew and Greg, it looks like kernel/relay is not in MAINTAINERS. I
+saw previous relay patches sent to Andrew (the docs call him the
+"maintainer of last resort"). This patch touches drivers that use relay,
+but since it touches so many in one patch I thought that Andrew's or
+Greg's trees were more appropriate. I'm new, so apologies if I have this
+wrong, and please redirect me :)
+
+Tested by compiling the affected drivers specifically and also compiling
+with allmodconfig.
