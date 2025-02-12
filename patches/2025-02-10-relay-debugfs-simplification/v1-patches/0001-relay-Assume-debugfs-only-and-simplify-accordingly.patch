@@ -1,7 +1,7 @@
-From b4b35f26a681f69eae114845466dfe01cd814487 Mon Sep 17 00:00:00 2001
+From b8047d0069e4ec08448133601bbfcfd2705bf41f Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
-Subject: [PATCH] relay: Assume debugfs and simplify accordingly
+Subject: [PATCH] relay: Assume debugfs-only and simplify accordingly
 To: Andrew Morton <akpm@linux-foundation.org>,
     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Jens Axboe <axboe@kernel.dk>,
