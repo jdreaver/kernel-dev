@@ -1,4 +1,4 @@
-From 4ca36c0ef6699343560f4c1a84b4680b9fdcc424 Mon Sep 17 00:00:00 2001
+From b4b35f26a681f69eae114845466dfe01cd814487 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [PATCH] relay: Assume debugfs and simplify accordingly
@@ -15,14 +15,14 @@ Cc: Jens Axboe <axboe@kernel.dk>,
 
 While the relay documentation suggests support for non-debugfs filesystems,
 in practice all relay users rely on debugfs. By assuming relay is only used
-with debugfs, we can vastly simplify the code and documentation. We noticed
-this simplification while migrating relay to use an opaque handle for
-debugfs nodes instead of dentry [1][2].
+with debugfs, we can vastly simplify the code and documentation. This
+redundant code was noticed while migrating relay to use an opaque handle
+for debugfs nodes instead of dentry [1][2].
 
 All relay users had essentially the same implementation of create_buf_file
-and remove_buf_file, so allowing customization adds unnecessary complexity.
-These two callbacks were removed. The core relay code now calls
-debugfs_create_file and debugfs_remove directly. In their place, users
+and remove_buf_file, so allowing customization added unnecessary
+complexity. These two callbacks were removed. The core relay code now calls
+debugfs_create_file and debugfs_remove directly, and users optionally
 specify a new is_global flag.
 
 Link: https://lore.kernel.org/linux-fsdevel/20250210052039.144513-4-me@davidreaver.com/ [1]
