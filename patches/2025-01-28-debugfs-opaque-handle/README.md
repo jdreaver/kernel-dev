@@ -39,14 +39,47 @@ Send these as a response to the v1 RFC thread to see if anyone objects to these,
 
 - (Al and Greg) Don't embed dentry in debugfs_node
   - Need to get consensus on alternative
+  - We could do `struct debugfs_node { struct dentry *dentry; }` and return `struct debugfs_node` everywhere instead of `struct debugfs_node *`, but when the internal structure of `debugfs_node` changes, we would need another migration to return pointers. It would certainly be an easier migration at least.
   - Consider lifetimes even if we embed a dentry pointer. We need to ensure that users of `debugfs_node_dentry()` do not free the dentry, for example.
 - Fix more compilation errors (kernel test robot sent me some)
 - (Greg) Refactor code that requires underlying access to the dentry so it no longer needs that.
   - Consider asking Greg to expand on his point about refactoring users to remove the need to store anything.
   - After that, it is okay to expose the underlying dentry via `debugfs_node_dentry`. Don't make so many wrapper functions.
-  - Greg mentioned relay as a good example of this. Why do we need to store those pointers at all?
+- Incorporate [2025-02-10-relay-debugfs-simplification](../2025-02-10-relay-debugfs-simplification/) into this patch set or send it off alone
+  - Make sure to include testing comments in patch
 - (Steve) Replace temporary defines and forward declarations with #include <linux/debugfs.h>.
   - Coccinelle might not be the right tool for the job, but try Coccinelle first.
+
+Greg's email for reference:
+
+> First off, many thanks for attempting this, I didn't think it was ready
+> to even be attempted, so it's very nice to see this.
+>
+> That being said, I agree with Al, we can't embed a dentry in a structure
+> like that as the lifecycles are going to get messy fast.
+>
+> Also, your replacement of many of the dentry functions with wrappers
+> seems at bit odd, ideally you would just return a dentry from a call
+> like "debugfs_node_to_dentry()" and then let the caller do with it what
+> it wants to, that way you don't need to wrap everything.
+>
+> And finally, I think that many of the places where you did have to
+> convert the code to save off a debugfs node instead of a dentry can be
+> removed entirely as a "lookup this file" can be used instead.  I was
+> waiting for more conversions of that logic, removing the need to store
+> anything in a driver/subsystem first, before attempting to get rid of
+> the returned dentry pointer.
+>
+> As an example of this, why not look at removing almost all of those
+> pointers in the relay code?  Why is all of that being stored at all?
+>
+> Oh, also, all of those forward declarations look really odd, something
+> feels wrong with needing that type of patch if we are doing things
+> right.  Are you sure it was needed?
+>
+> thanks,
+>
+> greg k-h
 
 # Why do we need the forward declarations?
 
