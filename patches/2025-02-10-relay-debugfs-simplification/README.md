@@ -32,14 +32,35 @@ Storing patches in this directory by calling `$this_dir/format-patch.sh` from th
   time git rebase --exec 'git show --quiet --pretty=format:"%h %s" && make -s mrproper && make -s allmodconfig && time make -s -j$(nproc) && echo Success!' master
   ```
 
-# TODO
+# Testing
 
-- Figure out testing methodology. blktrace is probably the best one to try.
+I used blktrace:
+
+```
+  [shell 1] # blktrace -d /dev/sda
+
+  [shell 2] # nproc
+  4
+  [shell 2] # ls /sys/kernel/debug/block/sda/trace*
+  /sys/kernel/debug/block/sda/trace0  /sys/kernel/debug/block/sda/trace2
+  /sys/kernel/debug/block/sda/trace1  /sys/kernel/debug/block/sda/trace3
+
+  [shell 1] ^C
+  === sda ===
+    CPU  0:                   14 events,        1 KiB data
+    CPU  1:                   33 events,        2 KiB data
+    CPU  2:                   64 events,        4 KiB data
+    CPU  3:                   29 events,        2 KiB data
+    Total:                   140 events (dropped 0),        7 KiB data
+
+  [shell 2] # ls /sys/kernel/debug/block/sda/trace*
+  ls: cannot access '/sys/kernel/debug/block/sda/trace*': No such file or directory
+```
 
 # Kernel configuration
 
 ```
-make defconfig
+make defconfig kvm_guest.config
 ./scripts/kconfig/merge_config.sh -m .config ../patches/2025-02-10-relay-debugfs-simplification/relay-drivers.config
 make olddefconfig
 ```

@@ -2,7 +2,8 @@ From 4ca36c0ef6699343560f4c1a84b4680b9fdcc424 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Mon, 10 Feb 2025 16:30:48 -0800
 Subject: [PATCH] relay: Assume debugfs and simplify accordingly
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+    Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Jens Axboe <axboe@kernel.dk>,
     Alexander Viro <viro@zeniv.linux.org.uk>,
     Jani Nikula <jani.nikula@intel.com>,
@@ -30,13 +31,36 @@ Link: https://lore.kernel.org/linux-fsdevel/2025021048-thieving-failing-7831@gre
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
 
-Hey Greg, it looks like kernel/relay is unowned, so I wasn't sure where
-to send this patch. Do patches for unowned code go to Andrew Morton by
-default? I picked you since we just discussed this (in the conversations
-linked in the patch), but please let me know if I should redirect.
+Hey Andrew and Greg, it looks like kernel/relay is not in MAINTAINERS. I
+saw previous relay patches sent to Andrew (the docs call him the
+"maintainer of last resort"). This patch touches drivers that use relay,
+but since it touches so many in one patch I thought that Andrew's or
+Greg's trees were more appropriate. I'm new, so apologies if I have this
+wrong, and please redirect me :)
 
-Tested by compiling the affected drivers specifically, and also
-compiling with allmodconfig.
+Tested by compiling the affected drivers specifically and also compiling
+with allmodconfig. I also ran a kernel with this patch in QEMU, testing
+that blktrace works and that the debugfs trace files are created and
+destroyed as expected:
+
+  [shell 1] # blktrace -d /dev/sda
+
+  [shell 2] # nproc
+  4
+  [shell 2] # ls /sys/kernel/debug/block/sda/trace*
+  /sys/kernel/debug/block/sda/trace0  /sys/kernel/debug/block/sda/trace2
+  /sys/kernel/debug/block/sda/trace1  /sys/kernel/debug/block/sda/trace3
+
+  [shell 1] ^C
+  === sda ===
+    CPU  0:                   14 events,        1 KiB data
+    CPU  1:                   33 events,        2 KiB data
+    CPU  2:                   64 events,        4 KiB data
+    CPU  3:                   29 events,        2 KiB data
+    Total:                   140 events (dropped 0),        7 KiB data
+
+  [shell 2] # ls /sys/kernel/debug/block/sda/trace*
+  ls: cannot access '/sys/kernel/debug/block/sda/trace*': No such file or directory
 
  Documentation/filesystems/relay.rst           | 122 ++++--------------
  drivers/gpu/drm/i915/gt/uc/intel_guc_log.c    |  42 +-----

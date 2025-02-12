@@ -6,4 +6,25 @@ Greg's trees were more appropriate. I'm new, so apologies if I have this
 wrong, and please redirect me :)
 
 Tested by compiling the affected drivers specifically and also compiling
-with allmodconfig.
+with allmodconfig. I also ran a kernel with this patch in QEMU, testing
+that blktrace works and that the debugfs trace files are created and
+destroyed as expected:
+
+  [shell 1] # blktrace -d /dev/sda
+
+  [shell 2] # nproc
+  4
+  [shell 2] # ls /sys/kernel/debug/block/sda/trace*
+  /sys/kernel/debug/block/sda/trace0  /sys/kernel/debug/block/sda/trace2
+  /sys/kernel/debug/block/sda/trace1  /sys/kernel/debug/block/sda/trace3
+
+  [shell 1] ^C
+  === sda ===
+    CPU  0:                   14 events,        1 KiB data
+    CPU  1:                   33 events,        2 KiB data
+    CPU  2:                   64 events,        4 KiB data
+    CPU  3:                   29 events,        2 KiB data
+    Total:                   140 events (dropped 0),        7 KiB data
+
+  [shell 2] # ls /sys/kernel/debug/block/sda/trace*
+  ls: cannot access '/sys/kernel/debug/block/sda/trace*': No such file or directory
