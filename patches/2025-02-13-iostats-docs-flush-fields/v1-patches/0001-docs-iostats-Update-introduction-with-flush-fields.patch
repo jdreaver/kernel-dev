@@ -1,0 +1,92 @@
+From c72a8cc4e8b35342cf2cd90182a6a07731bff04d Mon Sep 17 00:00:00 2001
+From: David Reaver <me@davidreaver.com>
+Date: Thu, 13 Feb 2025 16:55:18 -0800
+Subject: [PATCH] docs: iostats: Update introduction with flush fields
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Jens Axboe <axboe@kernel.dk>,
+    Konstantin Khlebnikov <koct9i@gmail.com>,
+    linux-doc@vger.kernel.org,
+    linux-block@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    David Reaver <me@davidreaver.com>
+
+Counters for flush requests were added to the kernel in
+b6866318657 ("block: add iostat counters for flush requests") [1]. While
+iostats.rst was updated with descriptions for the new fields, the
+introduction still mentions 15 fields instead of 17.
+
+Correct the introduction to state that there are 17 fields instead of 15.
+Also, replace the 2.4 vs. 2.6+ comparison with a distinction between
+/proc/diskstats and the sysfs stat file.
+
+Link: https://lore.kernel.org/lkml/157433282607.7928.5202409984272248322.stgit@buzz/T/ [1]
+
+Signed-off-by: David Reaver <me@davidreaver.com>
+---
+
+I noticed this small discrepancy while writing an observability tool
+that uses /proc/diskstats. I did a double take because I noticed the
+extra fields in my own system's /proc/diskstats while I was reading this
+doc, but _before_ I got to the descriptions for fields 16 and 17.
+
+I think the discussion of historical formats for 2.4, 2.6, and 4.18 in
+this document is confusing and not very useful. If you'd like, I'm happy
+to make a patch that rewrites the intro to simplify it and remove
+discussion of the historical formats.
+
+ Documentation/admin-guide/iostats.rst | 33 +++++++++++++++------------
+ 1 file changed, 18 insertions(+), 15 deletions(-)
+
+diff --git a/Documentation/admin-guide/iostats.rst b/Documentation/admin-guide/iostats.rst
+index 609a3201fd4e..1df7961bdc89 100644
+--- a/Documentation/admin-guide/iostats.rst
++++ b/Documentation/admin-guide/iostats.rst
+@@ -34,6 +34,9 @@ Here are examples of these different formats::
+    4.18+ diskstats:
+       3    0   hda 446216 784926 9550688 4382310 424847 312726 5922052 19310380 0 3376340 23705160 0 0 0 0
+ 
++   5.5+ diskstats:
++      3    0   hda 446216 784926 9550688 4382310 424847 312726 5922052 19310380 0 3376340 23705160 0 0 0 0 0 0
++
+ On 2.4 you might execute ``grep 'hda ' /proc/partitions``. On 2.6+, you have
+ a choice of ``cat /sys/block/hda/stat`` or ``grep 'hda ' /proc/diskstats``.
+ 
+@@ -43,21 +46,21 @@ be a better choice if you are watching a large number of disks because
+ you'll avoid the overhead of 50, 100, or 500 or more opens/closes with
+ each snapshot of your disk statistics.
+ 
+-In 2.4, the statistics fields are those after the device name. In
+-the above example, the first field of statistics would be 446216.
+-By contrast, in 2.6+ if you look at ``/sys/block/hda/stat``, you'll
+-find just the 15 fields, beginning with 446216.  If you look at
+-``/proc/diskstats``, the 15 fields will be preceded by the major and
+-minor device numbers, and device name.  Each of these formats provides
+-15 fields of statistics, each meaning exactly the same things.
+-All fields except field 9 are cumulative since boot.  Field 9 should
+-go to zero as I/Os complete; all others only increase (unless they
+-overflow and wrap). Wrapping might eventually occur on a very busy
+-or long-lived system; so applications should be prepared to deal with
+-it. Regarding wrapping, the types of the fields are either unsigned
+-int (32 bit) or unsigned long (32-bit or 64-bit, depending on your
+-machine) as noted per-field below. Unless your observations are very
+-spread in time, these fields should not wrap twice before you notice it.
++In ``/proc/diskstats``, the statistics fields are those after the device
++name. In the above example, the first field of statistics would
++be 446216. By contrast, in ``/sys/block/hda/stat`` you'll find just the
++17 fields, beginning with 446216. If you look at ``/proc/diskstats``,
++the 17 fields will be preceded by the major and minor device numbers,
++and device name. Each of these formats provides 17 fields of statistics,
++each meaning exactly the same things. All fields except field 9 are
++cumulative since boot. Field 9 should go to zero as I/Os complete; all
++others only increase (unless they overflow and wrap). Wrapping might
++eventually occur on a very busy or long-lived system; so applications
++should be prepared to deal with it. Regarding wrapping, the types of the
++fields are either unsigned int (32 bit) or unsigned long (32-bit or
++64-bit, depending on your machine) as noted per-field below. Unless your
++observations are very spread in time, these fields should not wrap twice
++before you notice it.
+ 
+ Each set of stats only applies to the indicated device; if you want
+ system-wide stats you'll have to find all the devices and sum them all up.
+
+base-commit: a64dcfb451e254085a7daee5fe51bf22959d52d3
