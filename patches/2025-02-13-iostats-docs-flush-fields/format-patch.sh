@@ -3,16 +3,16 @@
 set -euo pipefail
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-patch_dir="$script_dir/v1-patch"
+patch_dir="$script_dir/v3-patch"
 
 rm -rf "$patch_dir"
 
 git format-patch master...HEAD \
     --base=origin/master \
     -o "$patch_dir/" \
-    --in-reply-to '0e8c8ead-423a-45f3-9e10-020334ef8907@infradead.org' \
+    --reroll-count 3 \
     --to 'Jonathan Corbet <corbet@lwn.net>' \
-    --to 'Randy Dunlap <rdunlap@infradead.org>' \
+    --cc 'Randy Dunlap <rdunlap@infradead.org>' \
     --cc 'Jens Axboe <axboe@kernel.dk>' \
     --cc 'Konstantin Khlebnikov <koct9i@gmail.com>' \
     --cc 'linux-doc@vger.kernel.org' \
