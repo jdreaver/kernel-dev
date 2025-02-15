@@ -1,4 +1,4 @@
-From f445975d67a7f1f084a4c22ff938f4a4b7aee768 Mon Sep 17 00:00:00 2001
+From b6a35ad6385b6a20cabf2e2d61343d42ddd7e7f0 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Thu, 13 Feb 2025 20:58:39 -0800
 Subject: [PATCH v3] docs: iostats: Rewrite intro, remove outdated formats
@@ -24,21 +24,19 @@ Link: https://lore.kernel.org/lkml/157433282607.7928.5202409984272248322.stgit@b
 Signed-off-by: David Reaver <me@davidreaver.com>
 ---
 
+Lore links to previous versions:
 V1: https://lore.kernel.org/linux-doc/20250214013905.60526-1-me@davidreaver.com/
 V2: https://lore.kernel.org/linux-doc/20250214051432.207630-1-me@davidreaver.com/
 
-V1 -> V2:
-- Rewrite entire introduction instead of just changing 15 -> 17.
-
-V2 -> V3:
-- Remove 32/64 bit wraparound explanation as it is wrong and
-  confusing.
+Changes:
+V1 -> V2: Rewrite entire introduction instead of just changing 15 -> 17.
+V2 -> V3: Reword counter reset paragraph for accuracy and clarity.
 
  Documentation/admin-guide/iostats.rst | 89 ++++++++++-----------------
  1 file changed, 33 insertions(+), 56 deletions(-)
 
 diff --git a/Documentation/admin-guide/iostats.rst b/Documentation/admin-guide/iostats.rst
-index 609a3201fd4e..2cadbaec092b 100644
+index 609a3201fd4e..9453196ade51 100644
 --- a/Documentation/admin-guide/iostats.rst
 +++ b/Documentation/admin-guide/iostats.rst
 @@ -2,62 +2,39 @@
@@ -129,11 +127,11 @@ index 609a3201fd4e..2cadbaec092b 100644
 +``/proc/diskstats`` is often the better choice since it avoids the
 +overhead of opening and closing multiple files for each snapshot.
 +
-+All fields are cumulative, monotonic counters that start at zero at
-+boot, except for field 9, which resets to zero as I/Os complete. Other
-+fields only increase unless they overflow and wrap. Wrapping may occur
-+on long-running or high-load systems, so applications should handle this
-+properly.
++All fields are cumulative, monotonic counters, except for field 9, which
++resets to zero as I/Os complete. The remaining fields reset at boot, on
++device reattachment or reinitialization, or when the underlying counter
++overflows. Applications reading these counters should detect and handle
++resets when comparing stat snapshots.
  
  Each set of stats only applies to the indicated device; if you want
  system-wide stats you'll have to find all the devices and sum them all up.

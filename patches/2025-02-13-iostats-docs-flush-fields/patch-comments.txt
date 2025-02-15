@@ -1,9 +1,7 @@
+Lore links to previous versions:
 V1: https://lore.kernel.org/linux-doc/20250214013905.60526-1-me@davidreaver.com/
 V2: https://lore.kernel.org/linux-doc/20250214051432.207630-1-me@davidreaver.com/
 
-V1 -> V2:
-- Rewrite entire introduction instead of just changing 15 -> 17.
-
-V2 -> V3:
-- Remove 32/64 bit wraparound explanation as it is wrong and
-  confusing.
+Changes:
+V1 -> V2: Rewrite entire introduction instead of just changing 15 -> 17.
+V2 -> V3: Reword counter reset paragraph for accuracy and clarity.
