@@ -1,4 +1,4 @@
-From b6a35ad6385b6a20cabf2e2d61343d42ddd7e7f0 Mon Sep 17 00:00:00 2001
+From 3f29e42a005980b458d33ea733c3a8d0fef08812 Mon Sep 17 00:00:00 2001
 From: David Reaver <me@davidreaver.com>
 Date: Thu, 13 Feb 2025 20:58:39 -0800
 Subject: [PATCH v3] docs: iostats: Rewrite intro, remove outdated formats
@@ -11,13 +11,14 @@ Cc: Randy Dunlap <rdunlap@infradead.org>,
     linux-kernel@vger.kernel.org,
     David Reaver <me@davidreaver.com>
 
-The discussion of file formats for very old kernel versions obscured the
-key information in this document. Additionally, the introduction was
-missing a discussion of flush fields added in b6866318657 ("block: add
-iostat counters for flush requests") [1].
+The introduction discussed stat file formats for very old kernel versions,
+which obscured key information that readers may find useful. Additionally,
+the example file contents and the reference to "15 fields" did not account
+for the flush fields added in b6866318657 ("block: add iostat counters for
+flush requests") [1].
 
-Rewrite the introduction to discuss only the current kernel's disk I/O stat
-file formats. Also, clean up wording to be more concise.
+Rewrite the introduction to focus only on the current kernel's disk I/O stat
+file formats. Also, clean up wording for conciseness.
 
 Link: https://lore.kernel.org/lkml/157433282607.7928.5202409984272248322.stgit@buzz/T/ [1]
 
