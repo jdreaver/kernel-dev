@@ -40,6 +40,7 @@ Send these as a response to the v1 RFC thread to see if anyone objects to these,
 - (Al and Greg) Don't embed dentry in debugfs_node
   - Need to get consensus on alternative
   - We could do `struct debugfs_node { struct dentry *dentry; }` and return `struct debugfs_node` everywhere instead of `struct debugfs_node *`, but when the internal structure of `debugfs_node` changes, we would need another migration to return pointers. It would certainly be an easier migration at least.
+    - Could call it `struct debugfs_dentry` so it is clear what the intent is.
   - Consider lifetimes even if we embed a dentry pointer. We need to ensure that users of `debugfs_node_dentry()` do not free the dentry, for example.
 - Fix more compilation errors (kernel test robot sent me some)
 - (Greg) Refactor code that requires underlying access to the dentry so it no longer needs that.
